@@ -66,8 +66,18 @@
   el('railnext').addEventListener('click', () => ruecke(1));
 
   rail.addEventListener('keydown', e => {
-    if (e.key === 'ArrowRight') { e.preventDefault(); ruecke(1); }
-    if (e.key === 'ArrowLeft')  { e.preventDefault(); ruecke(-1); }
+    const d = e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0;
+    if (!d) return;
+    e.preventDefault();
+    // Steht der Fokus auf einer Person, wandert er mit. Sonst scrollte die Reihe
+    // unter dem Fokus weg und Enter oeffnete jemanden, den man nicht mehr sieht.
+    const i = karten.indexOf(document.activeElement);
+    if (i < 0) return ruecke(d);
+    const naechste = karten[Math.max(0, Math.min(karten.length - 1, i + d))];
+    naechste.focus();
+    // Nur hier zentrieren, nicht bei jedem Fokus: die Maus setzt den Fokus schon
+    // beim Druecken, ein Zug wuerde sich sonst gegen das Nachruecken stemmen.
+    naechste.scrollIntoView({block: 'nearest', inline: 'center'});
   });
 
   /* ---------- Ziehen mit der Maus ---------- */
