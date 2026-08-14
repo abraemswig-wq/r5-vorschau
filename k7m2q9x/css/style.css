@@ -1,0 +1,371 @@
+/* REHAB FIVE — Fünf Säulen
+   Struktur/Grammatik nach cornrevolution.resn.global (Resn), Marke komplett eigen.
+   Basis = normal scrollende Sektionen; die Kino-Mechanik legt JS als .cinema darüber. */
+
+:root{
+  --pine-black:#0B1611;
+  --pine:#1F342D;
+  --pine-lift:#2C4539;
+  --cream:#FBF1E0;
+  --orange:#D99129;
+  --orange-lt:#F0B860;
+
+  --gut:6.667vw;              /* 96px @1440 — aus der Referenz gemessen */
+  --hl-size:clamp(2.25rem,4.69vw,4.75rem);   /* 67.5px @1440 */
+  --hl-lh:1.0;
+  --body-size:clamp(.9rem,1.04vw,.9375rem);  /* 15px @1440 */
+  --body-lh:1.6;
+  --lede-w:clamp(20rem,35.2vw,31.7rem);      /* 507px @1440 */
+
+  --ease-out:cubic-bezier(.16,1,.3,1);
+  --ease-io:cubic-bezier(.65,0,.35,1);
+}
+
+*,*::before,*::after{box-sizing:border-box}
+
+html{background:var(--pine-black)}
+
+body{
+  margin:0;
+  font-family:'Barlow',system-ui,-apple-system,sans-serif;
+  font-weight:200;
+  color:var(--cream);
+  background:var(--pine-black);
+  -webkit-font-smoothing:antialiased;
+  overflow-x:hidden;
+}
+
+img{max-width:100%;height:auto;display:block}
+a{color:inherit}
+
+/* ---------- Beats (Basis: normaler Fluss) ---------- */
+
+.story{position:relative}
+
+.beat{
+  position:relative;
+  min-height:100svh;
+  display:flex;
+  align-items:center;
+  overflow:hidden;
+}
+
+.beat__media{position:absolute;inset:0;z-index:0}
+
+.beat__bg{
+  position:absolute;inset:-4%;
+  background-size:cover;
+  background-position:center;
+  /* Zoom als eigenständige `scale`-Property, damit die Schleife pro Frame nur
+     translate3d schreibt. Ein wechselndes scale() zwingt die 2400px-Platte in
+     jedem Frame zum Neu-Rastern — gemessen: p95 26.6ms → 13.1ms. */
+  scale:1.09;
+  will-change:transform;
+}
+
+.beat__scrim{
+  position:absolute;inset:0;
+  background:
+    linear-gradient(96deg, rgba(11,22,17,.95) 0%, rgba(11,22,17,.86) 30%, rgba(11,22,17,.74) 44%, rgba(11,22,17,.28) 68%, rgba(11,22,17,.46) 100%),
+    linear-gradient(to top, rgba(11,22,17,.7) 0%, rgba(11,22,17,0) 40%);
+}
+.beat__scrim--full{background:rgba(11,22,17,.82)}
+
+.beat__inner{
+  position:relative;z-index:2;
+  padding:0 var(--gut);
+  width:100%;
+  transform:translate3d(0,0,0);
+}
+.beat__inner--center{text-align:center;display:flex;flex-direction:column;align-items:center}
+
+/* ---------- Typo ---------- */
+
+.kicker{
+  margin:0 0 1.35rem;
+  font-size:.6875rem;         /* 11px */
+  font-weight:500;
+  letter-spacing:.22em;
+  text-transform:uppercase;
+  color:var(--orange);
+}
+
+.hl{
+  margin:0;
+  font-weight:900;
+  font-size:var(--hl-size);
+  line-height:var(--hl-lh);
+  letter-spacing:-.022em;
+  text-transform:uppercase;
+  display:flex;flex-direction:column;align-items:flex-start;
+}
+.hl--center{align-items:center}
+
+/* Signature der Referenz: Cream-Block, Schrift ausgestanzt */
+.hl__line{
+  display:inline-block;
+  background:var(--cream);
+  color:var(--pine-black);
+  padding:.08em .16em .12em;   /* Zeilenblock 81px bei 67.5px Schrift — Referenzmass */
+  white-space:pre;
+  transform-origin:left center;
+  /* Rückfallebene zur Glyphenwahl im Scramble: was die Breite doch sprengt,
+     wird abgeschnitten statt auf dem Foto ohne Cream-Grund zu landen. */
+  overflow:hidden;
+}
+.hl--center .hl__line{transform-origin:center}
+
+.lede{
+  margin:1.6rem 0 0;
+  max-width:var(--lede-w);
+  font-size:var(--body-size);
+  line-height:var(--body-lh);
+  font-weight:200;
+  color:rgba(251,241,224,.9);
+}
+
+/* ---------- Outro ---------- */
+
+.beat--outro{text-align:center}
+
+.cta{list-style:none;margin:2.75rem 0 0;padding:0;display:flex;flex-direction:column;gap:.5rem}
+.cta a{
+  display:inline-block;
+  font-weight:900;
+  font-size:clamp(1.25rem,2.5vw,2.25rem);
+  letter-spacing:-.01em;
+  text-transform:uppercase;
+  text-decoration:none;
+  color:var(--cream);
+  padding:.18em .3em;
+  transition:color .18s var(--ease-out), background-color .18s var(--ease-out);
+}
+@media (hover:hover) and (pointer:fine){
+  .cta a:hover{background:var(--orange);color:var(--pine-black)}
+}
+.cta a:focus-visible{outline:2px solid var(--orange);outline-offset:4px}
+
+.outro-foot{
+  margin:3rem 0 0;
+  font-size:.75rem;letter-spacing:.06em;line-height:2;
+  color:rgba(251,241,224,.55);
+}
+.outro-foot a{text-decoration:none;border-bottom:1px solid rgba(251,241,224,.3)}
+
+/* ---------- Chrome ---------- */
+
+.chrome-top{
+  position:fixed;top:0;left:0;right:0;z-index:60;
+  display:flex;align-items:center;gap:1.5rem;
+  padding:3.3rem var(--gut);           /* 53px oben, gemessen */
+  pointer-events:none;
+}
+.chrome-top > *{pointer-events:auto}
+
+.burger{
+  width:20px;height:14px;padding:0;border:0;background:none;cursor:pointer;
+  display:flex;flex-direction:column;justify-content:center;gap:5px;
+}
+.burger span{display:block;height:1.5px;background:var(--cream);transition:transform .38s var(--ease-out),opacity .2s linear}
+.burger[aria-expanded="true"] span:first-child{transform:translateY(3.25px) rotate(45deg)}
+.burger[aria-expanded="true"] span:last-child{transform:translateY(-3.25px) rotate(-45deg)}
+.burger:focus-visible{outline:2px solid var(--orange);outline-offset:6px}
+
+.wordmark img{width:auto;height:15px}
+
+/* Kapitelmenü */
+.chapters{
+  position:fixed;inset:0;z-index:55;
+  background:rgba(11,22,17,.94);
+  backdrop-filter:blur(14px);
+  display:flex;flex-direction:column;justify-content:center;
+  padding:0 var(--gut);
+  opacity:0;visibility:hidden;
+  transition:opacity .4s var(--ease-out),visibility .4s;
+}
+.chapters[data-open="true"]{opacity:1;visibility:visible}
+.chapters[hidden]{display:flex}
+
+.chapters__list{list-style:none;margin:0;padding:0;counter-reset:ch}
+.chapters__list li{overflow:hidden}
+.chapters__list button{
+  display:block;width:fit-content;text-align:left;
+  border:0;background:none;cursor:pointer;color:var(--cream);
+  font-family:inherit;font-weight:900;text-transform:uppercase;
+  font-size:clamp(1.5rem,4vw,3.5rem);line-height:1.14;letter-spacing:-.02em;
+  padding:.06em 0;
+  opacity:0;transform:translateY(110%);
+  /* Transitions statt Keyframes: schnelles Auf/Zu setzt neu an, statt bei 0 neu
+     zu starten. Die Staffelung liegt nur auf dem offenen Zustand — Schliessen
+     fährt ohne Verzögerung zusammen. */
+  transition:opacity .34s var(--ease-out),transform .42s var(--ease-out),color .2s var(--ease-out);
+}
+.chapters[data-open="true"] button{
+  opacity:1;transform:translateY(0);
+  transition-delay:var(--d,0s);
+}
+.chapters__list button span{
+  font-weight:200;font-size:.28em;letter-spacing:.2em;
+  color:var(--orange);margin-right:1.1em;vertical-align:middle;
+}
+@media (hover:hover) and (pointer:fine){
+  .chapters__list button:hover{color:var(--orange)}
+}
+.chapters__list button[aria-current="true"]{color:var(--orange)}
+.chapters__foot{
+  margin-top:3rem;font-size:.6875rem;letter-spacing:.16em;text-transform:uppercase;
+  color:rgba(251,241,224,.45);
+  display:flex;flex-wrap:wrap;align-items:baseline;gap:.6rem 2rem;
+}
+.chapters__links{display:flex;gap:1.6rem}
+.chapters__links a{
+  color:var(--cream);text-decoration:none;
+  border-bottom:1px solid var(--orange);padding-bottom:.2em;
+}
+.chapters__links a:focus-visible{outline:2px solid var(--orange);outline-offset:4px}
+
+/* Fortschrittsring rechts */
+.progress{
+  position:fixed;z-index:50;right:calc(var(--gut) * .55);top:50%;
+  transform:translateY(-50%);
+  display:flex;align-items:center;gap:.75rem;flex-direction:row-reverse;
+}
+.progress__ring{width:34px;height:34px;transform:rotate(-90deg)}
+.progress__track{fill:none;stroke:rgba(251,241,224,.22);stroke-width:1.5}
+.progress__fill{
+  fill:none;stroke:var(--orange);stroke-width:1.5;stroke-linecap:round;
+  /* Kein transition: die rAF-Schleife schreibt den Offset pro Frame und `cur`
+     ist bereits gedämpft. Eine Transition würde nur permanent nachhinken. */
+  stroke-dasharray:119.4;stroke-dashoffset:119.4;
+}
+.progress__label{
+  font-size:.625rem;letter-spacing:.2em;text-transform:uppercase;
+  color:rgba(251,241,224,.7);white-space:nowrap;
+}
+
+/* Rotierendes Siegel */
+.seal{
+  position:fixed;z-index:50;left:var(--gut);bottom:2.6rem;
+  width:86px;height:86px;
+  display:grid;place-items:center;
+  opacity:.85;
+}
+.seal svg{position:absolute;inset:0;width:100%;height:100%;animation:spin 26s linear infinite}
+.seal text{fill:rgba(251,241,224,.72);font-size:9.4px;letter-spacing:.11em;font-weight:500;text-transform:uppercase}
+.seal__glyph{
+  width:16px;height:16px;
+  background:var(--orange);
+  clip-path:polygon(50% 0%,100% 38%,81% 100%,19% 100%,0% 38%);
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* Scroll-Hinweis */
+.hint{
+  position:fixed;z-index:50;left:50%;bottom:2.4rem;transform:translateX(-50%);
+  display:flex;flex-direction:column;align-items:center;gap:.7rem;
+  font-size:.625rem;letter-spacing:.24em;text-transform:uppercase;
+  color:rgba(251,241,224,.6);
+  transition:opacity .5s var(--ease-out);
+}
+.hint i{display:block;width:1px;height:30px;background:linear-gradient(var(--orange),transparent);animation:drop 2s var(--ease-io) infinite}
+@keyframes drop{0%{transform:scaleY(0);transform-origin:top}45%{transform:scaleY(1);transform-origin:top}55%{transform:scaleY(1);transform-origin:bottom}100%{transform:scaleY(0);transform-origin:bottom}}
+.hint[data-off="true"]{opacity:0;pointer-events:none}
+
+/* Preloader */
+.preloader{
+  position:fixed;inset:0;z-index:100;
+  background:var(--pine-black);
+  display:grid;place-items:center;
+  transition:opacity .7s var(--ease-out),visibility .7s;
+}
+.preloader[data-done="true"]{opacity:0;visibility:hidden}
+.preloader__mark{
+  font-weight:900;text-transform:uppercase;letter-spacing:-.02em;
+  font-size:clamp(1.5rem,4vw,3rem);color:var(--cream);
+  display:flex;align-items:center;
+}
+.preloader__long{
+  display:block;overflow:hidden;white-space:nowrap;max-width:14ch;
+  transition:max-width .62s var(--ease-io),opacity .3s linear;
+}
+.preloader__short{
+  display:block;color:var(--orange);opacity:0;transform:scale(.94);
+  transition:opacity .4s .28s var(--ease-out),transform .4s .28s var(--ease-out);
+}
+.preloader[data-contract="true"] .preloader__long{max-width:0;opacity:0}
+.preloader[data-contract="true"] .preloader__short{opacity:1;transform:scale(1)}
+.preloader__bar{margin-top:1.6rem;width:120px;height:1px;background:rgba(251,241,224,.2);position:absolute;bottom:22%;left:50%;transform:translateX(-50%)}
+.preloader__bar i{
+  display:block;height:100%;width:100%;background:var(--orange);
+  transform:scaleX(var(--p,0));transform-origin:left center;
+  transition:transform .3s linear;
+}
+
+/* ---------- Kino-Modus (JS-Enhancement) ---------- */
+
+html.cinema,html.cinema body{height:100%;overflow:hidden}
+
+/* Weder .story noch .beat dürfen einen Stacking-Context aufmachen — sonst
+   liegt die Konstellation zwangsläufig über ODER unter beiden Ebenen.
+   Drei globale Ebenen: Bild (--zi) < Konstellation (20) < Typo (30+). */
+.cinema .story{position:absolute;inset:0}
+
+.cinema .beat{
+  position:absolute;inset:0;
+  min-height:0;height:100%;
+}
+/* Diagonaler Wipe: nur die Medienebene wird beschnitten, die Typo bleibt ganz —
+   genau wie in der Referenz (Headline läuft über die Kante). */
+.cinema .beat__media{
+  z-index:var(--zi,0);
+  clip-path:polygon(0 var(--wipe,115%),100% calc(var(--wipe,115%) + 15%),100% 200%,0 200%);
+}
+.cinema .beat:first-child .beat__media{clip-path:none}
+
+.cinema .beat__inner{
+  z-index:calc(30 + var(--zi,0));
+  padding-bottom:14vh;           /* Headline landet auf dem Referenz-Anker (246/900) */
+  opacity:var(--o,0);
+  transform:translate3d(0,var(--ty,0px),0);
+  will-change:opacity,transform;
+}
+.cinema .beat--outro .beat__inner{padding-bottom:0}
+
+.cinema .beat--outro{align-items:center;justify-content:center}
+
+/* ---------- Reveal der Headline-Blöcke ---------- */
+
+.hl__line{
+  transform:scaleX(var(--sx,1));
+  transition:transform .42s var(--ease-out);
+  transition-delay:var(--hd,0s);
+}
+.cinema .hl__line{--sx:0}
+/* data-seen bleibt gesetzt: der Block zieht einmal auf und klappt beim
+   Weiterscrollen nicht wieder zu. Das Ein- und Ausblenden macht allein --o. */
+.cinema .beat[data-live="true"] .hl__line,
+.cinema .beat[data-seen="true"] .hl__line{--sx:1}
+
+/* ---------- Mobiler / Flow-Modus ---------- */
+
+@media (max-width:820px){
+  :root{--gut:7vw;--hl-size:clamp(1.9rem,8.4vw,3rem)}
+  .progress{display:none}
+  .seal{width:64px;height:64px;bottom:1.4rem}
+  .seal text{font-size:11px}
+  .chrome-top{padding:1.4rem var(--gut)}
+  .beat{padding:7.5rem 0 6rem}
+  .lede{max-width:34rem}   /* Zeilenmass bleibt lesbar; auf Telefonen bindet ohnehin die Gasse */
+}
+
+@media (prefers-reduced-motion:reduce){
+  /* Nicht auf Null, sondern ohne Bewegung: Deckkraft und Farbe bleiben,
+     Verschiebungen und Dauerschleifen fallen weg. */
+  .seal svg,.hint i{animation:none}
+  .hl__line{transition-duration:.01ms}
+  .chapters__list button{transform:none;transition:opacity .2s linear,color .2s linear}
+  .chapters[data-open="true"] button{transform:none;transition-delay:0s}
+  .preloader__short{transform:none}
+  .beat__bg{scale:1}
+  *,*::before,*::after{scroll-behavior:auto!important}
+}
