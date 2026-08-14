@@ -80,7 +80,9 @@
     aktiv = (i + daten.length) % daten.length;
     const d = daten[aktiv];
     const bild = el('pcimg');
-    bild.src = d.bild;
+    // Pfad aus der Reihe uebernehmen statt aus den Daten: nur dort steht er in
+    // der Form, die auch auf dem Server stimmt.
+    bild.src = karten[aktiv].querySelector('img').src;
     bild.alt = d.ohne ? `${d.name} — noch kein Portrait` : d.name;
     el('pcname').textContent = d.name;
     el('pcrole').textContent = d.rolle;
