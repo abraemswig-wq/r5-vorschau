@@ -16,17 +16,51 @@
     el('railprev').disabled = rail.scrollLeft < 4;
     el('railnext').disabled = rail.scrollLeft > rest - 4;
   };
-  rail.addEventListener('scroll', mess, {passive: true});
-  addEventListener('resize', mess);
-  mess();
+
+  /* ---------- Tiefe ---------- */
+  // Die Person in der Mitte steht gerade, vorn und hell; nach aussen kippen die
+  // Bilder weg, ruecken zurueck und dunkeln ab. Der Blick hat dadurch einen
+  // Platz, an dem er haengenbleibt, statt 33 gleich laute Karten zu sehen.
+  const flach = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const raum = () => {
+    const halb = rail.clientWidth / 2;
+    const blick = rail.scrollLeft + halb;
+    karten.forEach(k => {
+      // offsetLeft ist die Layoutmitte und dreht sich nicht mit. Ueber die
+      // sichtbare Box gemessen zoege sich die Rechnung selbst am Schopf: jede
+      // Verschiebung veraenderte die naechste Messung.
+      const t = Math.max(-1.7, Math.min(1.7, (k.offsetLeft + k.offsetWidth / 2 - blick) / halb));
+      const weg = Math.abs(t);
+      k.classList.toggle('is-mitte', weg < 0.25);
+      if (flach) return;
+      // Der Zug nach innen ist das, was den Effekt ausmacht: die Nachbarn
+      // schieben sich hinter die Mitte, statt daneben stehen zu bleiben.
+      const d = k.firstElementChild;
+      d.style.transform = `perspective(1500px) translateX(${(-t * 92).toFixed(1)}px) `
+                        + `translateZ(${(-weg * 240).toFixed(1)}px) `
+                        + `rotateY(${(-t * 34).toFixed(2)}deg)`;
+      d.style.filter = `brightness(${(1 - weg * 0.36).toFixed(3)}) saturate(${(1 - weg * 0.3).toFixed(3)})`;
+      k.style.zIndex = String(40 - Math.round(weg * 20));
+    });
+  };
+
+  let angefordert = false;
+  const zeichne = () => { angefordert = false; mess(); raum(); };
+  const anfordern = () => {
+    if (angefordert) return;
+    angefordert = true;
+    requestAnimationFrame(zeichne);
+  };
+  rail.addEventListener('scroll', anfordern, {passive: true});
+  addEventListener('resize', anfordern);
+  zeichne();
 
   /* ---------- Pfeile ---------- */
   // Um genau ein Kartenraster weiterspringen, nicht um eine feste Pixelzahl:
   // die Kartenbreite haengt am Viewport.
-  const schritt = () => {
-    const a = karten[0], b = karten[1];
-    return b ? b.getBoundingClientRect().left - a.getBoundingClientRect().left : 300;
-  };
+  // Layoutabstand, nicht sichtbarer Abstand: die Karten werden gedreht und zur
+  // Mitte gezogen, ihre sichtbaren Kanten taugen als Mass nicht mehr.
+  const schritt = () => (karten[1] ? karten[1].offsetLeft - karten[0].offsetLeft : 300);
   const ruecke = d => rail.scrollBy({left: d * schritt(), behavior: 'smooth'});
   el('railprev').addEventListener('click', () => ruecke(-1));
   el('railnext').addEventListener('click', () => ruecke(1));

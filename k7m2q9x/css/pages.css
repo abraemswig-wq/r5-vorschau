@@ -195,27 +195,34 @@ body.page{overflow-x:hidden}
    ohne Beschriftung, dass da noch mehr kommt. */
 .gal{padding:0 0 clamp(2rem,5vh,3rem)}
 .gal__rail{
+  --karte:clamp(14rem,26vw,23rem);
   display:flex;gap:clamp(.9rem,1.8vw,1.6rem);
-  padding:0 var(--gut) 1.4rem;
+  /* Die aktive Person steht in der Mitte, nicht am linken Rand. Die Einrueckung
+     ist deshalb genau so breit, dass auch die erste und die letzte Karte dort
+     hinkommen — sonst waeren Anfang und Ende der Reihe nie scharf gestellt. */
+  padding:0 calc(50% - var(--karte)/2) 1.4rem;
   overflow-x:auto;overscroll-behavior-x:contain;
   scroll-snap-type:x mandatory;
-  /* Ohne das rastet die erste Karte auf den Rand statt auf die Satzkante:
-     der Snapport beginnt sonst hinter der Einrueckung. */
-  scroll-padding-inline:var(--gut);
   scrollbar-width:none;
   cursor:grab;
+  /* Bezugspunkt fuer offsetLeft der Karten: js/team.js rechnet in Layout-
+     Koordinaten, weil die gedrehten Boxen selbst keine brauchbaren liefern. */
+  position:relative;
 }
 .gal__rail::-webkit-scrollbar{display:none}
 .gal__rail.is-zieht{cursor:grabbing;scroll-snap-type:none}
 .gal__rail:focus-visible{outline:2px solid var(--orange);outline-offset:-2px}
 
 .member{
-  flex:0 0 clamp(13rem,22vw,19rem);
-  scroll-snap-align:start;
+  flex:0 0 var(--karte);
+  scroll-snap-align:center;
   display:block;margin:0;padding:0;border:0;background:none;
   font:inherit;color:inherit;text-align:left;cursor:pointer;
   -webkit-tap-highlight-color:transparent;user-select:none;
 }
+/* Tiefe und Helligkeit setzt js/team.js hier — die Kurve haengt am Abstand zur
+   Mitte und laesst sich nicht in Klassen abbilden. */
+.member__d{display:block;transform-origin:50% 50%}
 .gal__rail.is-zieht .member{cursor:grabbing}
 .member__img{
   display:block;aspect-ratio:3/4;overflow:hidden;background:var(--pine);
@@ -233,7 +240,8 @@ body.page{overflow-x:hidden}
   transform:scaleX(0);transform-origin:left;transition:transform .45s var(--ease-out);
 }
 .member:hover .member__img::after,
-.member:focus-visible .member__img::after{transform:scaleX(1)}
+.member:focus-visible .member__img::after,
+.member.is-mitte .member__img::after{transform:scaleX(1)}
 .member:focus-visible{outline:2px solid var(--orange);outline-offset:4px}
 
 .member__cap{display:block;padding:.9rem 0 0}
