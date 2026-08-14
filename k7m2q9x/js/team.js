@@ -17,30 +17,49 @@
     el('railnext').disabled = rail.scrollLeft > rest - 4;
   };
 
+  /* ---------- Rasterweite ---------- */
+  // Layoutabstand, nicht sichtbarer Abstand: die Karten werden gedreht und zur
+  // Mitte gezogen, ihre sichtbaren Kanten taugen als Mass nicht mehr.
+  const schritt = () => (karten[1] ? karten[1].offsetLeft - karten[0].offsetLeft : 300);
+
   /* ---------- Tiefe ---------- */
   // Die Person in der Mitte steht gerade, vorn und hell; nach aussen kippen die
   // Bilder weg, ruecken zurueck und dunkeln ab. Der Blick hat dadurch einen
   // Platz, an dem er haengenbleibt, statt 33 gleich laute Karten zu sehen.
   const flach = matchMedia('(prefers-reduced-motion: reduce)').matches;
   const raum = () => {
-    const halb = rail.clientWidth / 2;
-    const blick = rail.scrollLeft + halb;
+    const blick = rail.scrollLeft + rail.clientWidth / 2;
+    // Gemessen wird in Karten, nicht in Bruchteilen der Reihenbreite: sonst haengt
+    // die Staerke am Viewport. Auf dem Handy passen keine zwei Karten neben die
+    // Mitte, der Nachbar landete rechnerisch bei 1,2 statt 0,5 und schrumpfte auf
+    // einen 71px-Splitter — auf dem Desktop sah dieselbe Formel richtig aus.
+    const raster = schritt();
     karten.forEach(k => {
       // offsetLeft ist die Layoutmitte und dreht sich nicht mit. Ueber die
       // sichtbare Box gemessen zoege sich die Rechnung selbst am Schopf: jede
       // Verschiebung veraenderte die naechste Messung.
-      const t = Math.max(-1.7, Math.min(1.7, (k.offsetLeft + k.offsetWidth / 2 - blick) / halb));
+      const roh = (k.offsetLeft + k.offsetWidth / 2 - blick) / raster;
+      const t = Math.max(-2.4, Math.min(2.4, roh));
       const weg = Math.abs(t);
-      k.classList.toggle('is-mitte', weg < 0.25);
+      k.classList.toggle('is-mitte', weg < 0.35);
       if (flach) return;
       // Der Zug nach innen ist das, was den Effekt ausmacht: die Nachbarn
       // schieben sich hinter die Mitte, statt daneben stehen zu bleiben.
       const d = k.firstElementChild;
-      d.style.transform = `perspective(1500px) translateX(${(-t * 92).toFixed(1)}px) `
-                        + `translateZ(${(-weg * 240).toFixed(1)}px) `
-                        + `rotateY(${(-t * 34).toFixed(2)}deg)`;
-      d.style.filter = `brightness(${(1 - weg * 0.36).toFixed(3)}) saturate(${(1 - weg * 0.3).toFixed(3)})`;
-      k.style.zIndex = String(40 - Math.round(weg * 20));
+      // scale zusaetzlich zu translateZ: die Perspektive allein verkleinert bei
+      // 240px Tiefe nur auf 86% — zu wenig, um eine Rangfolge zu sehen. Erst der
+      // Sprung auf gut die Haelfte macht aus dem Verlauf eine Hierarchie.
+      // Der Zug nach innen waechst im Quadrat, die Groesse nimmt linear ab: bei
+      // linearem Zug klaffte zwischen der zweiten und dritten Person eine Luecke
+      // von 137px, weil jede Karte zwar schrumpft, ihren Platz im Raster aber
+      // behaelt. Das Quadrat haelt die sichtbaren Kanten aneinander.
+      d.style.transform = `perspective(1500px) translateX(${(-t * weg * raster * 0.135).toFixed(1)}px) `
+                        + `translateZ(${(-weg * 120).toFixed(1)}px) `
+                        + `rotateY(${(-t * 17).toFixed(2)}deg) `
+                        + `scale(${(1 - weg * 0.19).toFixed(3)})`;
+      d.style.filter = `brightness(${(1 - weg * 0.21).toFixed(3)}) `
+                     + `saturate(${Math.max(0, 1 - weg * 0.48).toFixed(3)})`;
+      k.style.zIndex = String(40 - Math.round(weg * 8));
     });
   };
 
@@ -58,9 +77,6 @@
   /* ---------- Pfeile ---------- */
   // Um genau ein Kartenraster weiterspringen, nicht um eine feste Pixelzahl:
   // die Kartenbreite haengt am Viewport.
-  // Layoutabstand, nicht sichtbarer Abstand: die Karten werden gedreht und zur
-  // Mitte gezogen, ihre sichtbaren Kanten taugen als Mass nicht mehr.
-  const schritt = () => (karten[1] ? karten[1].offsetLeft - karten[0].offsetLeft : 300);
   const ruecke = d => rail.scrollBy({left: d * schritt(), behavior: 'smooth'});
   el('railprev').addEventListener('click', () => ruecke(-1));
   el('railnext').addEventListener('click', () => ruecke(1));

@@ -244,7 +244,13 @@ body.page{overflow-x:hidden}
 .member.is-mitte .member__img::after{transform:scaleX(1)}
 .member:focus-visible{outline:2px solid var(--orange);outline-offset:4px}
 
-.member__cap{display:block;padding:.9rem 0 0}
+/* Nur die Mitte ist beschriftet. 33 gleich laute Namen nebeneinander sind eine
+   Liste; ein einziger Name unter dem scharfen Bild ist eine Person. */
+.member__cap{display:block;padding:.9rem 0 0;opacity:.14;transition:opacity .45s var(--ease-out)}
+.member.is-mitte .member__cap,
+.member:hover .member__cap,
+.member:focus-visible .member__cap{opacity:1}
+@media (prefers-reduced-motion:reduce){.member__cap{opacity:1}}
 .member__name{display:block;font-size:1rem;font-weight:500;letter-spacing:.01em;color:var(--cream)}
 .member__role{display:block;margin-top:.3rem;font-size:.75rem;line-height:1.5;font-weight:200;color:rgba(251,241,224,.6)}
 
@@ -275,8 +281,11 @@ body.page{overflow-x:hidden}
 
 /* ---------- Team: Profilkarte ---------- */
 
+/* Die Karte hat keine gesetzte Hoehe: sie ist so hoch wie die hoehere ihrer
+   beiden Spalten. Bei den meisten Personen ist heute nur wenig hinterlegt —
+   eine kleine, ruhige Karte ist dann richtiger als eine grosse mit einem Loch. */
 .pc{
-  width:min(64rem,92vw);max-width:none;max-height:88vh;
+  width:min(56rem,92vw);max-width:none;max-height:88vh;
   padding:0;border:0;background:var(--pine);color:var(--cream);
   box-shadow:0 40px 120px rgba(0,0,0,.6);
 }
@@ -296,9 +305,11 @@ body.page{overflow-x:hidden}
 .pc__shot{background:var(--pine-black);aspect-ratio:3/4}
 .pc__shot img{width:100%;height:100%;object-fit:cover;display:block}
 
+/* Mittig statt oben und unten auseinandergezogen: was fehlt, hinterlaesst dann
+   Luft auf beiden Seiten statt eines Lochs ueber der Navigation. */
 .pc__txt{
-  padding:clamp(1.6rem,3.4vw,3rem);
-  display:flex;flex-direction:column;
+  padding:clamp(1.6rem,3.4vw,2.6rem);
+  display:flex;flex-direction:column;justify-content:center;
   overflow-y:auto;
 }
 .pc__kicker{
@@ -312,7 +323,7 @@ body.page{overflow-x:hidden}
   background:var(--cream);color:var(--pine-black);
   padding:.08em .16em .12em;
   font-weight:900;text-transform:uppercase;letter-spacing:-.022em;
-  font-size:clamp(1.7rem,3.4vw,2.9rem);line-height:1;
+  font-size:clamp(1.5rem,2.9vw,2.4rem);line-height:1.06;
 }
 
 .pc__facts{
@@ -332,7 +343,7 @@ body.page{overflow-x:hidden}
 .pc__satz{margin:1.4rem 0 0;font-size:.9375rem;line-height:1.7;color:rgba(251,241,224,.8)}
 
 .pc__nav{
-  margin-top:auto;padding-top:clamp(1.6rem,3vw,2.4rem);
+  padding-top:clamp(1.6rem,3vw,2.4rem);
   display:flex;align-items:center;gap:1rem;
 }
 .pc__zaehler{
@@ -340,10 +351,13 @@ body.page{overflow-x:hidden}
 }
 
 @media (max-width:820px){
-  .pc{width:100vw;height:100dvh;max-height:none;margin:0}
-  .pc__body{grid-template-columns:1fr;grid-template-rows:auto 1fr;height:100%}
+  /* Am unteren Rand angesetzt und nur so hoch wie noetig: eine formatfuellende
+     Karte mit drei Zeilen Inhalt sah aus, als fehle der Rest der Seite. */
+  .pc{width:100vw;max-height:92dvh;margin:auto 0 0}
+  .pc__body{grid-template-columns:1fr}
   .pc__shot{aspect-ratio:4/3}
   .pc__shot img{object-position:50% 22%}
+  .pc__txt{justify-content:flex-start}
 }
 
 .team-note{
