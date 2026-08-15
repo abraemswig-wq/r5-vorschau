@@ -154,40 +154,155 @@ body.page{overflow-x:hidden}
 
 /* ---------- Blog-Übersicht ---------- */
 
-.cards{
-  padding:0 var(--gut) clamp(4rem,9vh,6rem);
-  display:grid;gap:1px;
-  grid-template-columns:repeat(auto-fill,minmax(min(100%,20rem),1fr));
-  background:rgba(251,241,224,.14);
-  border:1px solid rgba(251,241,224,.14);
-  padding:1px;margin:0 var(--gut) clamp(4rem,9vh,6rem);
-}
-.card{
-  position:relative;display:flex;flex-direction:column;
-  background:var(--pine-black);
+/* ---------- Blog-Übersicht: Aufmacher + Leisten ---------- */
+/* Der Aufmacher ist der Kopf der Seite: eine Titelseite hat keine Ueberschrift
+   ueber der Ueberschrift. Darunter die Artikel in waagerechten Leisten,
+   nach Koerperregion. */
+
+/* Der Aufmacher bekommt nicht den ganzen Bildschirm, sondern den Rest.
+   Vorher stand hier 84svh — gemessen blieb davon auf dem Laptop 11px und auf
+   dem Handy 10px fuer alles Weitere uebrig, also null Pixel einer Artikelkarte.
+   Die Seite endete optisch am Aufmacher. Jetzt sind unten 21rem reserviert
+   (Kopfleiste ~7.5rem + Leistenkopf ~5.5rem + 8rem angeschnittene Karte), und
+   der Aufmacher nimmt, was uebrig bleibt. Die angeschnittene Karte ist das
+   ehrlichste Weiter-Zeichen, das es gibt: kein Symbol fuer Inhalt, sondern
+   Inhalt. */
+.lead{
+  position:relative;display:flex;align-items:flex-end;
+  min-height:clamp(20rem, calc(100svh - 21rem), 44rem);overflow:hidden;
   text-decoration:none;color:inherit;
+}
+.lead__bg{
+  position:absolute;inset:0;
+  background-size:cover;background-position:center 28%;
+  transition:transform 1.2s var(--ease-out);
+}
+.lead__scrim{
+  position:absolute;inset:0;
+  background:
+    linear-gradient(96deg, rgba(11,22,17,.94) 0%, rgba(11,22,17,.82) 32%, rgba(11,22,17,.34) 64%, rgba(11,22,17,.5) 100%),
+    linear-gradient(to top, rgba(11,22,17,.86) 0%, rgba(11,22,17,0) 48%);
+}
+.lead__inner{
+  position:relative;z-index:2;width:100%;
+  padding:0 var(--gut) clamp(2.6rem,6vh,4.4rem);
+}
+.lead__more{
+  margin:1.9rem 0 0;
+  font-size:.625rem;letter-spacing:.2em;text-transform:uppercase;
+  color:rgba(251,241,224,.55);
+}
+.lead__more span{color:var(--orange)}
+.lead:focus-visible{outline:2px solid var(--orange);outline-offset:-4px}
+@media (hover:hover){.lead:hover .lead__bg{transform:scale(1.04)}}
+
+/* Die Artikel stehen in einer Leiste, nicht in einem Raster mit fester
+   Spaltenzahl. Ein Raster laesst bei jeder Artikelzahl, die nicht aufgeht,
+   eine Zelle leer — eine Leiste traegt beliebig viele. */
+.rail-wrap{
+  border-top:1px solid rgba(251,241,224,.14);
+  margin-bottom:clamp(4rem,9vh,6rem);
+}
+.rail__head{
+  display:flex;align-items:baseline;justify-content:space-between;gap:1rem;
+  padding:1.5rem var(--gut) 1.25rem;
+}
+.rail__t{
+  margin:0;font-size:.6875rem;font-weight:500;letter-spacing:.22em;
+  text-transform:uppercase;color:rgba(251,241,224,.5);
+}
+.rail__n{
+  margin:0 auto 0 -.4rem;font-size:.6875rem;letter-spacing:.1em;
+  color:var(--orange);font-variant-numeric:tabular-nums;
+}
+.rail__nav{display:flex;gap:.5rem}
+.rail__btn{
+  width:2.75rem;height:2.75rem;display:grid;place-items:center;
+  background:none;color:var(--cream);cursor:pointer;
+  border:1px solid rgba(251,241,224,.22);border-radius:50%;
+  transition:border-color .3s var(--ease-out),background-color .3s var(--ease-out),
+             color .3s var(--ease-out),opacity .3s var(--ease-out);
+}
+.rail__btn svg{width:1.05rem;height:1.05rem;display:block}
+.rail__btn:disabled{opacity:.28;cursor:default}
+.rail__btn:focus-visible{outline:2px solid var(--orange);outline-offset:3px}
+@media (hover:hover){
+  .rail__btn:not(:disabled):hover{
+    background:var(--orange);border-color:var(--orange);color:var(--pine-black);
+  }
+}
+
+.rail{
+  --blende-l:0px;--blende-r:0px;
+  display:flex;gap:0;
+  overflow-x:auto;overscroll-behavior-x:contain;
+  scroll-snap-type:x proximity;
+  scroll-padding-left:var(--gut);
+  padding-left:var(--gut);
+  border-top:1px solid rgba(251,241,224,.14);
+  scrollbar-width:none;
+  /* Der Anschnitt an den Raendern sagt ohne Worte, dass die Leiste weitergeht. */
+  -webkit-mask-image:linear-gradient(90deg,transparent 0,#000 var(--blende-l),
+                     #000 calc(100% - var(--blende-r)),transparent 100%);
+          mask-image:linear-gradient(90deg,transparent 0,#000 var(--blende-l),
+                     #000 calc(100% - var(--blende-r)),transparent 100%);
+}
+.rail::-webkit-scrollbar{display:none}
+.rail:focus-visible{outline:2px solid var(--orange);outline-offset:-2px}
+/* Abstandhalter statt padding-right: das rechte Innenpolster einer Flex-Leiste
+   fiel in aelteren Browsern beim Scrollen unter den Tisch. */
+.rail::after{content:"";flex:0 0 var(--gut)}
+
+.rail__bar{
+  height:1px;margin:0 var(--gut);
+  background:rgba(251,241,224,.14);overflow:hidden;
+}
+.rail__fill{
+  display:block;height:100%;width:100%;
+  background:var(--orange);transform-origin:0 50%;
+  transition:transform .12s linear;
+}
+
+.qc{
+  flex:0 0 clamp(15.5rem,23vw,20.5rem);
+  scroll-snap-align:start;
+  display:flex;flex-direction:column;
+  background:var(--pine-black);text-decoration:none;color:inherit;
+  padding-bottom:1.7rem;
+  border-right:1px solid rgba(251,241,224,.14);
   transition:background-color .3s var(--ease-out);
 }
-.card:hover{background:var(--pine)}
-.card:focus-visible{outline:2px solid var(--orange);outline-offset:-2px}
-.card__img{aspect-ratio:4/3;overflow:hidden;background:var(--pine)}
-.card__img img{width:100%;height:100%;object-fit:cover;transition:transform .55s var(--ease-out);filter:saturate(.9)}
-.card:hover .card__img img{transform:scale(1.045)}
-.card__body{padding:1.5rem 1.6rem 1.9rem;display:flex;flex-direction:column;flex:1}
-.card__kicker{
-  margin:0 0 .8rem;font-size:.625rem;font-weight:500;letter-spacing:.2em;
+.qc:focus-visible{outline:2px solid var(--orange);outline-offset:-2px}
+.qc__img{display:block;overflow:hidden;aspect-ratio:16/10;background:var(--pine)}
+.qc__img img{
+  width:100%;height:100%;object-fit:cover;filter:saturate(.9);
+  transition:transform .55s var(--ease-out);
+}
+.qc__ind{
+  display:block;padding:1.35rem 1.4rem .75rem;
+  font-size:.625rem;font-weight:500;letter-spacing:.2em;
   text-transform:uppercase;color:var(--orange);
 }
-.card__title{
-  margin:0;font-size:1.0625rem;line-height:1.3;font-weight:500;
+.qc__t{
+  display:block;padding:0 1.4rem;
+  font-weight:500;font-size:1rem;line-height:1.3;
   color:var(--cream);text-wrap:balance;
 }
-.card__teaser{margin:.9rem 0 0;font-size:.875rem;line-height:1.62;font-weight:200;color:rgba(251,241,224,.66)}
-.card__more{
-  margin-top:auto;padding-top:1.4rem;
-  font-size:.625rem;letter-spacing:.2em;text-transform:uppercase;color:rgba(251,241,224,.5);
+.qc__meta{
+  display:block;margin-top:auto;padding:1.3rem 1.4rem 0;
+  font-size:.625rem;letter-spacing:.2em;text-transform:uppercase;
+  color:rgba(251,241,224,.42);
 }
-.card:hover .card__more{color:var(--orange)}
+@media (hover:hover){
+  .qc:hover{background:var(--pine)}
+  .qc:hover .qc__img img{transform:scale(1.045)}
+}
+@media (max-width:600px){
+  .qc{flex-basis:76vw}
+  .rail__head{padding-top:1.25rem}
+  .rail__nav{display:none}   /* auf dem Touchscreen wischt man ohnehin */
+}
+
 
 /* ---------- Team: Galerie ---------- */
 
@@ -395,8 +510,10 @@ body.page{overflow-x:hidden}
 }
 
 @media (prefers-reduced-motion:reduce){
-  .card__img img,.member__img img{transition:none}
-  .card:hover .card__img img,.member:hover .member__img img{transform:none}
+  .lead__bg,.qc__img img{transition:none}
+  .lead:hover .lead__bg,.qc:hover .qc__img img{transform:none}
+  .member__img img{transition:none}
+  .member:hover .member__img img{transform:none}
   .pc[open]{animation:none}
   .gal__rail{scroll-behavior:auto}
 }
