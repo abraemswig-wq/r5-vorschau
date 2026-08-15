@@ -138,6 +138,36 @@ body.page{overflow-x:hidden}
 .faq summary:focus-visible{outline:2px solid var(--orange);outline-offset:3px}
 .faq__a{margin:0;padding:0 2.5rem 1.4rem 0;font-size:.9375rem;line-height:1.72;font-weight:200;color:rgba(251,241,224,.82)}
 
+/* Eine Angabe, die uns fehlt, steht sichtbar als Luecke da. Eine erfundene
+   Wartezeit merkt niemand — bis jemand deswegen anruft. */
+.fehlt{
+  font-style:normal;font-size:.8125rem;letter-spacing:.1em;text-transform:uppercase;
+  color:rgba(251,241,224,.42);
+}
+
+/* ---------- Leistungspositionen ---------- */
+/* Kein Icon-Raster, keine Karten: das hier ist eine Liste dessen, was auf einem
+   Rezept stehen kann. Die Abrechnungsposition ist die Ueberschrift, weil genau
+   danach gesucht wird — „KG am Geraet", nicht „Trainingstherapie". */
+
+.prose .pos{margin:0 0 2.6em;padding:0;list-style:none;border-top:1px solid rgba(251,241,224,.16)}
+.prose .pos__i{
+  padding:1.25rem 0;margin:0;
+  border-bottom:1px solid rgba(251,241,224,.16);
+  display:grid;grid-template-columns:minmax(11rem,22%) 1fr;gap:.4rem 2rem;
+  align-items:baseline;
+}
+.prose .pos__i::before{display:none}
+.pos__n{
+  font-weight:900;text-transform:uppercase;letter-spacing:-.005em;line-height:1.24;
+  font-size:.9375rem;color:var(--cream);
+}
+.pos__t{font-weight:200;line-height:1.7;color:rgba(251,241,224,.82)}
+
+@media (max-width:760px){
+  .prose .pos__i{grid-template-columns:1fr;gap:.45rem}
+}
+
 /* ---------- Quellen & Autor ---------- */
 
 .sources{padding:0 var(--gut) 1rem;max-width:calc(72ch + 2 * var(--gut))}
