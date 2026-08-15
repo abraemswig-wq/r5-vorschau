@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow,noarchive,noimageindex">
+<title>Vorschau</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@200;300;500;900&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{margin:0;display:grid;place-items:center;background:#0B1611;color:#FBF1E0;
+       font-family:Barlow,system-ui,sans-serif}
+  .gate{width:min(90vw,26rem);text-align:left}
+  .gate h1{margin:0 0 .35rem;font-weight:900;text-transform:uppercase;
+           font-size:clamp(1.75rem,6vw,2.5rem);line-height:1;letter-spacing:-.022em}
+  .gate p{margin:0 0 2rem;font-weight:200;font-size:.9375rem;line-height:1.6;color:rgba(251,241,224,.7)}
+  form{display:flex;gap:.5rem}
+  input{flex:1;min-width:0;padding:.85rem 1rem;background:rgba(251,241,224,.06);color:#FBF1E0;
+        border:1px solid rgba(251,241,224,.22);border-radius:2px;
+        font-family:inherit;font-size:1rem;font-weight:300}
+  input:focus{outline:2px solid #D99129;outline-offset:2px;border-color:transparent}
+  button{padding:.85rem 1.4rem;border:0;border-radius:2px;cursor:pointer;background:#D99129;color:#0B1611;
+         font-family:inherit;font-weight:900;text-transform:uppercase;font-size:.8125rem;letter-spacing:.08em}
+  button:hover{background:#F0B860}
+  button[disabled]{opacity:.5;cursor:default}
+  .msg{margin:1rem 0 0;font-size:.8125rem;font-weight:300;min-height:1.2em;color:#F0B860}
+  .foot{margin:3rem 0 0;font-size:.6875rem;letter-spacing:.16em;text-transform:uppercase;color:rgba(251,241,224,.35)}
+</style>
+</head>
+<body>
+<main class="gate">
+  <h1>Fünf Säulen</h1>
+  <p>Interne Vorschau. Bitte das Passwort eingeben.</p>
+  <form id="f">
+    <input id="pw" type="password" autocomplete="current-password" aria-label="Passwort" autofocus>
+    <button id="go" type="submit">Öffnen</button>
+  </form>
+  <p class="msg" id="msg" role="status"></p>
+  <p class="foot">REHAB FIVE · Münster</p>
+</main>
+<script>
+const DAT = '../k7m2q9x/d/blog__trainingslehre-physiotherapie-munster-das-said-prinzip-nutzen.dat';
+const $ = s => document.querySelector(s);
+const b2a = b => Uint8Array.from(atob(b), c => c.charCodeAt(0));
+const a2b = a => btoa(String.fromCharCode(...new Uint8Array(a)));
+
+async function render(key, d){
+  const buf = await crypto.subtle.decrypt({ name:'AES-GCM', iv:b2a(d.iv) }, key, b2a(d.ct));
+  document.open(); document.write(new TextDecoder().decode(buf)); document.close();
+}
+
+async function keyFromPw(pw, salt){
+  const base = await crypto.subtle.importKey('raw', new TextEncoder().encode(pw), 'PBKDF2', false, ['deriveKey']);
+  return crypto.subtle.deriveKey({ name:'PBKDF2', salt:b2a(salt), iterations:250000, hash:'SHA-256' },
+    base, { name:'AES-GCM', length:256 }, true, ['decrypt']);
+}
+
+/* Schon in dieser Sitzung freigeschaltet? Dann stumm oeffnen — sonst fragt jede
+   Unterseite erneut nach dem Passwort und die Vorschau ist unbenutzbar. */
+(async () => {
+  const raw = sessionStorage.getItem('r5k');
+  if (!raw) return;
+  try {
+    const d = await (await fetch(DAT, { cache:'no-store' })).json();
+    const key = await crypto.subtle.importKey('raw', b2a(raw), 'AES-GCM', true, ['decrypt']);
+    await render(key, d);
+  } catch (_) { sessionStorage.removeItem('r5k'); }
+})();
+
+$('#f').addEventListener('submit', async e => {
+  e.preventDefault();
+  const pw = $('#pw').value;
+  if (!pw) return;
+  $('#go').disabled = true;
+  $('#msg').textContent = 'Entschlüsseln …';
+  try {
+    const d = await (await fetch(DAT, { cache:'no-store' })).json();
+    const key = await keyFromPw(pw, d.salt);
+    await render(key, d);
+    sessionStorage.setItem('r5k', a2b(await crypto.subtle.exportKey('raw', key)));
+  } catch (_) {
+    $('#msg').textContent = 'Passwort stimmt nicht.';
+    $('#go').disabled = false;
+    $('#pw').select();
+  }
+});
+</script>
+</body>
+</html>

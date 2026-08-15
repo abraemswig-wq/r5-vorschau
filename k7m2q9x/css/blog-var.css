@@ -133,17 +133,80 @@
 .lead:focus-visible{outline:2px solid var(--orange);outline-offset:-4px}
 @media (hover:hover){.lead:hover .lead__bg{transform:scale(1.04)}}
 
-.quad{
-  display:grid;gap:1px;
-  grid-template-columns:repeat(4,minmax(0,1fr));
-  background:rgba(251,241,224,.14);
+/* Die Artikel stehen in einer Leiste, nicht in einem Raster mit fester
+   Spaltenzahl. Ein Raster laesst bei jeder Artikelzahl, die nicht aufgeht,
+   eine Zelle leer — eine Leiste traegt beliebig viele. */
+.rail-wrap{
   border-top:1px solid rgba(251,241,224,.14);
   margin-bottom:clamp(4rem,9vh,6rem);
 }
+.rail__head{
+  display:flex;align-items:baseline;justify-content:space-between;gap:1rem;
+  padding:1.5rem var(--gut) 1.25rem;
+}
+.rail__t{
+  margin:0;font-size:.6875rem;font-weight:500;letter-spacing:.22em;
+  text-transform:uppercase;color:rgba(251,241,224,.5);
+}
+.rail__n{
+  margin:0 auto 0 -.4rem;font-size:.6875rem;letter-spacing:.1em;
+  color:var(--orange);font-variant-numeric:tabular-nums;
+}
+.rail__nav{display:flex;gap:.5rem}
+.rail__btn{
+  width:2.75rem;height:2.75rem;display:grid;place-items:center;
+  background:none;color:var(--cream);cursor:pointer;
+  border:1px solid rgba(251,241,224,.22);border-radius:50%;
+  transition:border-color .3s var(--ease-out),background-color .3s var(--ease-out),
+             color .3s var(--ease-out),opacity .3s var(--ease-out);
+}
+.rail__btn svg{width:1.05rem;height:1.05rem;display:block}
+.rail__btn:disabled{opacity:.28;cursor:default}
+.rail__btn:focus-visible{outline:2px solid var(--orange);outline-offset:3px}
+@media (hover:hover){
+  .rail__btn:not(:disabled):hover{
+    background:var(--orange);border-color:var(--orange);color:var(--pine-black);
+  }
+}
+
+.rail{
+  --blende-l:0px;--blende-r:0px;
+  display:flex;gap:0;
+  overflow-x:auto;overscroll-behavior-x:contain;
+  scroll-snap-type:x proximity;
+  scroll-padding-left:var(--gut);
+  padding-left:var(--gut);
+  border-top:1px solid rgba(251,241,224,.14);
+  scrollbar-width:none;
+  /* Der Anschnitt an den Raendern sagt ohne Worte, dass die Leiste weitergeht. */
+  -webkit-mask-image:linear-gradient(90deg,transparent 0,#000 var(--blende-l),
+                     #000 calc(100% - var(--blende-r)),transparent 100%);
+          mask-image:linear-gradient(90deg,transparent 0,#000 var(--blende-l),
+                     #000 calc(100% - var(--blende-r)),transparent 100%);
+}
+.rail::-webkit-scrollbar{display:none}
+.rail:focus-visible{outline:2px solid var(--orange);outline-offset:-2px}
+/* Abstandhalter statt padding-right: das rechte Innenpolster einer Flex-Leiste
+   fiel in aelteren Browsern beim Scrollen unter den Tisch. */
+.rail::after{content:"";flex:0 0 var(--gut)}
+
+.rail__bar{
+  height:1px;margin:0 var(--gut);
+  background:rgba(251,241,224,.14);overflow:hidden;
+}
+.rail__fill{
+  display:block;height:100%;width:100%;
+  background:var(--orange);transform-origin:0 50%;
+  transition:transform .12s linear;
+}
+
 .qc{
+  flex:0 0 clamp(15.5rem,23vw,20.5rem);
+  scroll-snap-align:start;
   display:flex;flex-direction:column;
   background:var(--pine-black);text-decoration:none;color:inherit;
   padding-bottom:1.7rem;
+  border-right:1px solid rgba(251,241,224,.14);
   transition:background-color .3s var(--ease-out);
 }
 .qc:focus-visible{outline:2px solid var(--orange);outline-offset:-2px}
@@ -171,8 +234,11 @@
   .qc:hover{background:var(--pine)}
   .qc:hover .qc__img img{transform:scale(1.045)}
 }
-@media (max-width:1100px){.quad{grid-template-columns:repeat(2,minmax(0,1fr))}}
-@media (max-width:600px){.quad{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:600px){
+  .qc{flex-basis:76vw}
+  .rail__head{padding-top:1.25rem}
+  .rail__nav{display:none}   /* auf dem Touchscreen wischt man ohnehin */
+}
 
 /* ---------- 3 — Einstieg über den Körper ---------- */
 /* Sortiert nach der Stelle statt nach dem Datum. Die Ziffern verbinden Figur
