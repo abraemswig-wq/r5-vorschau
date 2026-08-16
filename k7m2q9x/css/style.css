@@ -63,6 +63,19 @@ a{color:inherit}
   will-change:transform;
 }
 
+/* Das Video liegt IN der Bildebene, nicht daneben: so erbt es Zoom und Parallaxe
+   und das Standbild darunter bleibt Poster und Preloader-Quelle. Wird das Video
+   nie angehängt (Mobil, reduzierte Bewegung, Ladefehler), sieht man genau dieses
+   Standbild — es ist derselbe Frame, auf dem das Video startet. */
+.beat__video{
+  position:absolute;inset:0;
+  width:100%;height:100%;
+  object-fit:cover;
+  opacity:0;
+  transition:opacity .9s var(--ease-out);
+}
+.beat__video[data-laeuft="true"]{opacity:1}
+
 .beat__scrim{
   position:absolute;inset:0;
   background:

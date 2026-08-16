@@ -263,6 +263,33 @@ function bindFlow() {
   addEventListener('scroll', () => { hint.dataset.off = scrollY > 60 ? 'true' : 'false'; }, { passive: true });
 }
 
+/* ---------------- Hintergrundvideo ---------------- */
+
+/* Die Quelle steht als data-video im Markup und wird erst hier gesetzt. Stünde
+   sie als src im HTML, lüde jedes Handy die 1,8 MB mit — sichtbar wäre das Video
+   dort nie, weil unterhalb von 821px und bei reduzierter Bewegung das Standbild
+   stehen bleibt. Eingeblendet wird erst nach dem ersten gezeigten Frame: ein
+   sofort sichtbares <video> zeigt sonst kurz ein leeres Rechteck. */
+function bindVideo() {
+  beats.forEach(b => {
+    const bg = b.querySelector('.beat__bg');
+    const src = bg?.dataset.video;
+    if (!src) return;
+
+    const v = document.createElement('video');
+    Object.assign(v, { muted: true, loop: true, autoplay: true, playsInline: true, preload: 'auto' });
+    v.className = 'beat__video';
+    v.setAttribute('aria-hidden', 'true');
+    v.addEventListener('playing', () => { v.dataset.laeuft = 'true'; }, { once: true });
+    v.src = src;
+    bg.appendChild(v);
+
+    /* Safari/iOS lehnt play() ohne Geste gelegentlich trotzdem ab. Dann bleibt es
+       beim Standbild — kein Grund, den Seitenstart scheitern zu lassen. */
+    v.play().catch(() => {});
+  });
+}
+
 /* ---------------- Start ---------------- */
 
 (async () => {
@@ -275,6 +302,7 @@ function bindFlow() {
     root.classList.add('cinema');
     lockLineWidths();
     bindCinema();
+    bindVideo();
     requestAnimationFrame(loop);
   } else {
     bindFlow();
