@@ -82,7 +82,13 @@ a{color:inherit}
     linear-gradient(96deg, rgba(11,22,17,.95) 0%, rgba(11,22,17,.86) 30%, rgba(11,22,17,.74) 44%, rgba(11,22,17,.28) 68%, rgba(11,22,17,.46) 100%),
     linear-gradient(to top, rgba(11,22,17,.7) 0%, rgba(11,22,17,0) 40%);
 }
-.beat__scrim--full{background:rgba(11,22,17,.82)}
+/* Radial statt flach: hinter der zentrierten Schrift bleibt es so dunkel wie zuvor,
+   zu den Rändern hin öffnet es sich — sonst schluckt die Deckfläche die Kamerafahrt. */
+.beat__scrim--full{
+  background:
+    radial-gradient(ellipse 64% 80% at 50% 46%, rgba(11,22,17,.88) 0%, rgba(11,22,17,.85) 42%, rgba(11,22,17,.58) 76%, rgba(11,22,17,.40) 100%),
+    linear-gradient(to top, rgba(11,22,17,.60) 0%, rgba(11,22,17,0) 36%);
+}
 
 .beat__inner{
   position:relative;z-index:2;
