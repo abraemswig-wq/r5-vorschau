@@ -516,12 +516,17 @@ body.page{overflow-x:hidden}
 
 /* Die Reihe laeuft rechts aus dem Bild statt am Rand zu enden — das zeigt
    ohne Beschriftung, dass da noch mehr kommt. */
-/* Nach Bereich, nicht nach Standort: hinterlegt ist der Standort nur für die
-   vier Leitungen. Eine Zuordnung für die übrigen 29 wäre geraten. */
+/* Zwei Achsen, zwei Leisten: Bereich oben, Standort darunter. Sie schneiden
+   sich, deshalb dürfen sie nicht wie eine lange Reihe aussehen. */
 .teamfilter{
   display:flex;flex-wrap:wrap;gap:.6rem;
   padding:0 var(--gut) 2.2rem;
 }
+.teamfilter:not(.teamfilter--ort){padding-bottom:.7rem}
+.teamfilter--ort button{border-style:dashed}
+.teamfilter--ort button[aria-pressed="true"]{border-style:solid}
+/* Kombination ohne Treffer: der Knopf bleibt lesbar, ist aber kein Angebot mehr. */
+.teamfilter button[disabled]{opacity:.3;cursor:default}
 .teamfilter button{
   display:inline-flex;align-items:baseline;gap:.6em;
   padding:.72em 1.15em;cursor:pointer;

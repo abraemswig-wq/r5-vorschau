@@ -196,16 +196,52 @@
     if (Math.abs(d) > 60) weiter(d < 0 ? 1 : -1);
   }, {passive: true});
 
-  /* ---------- Bereichsfilter ---------- */
-  const leiste = document.querySelector('.teamfilter');
-  if (leiste) {
-    const knoepfe = [...leiste.querySelectorAll('button')];
-    knoepfe.forEach(b => b.addEventListener('click', () => {
-      const wahl = b.dataset.filter;
-      knoepfe.forEach(x => x.setAttribute('aria-pressed', String(x === b)));
-      karten.forEach(k => { k.hidden = wahl !== 'alle' && k.dataset.gruppe !== wahl; });
+  /* ---------- Filter: Bereich und Standort ---------- */
+  // Zwei Achsen, die sich schneiden — „Physiotherapie" und „Scharnhorststrasse"
+  // gelten gleichzeitig. Getrennte Leisten statt einer langen: die Frage „welcher
+  // Beruf" und die Frage „welches Haus" sind zwei Fragen.
+  const bereich = document.querySelector('.teamfilter:not(.teamfilter--ort)');
+  const ortLeiste = document.querySelector('.teamfilter--ort');
+  if (bereich || ortLeiste) {
+    let wahlBereich = 'alle', wahlOrt = 'alle';
+
+    const anwenden = () => {
+      karten.forEach(k => {
+        k.hidden = (wahlBereich !== 'alle' && k.dataset.gruppe !== wahlBereich)
+                || (wahlOrt !== 'alle' && k.dataset.ort !== wahlOrt);
+      });
       rail.scrollLeft = 0;
       zeichne();
-    }));
+      // Die Zahl auf dem Knopf gilt fuer die jeweils andere Achse mit: wer nach
+      // Standort filtert, will wissen, wie viele Physios dort sitzen — nicht wie
+      // viele es insgesamt gibt. Sonst verspricht ein Knopf 16 und zeigt 4.
+      zaehlen(bereich, 'filter', k => wahlOrt === 'alle' || k.dataset.ort === wahlOrt, 'gruppe');
+      zaehlen(ortLeiste, 'ort', k => wahlBereich === 'alle' || k.dataset.gruppe === wahlBereich, 'ort');
+    };
+
+    const zaehlen = (leiste, feld, passt, merkmal) => {
+      if (!leiste) return;
+      leiste.querySelectorAll('button').forEach(b => {
+        const wert = b.dataset[feld];
+        const n = karten.filter(k => passt(k) && (wert === 'alle' || k.dataset[merkmal] === wert)).length;
+        b.querySelector('.teamfilter__n').textContent = String(n);
+        // Ein Knopf, der auf null fuehrt, ist eine Sackgasse — abschalten statt
+        // den Nutzer in eine leere Reihe laufen lassen.
+        b.disabled = n === 0 && b.getAttribute('aria-pressed') !== 'true';
+      });
+    };
+
+    const verdrahten = (leiste, feld, setzen) => {
+      if (!leiste) return;
+      const knoepfe = [...leiste.querySelectorAll('button')];
+      knoepfe.forEach(b => b.addEventListener('click', () => {
+        knoepfe.forEach(x => x.setAttribute('aria-pressed', String(x === b)));
+        setzen(b.dataset[feld]);
+        anwenden();
+      }));
+    };
+    verdrahten(bereich, 'filter', w => { wahlBereich = w; });
+    verdrahten(ortLeiste, 'ort', w => { wahlOrt = w; });
+    anwenden();
   }
 })();
