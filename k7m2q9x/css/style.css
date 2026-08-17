@@ -197,10 +197,10 @@ a{color:inherit}
 .ort__z dd{margin:0;color:rgba(251,241,224,.9)}
 
 .bewertung{
-  margin:2rem 0 0;display:flex;align-items:center;gap:.6em;
-  font-size:.8125rem;letter-spacing:.06em;color:rgba(251,241,224,.9);
+  margin:1rem 0 0;display:flex;align-items:center;gap:.55em;
+  font-size:.75rem;letter-spacing:.04em;color:rgba(251,241,224,.72);
 }
-.bewertung__s{color:var(--orange);letter-spacing:.12em}
+.bewertung__s{color:var(--orange);letter-spacing:.1em;font-size:.7rem}
 
 .ort__fuss{
   margin:.7rem 0 0;font-size:.75rem;letter-spacing:.06em;
