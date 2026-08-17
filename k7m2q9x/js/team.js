@@ -9,6 +9,10 @@
   const el = id => document.getElementById(id);
   const bar = el('railbar');
 
+  // Gefiltert wird durch Ausblenden, nicht durch Umsortieren: die Profilkarte
+  // greift ueber den Index auf die Daten zu, und der muss stabil bleiben.
+  const offen = () => karten.filter(k => !k.hidden);
+
   /* ---------- Fortschritt ---------- */
   const mess = () => {
     const rest = rail.scrollWidth - rail.clientWidth;
@@ -20,7 +24,10 @@
   /* ---------- Rasterweite ---------- */
   // Layoutabstand, nicht sichtbarer Abstand: die Karten werden gedreht und zur
   // Mitte gezogen, ihre sichtbaren Kanten taugen als Mass nicht mehr.
-  const schritt = () => (karten[1] ? karten[1].offsetLeft - karten[0].offsetLeft : 300);
+  const schritt = () => {
+    const s = offen();
+    return s[1] ? s[1].offsetLeft - s[0].offsetLeft : (s[0]?.offsetWidth || 300);
+  };
 
   /* ---------- Tiefe ---------- */
   // Die Person in der Mitte steht gerade, vorn und hell; nach aussen kippen die
@@ -34,7 +41,7 @@
     // Mitte, der Nachbar landete rechnerisch bei 1,2 statt 0,5 und schrumpfte auf
     // einen 71px-Splitter — auf dem Desktop sah dieselbe Formel richtig aus.
     const raster = schritt();
-    karten.forEach(k => {
+    offen().forEach(k => {
       // offsetLeft ist die Layoutmitte und dreht sich nicht mit. Ueber die
       // sichtbare Box gemessen zoege sich die Rechnung selbst am Schopf: jede
       // Verschiebung veraenderte die naechste Messung.
@@ -87,9 +94,10 @@
     e.preventDefault();
     // Steht der Fokus auf einer Person, wandert er mit. Sonst scrollte die Reihe
     // unter dem Fokus weg und Enter oeffnete jemanden, den man nicht mehr sieht.
-    const i = karten.indexOf(document.activeElement);
+    const s = offen();
+    const i = s.indexOf(document.activeElement);
     if (i < 0) return ruecke(d);
-    const naechste = karten[Math.max(0, Math.min(karten.length - 1, i + d))];
+    const naechste = s[Math.max(0, Math.min(s.length - 1, i + d))];
     naechste.focus();
     // Nur hier zentrieren, nicht bei jedem Fokus: die Maus setzt den Fokus schon
     // beim Druecken, ein Zug wuerde sich sonst gegen das Nachruecken stemmen.
@@ -137,7 +145,7 @@
 
   let aktiv = 0;
   const zeige = i => {
-    aktiv = (i + daten.length) % daten.length;
+    aktiv = (i + karten.length) % karten.length;
     const d = daten[aktiv];
     const bild = el('pcimg');
     // Pfad aus der Reihe uebernehmen statt aus den Daten: nur dort steht er in
@@ -149,7 +157,8 @@
     setz(el('pcort'), d.standort);
     setz(el('pcfokus'), d.fokus);
     setz(el('pcsatz'), d.satz);
-    el('pczaehler').textContent = `${aktiv + 1} / ${daten.length}`;
+    const s = offen();
+    el('pczaehler').textContent = `${s.indexOf(karten[aktiv]) + 1} / ${s.length}`;
     // Die Karte hinter der Galerie mitziehen, damit nach dem Schliessen die
     // zuletzt gesehene Person im Bild steht.
     karten[aktiv]?.scrollIntoView({block: 'nearest', inline: 'center'});
@@ -160,12 +169,20 @@
     pc.showModal();
   }));
 
+  // Blaettern laeuft ueber die sichtbaren Karten: bei aktivem Filter waere es
+  // sonst moeglich, aus dem Bereich herauszublaettern, den man gerade ansieht.
+  const weiter = d => {
+    const s = offen();
+    const i = s.indexOf(karten[aktiv]);
+    zeige(karten.indexOf(s[(i + d + s.length) % s.length]));
+  };
+
   el('pcx').addEventListener('click', () => pc.close());
-  el('pcprev').addEventListener('click', () => zeige(aktiv - 1));
-  el('pcnext').addEventListener('click', () => zeige(aktiv + 1));
+  el('pcprev').addEventListener('click', () => weiter(-1));
+  el('pcnext').addEventListener('click', () => weiter(1));
   pc.addEventListener('keydown', e => {
-    if (e.key === 'ArrowRight') zeige(aktiv + 1);
-    if (e.key === 'ArrowLeft')  zeige(aktiv - 1);
+    if (e.key === 'ArrowRight') weiter(1);
+    if (e.key === 'ArrowLeft')  weiter(-1);
   });
   // Klick auf die Flaeche neben der Karte schliesst — ohne den Rahmen selbst
   // zu treffen, sonst schliesst jeder Klick im Inneren mit.
@@ -176,6 +193,19 @@
   pc.addEventListener('touchstart', e => { tx = e.changedTouches[0].clientX; }, {passive: true});
   pc.addEventListener('touchend', e => {
     const d = e.changedTouches[0].clientX - tx;
-    if (Math.abs(d) > 60) zeige(aktiv + (d < 0 ? 1 : -1));
+    if (Math.abs(d) > 60) weiter(d < 0 ? 1 : -1);
   }, {passive: true});
+
+  /* ---------- Bereichsfilter ---------- */
+  const leiste = document.querySelector('.teamfilter');
+  if (leiste) {
+    const knoepfe = [...leiste.querySelectorAll('button')];
+    knoepfe.forEach(b => b.addEventListener('click', () => {
+      const wahl = b.dataset.filter;
+      knoepfe.forEach(x => x.setAttribute('aria-pressed', String(x === b)));
+      karten.forEach(k => { k.hidden = wahl !== 'alle' && k.dataset.gruppe !== wahl; });
+      rail.scrollLeft = 0;
+      zeichne();
+    }));
+  }
 })();

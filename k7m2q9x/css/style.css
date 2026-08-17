@@ -261,7 +261,12 @@ a{color:inherit}
 .burger[aria-expanded="true"] span:last-child{transform:translateY(-3.25px) rotate(-45deg)}
 .burger:focus-visible{outline:2px solid var(--orange);outline-offset:6px}
 
-.wordmark img{width:auto;height:15px}
+/* Der Wortmarke ist zugleich der Weg zurück auf die Hauptseite. Bei 15px stand
+   sie kleiner da als der Burger daneben und las sich wie eine Fußnote. */
+.wordmark{display:block;transition:opacity .25s var(--ease-out)}
+.wordmark img{display:block;width:auto;height:27px}
+.wordmark:hover{opacity:.72}
+.wordmark:focus-visible{outline:2px solid var(--orange);outline-offset:8px}
 
 /* Kapitelmenü */
 .chapters{
@@ -444,6 +449,7 @@ html.cinema,html.cinema body{height:100%;overflow:hidden}
   .seal{width:64px;height:64px;bottom:1.4rem}
   .seal text{font-size:11px}
   .chrome-top{padding:1.4rem var(--gut)}
+  .wordmark img{height:22px}
   .beat{padding:7.5rem 0 6rem}
   .lede{max-width:34rem}   /* Zeilenmass bleibt lesbar; auf Telefonen bindet ohnehin die Gasse */
 }

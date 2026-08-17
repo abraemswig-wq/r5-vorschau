@@ -14,7 +14,7 @@ body.page{overflow-x:hidden}
   backdrop-filter:blur(14px);
   border-bottom:1px solid rgba(251,241,224,.1);
 }
-.page-top .wordmark img{height:15px;width:auto}
+.page-top .wordmark img{height:24px;width:auto}
 
 .page-nav{display:flex;gap:1.5rem;align-items:center}
 .page-nav a{
@@ -67,6 +67,77 @@ body.page{overflow-x:hidden}
 
 /* ---------- Fließtext ---------- */
 
+/* Der Satz bleibt auf Lesebreite — breiter zu setzen wäre der bequeme, aber
+   falsche Weg. Stattdessen bekommt die freie Spalte rechts eine Aufgabe. */
+.artbody{
+  display:grid;
+  grid-template-columns:minmax(0,calc(72ch)) minmax(0,19rem);
+  gap:clamp(2.5rem,5vw,5rem);
+  max-width:calc(72ch + 19rem + 5rem + 2 * var(--gut));
+  padding:0 var(--gut);
+}
+.artbody > .prose{padding-left:0;padding-right:0;max-width:none}
+
+.artside{
+  padding-top:clamp(3rem,7vh,5rem);
+  align-self:start;position:sticky;top:6.5rem;
+}
+
+.toc{
+  border-top:1px solid rgba(251,241,224,.22);
+  padding-top:1.1rem;margin-bottom:2.2rem;
+}
+.toc__h{
+  margin:0 0 .9rem;
+  font-size:.625rem;font-weight:500;letter-spacing:.22em;text-transform:uppercase;
+  color:rgba(251,241,224,.45);
+}
+.toc__l{margin:0;padding:0;list-style:none;counter-reset:toc}
+.toc__l li{counter-increment:toc}
+.toc__l a{
+  display:grid;grid-template-columns:1.9em 1fr;gap:.2em;
+  padding:.42rem 0;
+  font-size:.8125rem;line-height:1.35;font-weight:300;
+  text-decoration:none;color:rgba(251,241,224,.6);
+  transition:color .22s var(--ease-out);
+}
+.toc__l a::before{
+  content:counter(toc,decimal-leading-zero);
+  font-weight:900;font-size:.625rem;color:rgba(251,241,224,.3);
+  font-variant-numeric:tabular-nums;padding-top:.22em;
+  transition:color .22s var(--ease-out);
+}
+@media (hover:hover){.toc__l a:hover{color:var(--cream)}}
+.toc__l a:focus-visible{outline:2px solid var(--orange);outline-offset:2px}
+.toc__l a[aria-current="true"]{color:var(--cream)}
+.toc__l a[aria-current="true"]::before{color:var(--orange)}
+
+.artcard{border-top:1px solid rgba(251,241,224,.22);padding-top:1.1rem}
+.artcard__h{
+  margin:0 0 .7rem;
+  font-size:.625rem;font-weight:500;letter-spacing:.22em;text-transform:uppercase;
+  color:var(--orange);
+}
+.artcard__t{margin:0 0 1rem;font-size:.8125rem;line-height:1.6;font-weight:200;color:rgba(251,241,224,.7)}
+.artcard__l{margin:0;padding:0;list-style:none}
+.artcard__l li + li{margin-top:.5rem}
+.artcard__l a{
+  font-size:.8125rem;font-weight:500;letter-spacing:.04em;
+  text-decoration:none;color:var(--cream);
+  border-bottom:1px solid rgba(251,241,224,.28);
+  transition:border-color .22s var(--ease-out);
+}
+@media (hover:hover){.artcard__l a:hover{border-color:var(--orange)}}
+.artcard__l a:focus-visible{outline:2px solid var(--orange);outline-offset:3px}
+
+/* Unter 1024px trägt eine zweite Spalte nicht mehr: das Verzeichnis fällt weg
+   (der Text ist dann ohnehin einen Wisch entfernt), die Termin-Karte bleibt. */
+@media (max-width:1023px){
+  .artbody{grid-template-columns:minmax(0,1fr);max-width:calc(72ch + 2 * var(--gut))}
+  .artside{position:static;padding-top:2.5rem}
+  .toc{display:none}
+}
+
 .prose{
   padding:clamp(3rem,7vh,5rem) var(--gut) 0;
   max-width:calc(72ch + 2 * var(--gut));
@@ -85,6 +156,7 @@ body.page{overflow-x:hidden}
   border-top:1px solid rgba(251,241,224,.16);
 }
 .prose h2:first-child{margin-top:0}
+.prose h2[id]{scroll-margin-top:6rem}   /* der Seitenkopf klebt oben */
 .prose ul{margin:0 0 1.5em;padding:0;list-style:none}
 .prose li{position:relative;padding-left:1.5rem;margin-bottom:.75em}
 .prose li::before{
@@ -306,18 +378,51 @@ body.page{overflow-x:hidden}
   border-top:1px solid rgba(251,241,224,.14);
   margin-bottom:clamp(4rem,9vh,6rem);
 }
+/* Sprungleiste: die fünf Bereiche stehen einmal beieinander, bevor man sich
+   durch fünf Leisten scrollt. Ohne sie ist die Gliederung erst nach dem
+   Durchscrollen erkennbar. */
+.rubriken{
+  display:flex;flex-wrap:wrap;gap:.6rem;
+  padding:2.2rem var(--gut) 2.6rem;
+  border-top:1px solid rgba(251,241,224,.14);
+}
+.rubriken a{
+  display:inline-flex;align-items:baseline;gap:.6em;
+  padding:.72em 1.15em;
+  border:1px solid rgba(251,241,224,.2);border-radius:100px;
+  font-size:.75rem;font-weight:500;letter-spacing:.12em;text-transform:uppercase;
+  text-decoration:none;color:rgba(251,241,224,.82);
+  transition:color .25s var(--ease-out),border-color .25s var(--ease-out),
+             background-color .25s var(--ease-out);
+}
+.rubriken__n{
+  font-weight:900;font-size:.6875rem;color:var(--orange);
+  font-variant-numeric:tabular-nums;
+}
+@media (hover:hover){
+  .rubriken a:hover{background:var(--cream);border-color:var(--cream);color:var(--pine-black)}
+  .rubriken a:hover .rubriken__n{color:var(--pine-black)}
+}
+.rubriken a:focus-visible{outline:2px solid var(--orange);outline-offset:3px}
+
 .rail__head{
   display:flex;align-items:baseline;justify-content:space-between;gap:1rem;
-  padding:1.5rem var(--gut) 1.25rem;
+  padding:2.4rem var(--gut) 1.5rem;
 }
+/* Vorher 11px in halber Deckkraft — die Gliederung des Blogs war damit leiser
+   als die Artikeltitel darunter. Jetzt trägt sie. */
 .rail__t{
-  margin:0;font-size:.6875rem;font-weight:500;letter-spacing:.22em;
-  text-transform:uppercase;color:rgba(251,241,224,.5);
+  margin:0;font-size:clamp(1.5rem,3vw,2.1rem);font-weight:900;line-height:1;
+  letter-spacing:-.005em;text-transform:uppercase;color:var(--cream);
+  scroll-margin-top:6.5rem;   /* der Seitenkopf klebt oben und würde sonst die Zeile verdecken */
 }
 .rail__n{
-  margin:0 auto 0 -.4rem;font-size:.6875rem;letter-spacing:.1em;
+  margin:.15em auto 0 .45rem;align-self:flex-start;
+  font-size:.8125rem;font-weight:900;letter-spacing:.06em;
   color:var(--orange);font-variant-numeric:tabular-nums;
 }
+.rail__n::after{content:" Artikel";font-weight:200;color:rgba(251,241,224,.42);letter-spacing:.12em;
+  font-size:.625rem;text-transform:uppercase}
 .rail__nav{display:flex;gap:.5rem}
 .rail__btn{
   width:2.75rem;height:2.75rem;display:grid;place-items:center;
@@ -388,7 +493,7 @@ body.page{overflow-x:hidden}
 }
 .qc__t{
   display:block;padding:0 1.4rem;
-  font-weight:500;font-size:1rem;line-height:1.3;
+  font-weight:500;font-size:clamp(1.0625rem,1.35vw,1.1875rem);line-height:1.26;
   color:var(--cream);text-wrap:balance;
 }
 .qc__meta{
@@ -411,7 +516,31 @@ body.page{overflow-x:hidden}
 
 /* Die Reihe laeuft rechts aus dem Bild statt am Rand zu enden — das zeigt
    ohne Beschriftung, dass da noch mehr kommt. */
+/* Nach Bereich, nicht nach Standort: hinterlegt ist der Standort nur für die
+   vier Leitungen. Eine Zuordnung für die übrigen 29 wäre geraten. */
+.teamfilter{
+  display:flex;flex-wrap:wrap;gap:.6rem;
+  padding:0 var(--gut) 2.2rem;
+}
+.teamfilter button{
+  display:inline-flex;align-items:baseline;gap:.6em;
+  padding:.72em 1.15em;cursor:pointer;
+  background:none;border:1px solid rgba(251,241,224,.2);border-radius:100px;
+  font:inherit;font-size:.75rem;font-weight:500;letter-spacing:.12em;text-transform:uppercase;
+  color:rgba(251,241,224,.82);
+  transition:color .25s var(--ease-out),border-color .25s var(--ease-out),
+             background-color .25s var(--ease-out);
+}
+.teamfilter__n{font-weight:900;font-size:.6875rem;color:var(--orange);font-variant-numeric:tabular-nums}
+@media (hover:hover){
+  .teamfilter button:hover{border-color:var(--cream);color:var(--cream)}
+}
+.teamfilter button[aria-pressed="true"]{background:var(--cream);border-color:var(--cream);color:var(--pine-black)}
+.teamfilter button[aria-pressed="true"] .teamfilter__n{color:var(--pine-black)}
+.teamfilter button:focus-visible{outline:2px solid var(--orange);outline-offset:3px}
+
 .gal{padding:0 0 clamp(2rem,5vh,3rem)}
+.member[hidden]{display:none}
 .gal__rail{
   --karte:clamp(14rem,26vw,23rem);
   display:flex;gap:clamp(.9rem,1.8vw,1.6rem);
@@ -606,6 +735,7 @@ body.page{overflow-x:hidden}
 
 @media (max-width:820px){
   .page-top{padding:1.1rem var(--gut)}
+  .page-top .wordmark img{height:20px}
   .page-nav{gap:1rem}
   .page-nav a{font-size:.625rem;letter-spacing:.12em}
   .artcover{min-height:60svh}
