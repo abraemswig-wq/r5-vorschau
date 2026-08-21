@@ -70,6 +70,20 @@
     });
   };
 
+  /* ---------- Startpunkt ---------- */
+  // Auf die erste Karte zentriert stand die halbe Reihe leer: links vom Anfang
+  // liegt nichts, auf 1440px waren das 536 tote Pixel neben einem Gesicht. Die
+  // Reihe startet deshalb so weit eingerueckt, wie links tatsaechlich Karten
+  // hinpassen — die Mitte bleibt die Mitte, sie hat nur beide Seiten belegt.
+  const anfang = () => {
+    const s = offen();
+    if (!s.length) return;
+    const raster = schritt();
+    const platz = Math.max(0, Math.floor((rail.clientWidth / raster - 1) / 2));
+    const z = s[Math.min(platz, s.length - 1)];
+    rail.scrollLeft = z.offsetLeft + z.offsetWidth / 2 - rail.clientWidth / 2;
+  };
+
   let angefordert = false;
   const zeichne = () => { angefordert = false; mess(); raum(); };
   const anfordern = () => {
@@ -200,6 +214,14 @@
   // Zwei Achsen, die sich schneiden — „Physiotherapie" und „Scharnhorststrasse"
   // gelten gleichzeitig. Getrennte Leisten statt einer langen: die Frage „welcher
   // Beruf" und die Frage „welches Haus" sind zwei Fragen.
+  // Beide Seiten sind Mengen, nicht einzelne Werte: Freddy und Luana sind
+  // Physiotherapeutinnen *und* Rezeption, und der Knopf „Buero & Verwaltung"
+  // fasst zwei Adressen zusammen. Ein Treffer ist eine Schnittmenge.
+  const trifft = (karte, merkmal, wert) => {
+    if (wert === 'alle') return true;
+    const hat = (karte.dataset[merkmal] || '').split(' ');
+    return wert.split(' ').some(w => hat.includes(w));
+  };
   const bereich = document.querySelector('.teamfilter:not(.teamfilter--ort)');
   const ortLeiste = document.querySelector('.teamfilter--ort');
   if (bereich || ortLeiste) {
@@ -207,23 +229,22 @@
 
     const anwenden = () => {
       karten.forEach(k => {
-        k.hidden = (wahlBereich !== 'alle' && k.dataset.gruppe !== wahlBereich)
-                || (wahlOrt !== 'alle' && k.dataset.ort !== wahlOrt);
+        k.hidden = !trifft(k, 'gruppe', wahlBereich) || !trifft(k, 'ort', wahlOrt);
       });
-      rail.scrollLeft = 0;
+      anfang();
       zeichne();
       // Die Zahl auf dem Knopf gilt fuer die jeweils andere Achse mit: wer nach
       // Standort filtert, will wissen, wie viele Physios dort sitzen — nicht wie
       // viele es insgesamt gibt. Sonst verspricht ein Knopf 16 und zeigt 4.
-      zaehlen(bereich, 'filter', k => wahlOrt === 'alle' || k.dataset.ort === wahlOrt, 'gruppe');
-      zaehlen(ortLeiste, 'ort', k => wahlBereich === 'alle' || k.dataset.gruppe === wahlBereich, 'ort');
+      zaehlen(bereich, 'filter', k => trifft(k, 'ort', wahlOrt), 'gruppe');
+      zaehlen(ortLeiste, 'ort', k => trifft(k, 'gruppe', wahlBereich), 'ort');
     };
 
     const zaehlen = (leiste, feld, passt, merkmal) => {
       if (!leiste) return;
       leiste.querySelectorAll('button').forEach(b => {
         const wert = b.dataset[feld];
-        const n = karten.filter(k => passt(k) && (wert === 'alle' || k.dataset[merkmal] === wert)).length;
+        const n = karten.filter(k => passt(k) && trifft(k, merkmal, wert)).length;
         b.querySelector('.teamfilter__n').textContent = String(n);
         // Ein Knopf, der auf null fuehrt, ist eine Sackgasse — abschalten statt
         // den Nutzer in eine leere Reihe laufen lassen.

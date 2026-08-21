@@ -19,7 +19,7 @@ body.page{overflow-x:hidden}
 .page-nav{display:flex;gap:1.5rem;align-items:center}
 .page-nav a{
   font-size:.6875rem;font-weight:500;letter-spacing:.18em;text-transform:uppercase;
-  text-decoration:none;color:rgba(251,241,224,.65);
+  text-decoration:none;color:rgba(251,241,224,.8);
   padding:.4em 0;border-bottom:1px solid transparent;
   transition:color .18s var(--ease-out),border-color .18s var(--ease-out);
 }
@@ -62,7 +62,7 @@ body.page{overflow-x:hidden}
   margin:1.5rem 0 0;
   display:flex;flex-wrap:wrap;gap:.5rem 1.4rem;
   font-size:.6875rem;letter-spacing:.16em;text-transform:uppercase;
-  color:rgba(251,241,224,.6);
+  color:rgba(251,241,224,.78);
 }
 
 /* ---------- Fließtext ---------- */
@@ -98,7 +98,7 @@ body.page{overflow-x:hidden}
   display:grid;grid-template-columns:1.9em 1fr;gap:.2em;
   padding:.42rem 0;
   font-size:.8125rem;line-height:1.35;font-weight:300;
-  text-decoration:none;color:rgba(251,241,224,.6);
+  text-decoration:none;color:rgba(251,241,224,.78);
   transition:color .22s var(--ease-out);
 }
 .toc__l a::before{
@@ -118,7 +118,7 @@ body.page{overflow-x:hidden}
   font-size:.625rem;font-weight:500;letter-spacing:.22em;text-transform:uppercase;
   color:var(--orange);
 }
-.artcard__t{margin:0 0 1rem;font-size:.8125rem;line-height:1.6;font-weight:200;color:rgba(251,241,224,.7)}
+.artcard__t{margin:0 0 1rem;font-size:.8125rem;line-height:1.6;font-weight:300;color:rgba(251,241,224,.84)}
 .artcard__l{margin:0;padding:0;list-style:none}
 .artcard__l li + li{margin-top:.5rem}
 .artcard__l a{
@@ -143,7 +143,7 @@ body.page{overflow-x:hidden}
   max-width:calc(72ch + 2 * var(--gut));
   font-size:clamp(.95rem,1.12vw,1.0625rem);
   line-height:1.78;
-  font-weight:200;
+  font-weight:300;
   color:rgba(251,241,224,.88);
 }
 .prose > p{margin:0 0 1.35em}
@@ -208,7 +208,7 @@ body.page{overflow-x:hidden}
 }
 .faq details[open] summary::after{transform:rotate(-135deg)}
 .faq summary:focus-visible{outline:2px solid var(--orange);outline-offset:3px}
-.faq__a{margin:0;padding:0 2.5rem 1.4rem 0;font-size:.9375rem;line-height:1.72;font-weight:200;color:rgba(251,241,224,.82)}
+.faq__a{margin:0;padding:0 2.5rem 1.4rem 0;font-size:.9375rem;line-height:1.72;font-weight:300;color:rgba(251,241,224,.9)}
 
 /* Eine Angabe, die uns fehlt, steht sichtbar als Luecke da. Eine erfundene
    Wartezeit merkt niemand — bis jemand deswegen anruft. */
@@ -234,7 +234,7 @@ body.page{overflow-x:hidden}
   font-weight:900;text-transform:uppercase;letter-spacing:-.005em;line-height:1.24;
   font-size:.9375rem;color:var(--cream);
 }
-.pos__t{font-weight:200;line-height:1.7;color:rgba(251,241,224,.82)}
+.pos__t{font-weight:300;line-height:1.7;color:rgba(251,241,224,.9)}
 
 .pos__k{
   display:inline-block;margin-left:.4rem;padding:.1rem .4rem;
@@ -257,7 +257,7 @@ body.page{overflow-x:hidden}
 .bild{margin:2.8em 0;padding:0}
 .bild img{display:block;width:100%;height:auto;border-radius:2px}
 .bild figcaption{
-  margin-top:.7rem;font-size:.8125rem;line-height:1.6;font-weight:200;
+  margin-top:.7rem;font-size:.8125rem;line-height:1.6;font-weight:300;
   color:rgba(251,241,224,.5);
 }
 
@@ -280,7 +280,7 @@ body.page{overflow-x:hidden}
 .weiter__l a:hover{background:rgba(251,241,224,.09);border-color:rgba(217,145,41,.5)}
 .weiter__l span{font-weight:500;font-size:.9375rem;line-height:1.3;color:var(--cream)}
 .weiter__l i{font-style:normal;font-size:.6875rem;letter-spacing:.08em;color:var(--orange-lt)}
-.weiter__all{margin:1.6rem 0 0;font-size:.875rem;font-weight:200}
+.weiter__all{margin:1.6rem 0 0;font-size:.875rem;font-weight:300}
 .weiter__all a{color:var(--orange-lt);text-decoration:none;border-bottom:1px solid rgba(217,145,41,.4)}
 .weiter__all a:hover{border-bottom-color:var(--orange-lt)}
 
@@ -309,14 +309,14 @@ body.page{overflow-x:hidden}
   color:var(--orange-lt);margin-left:.4rem;vertical-align:.12em;
 }
 .lkarte__x{
-  display:block;margin-top:.5rem;font-size:.875rem;line-height:1.65;font-weight:200;
+  display:block;margin-top:.5rem;font-size:.875rem;line-height:1.65;font-weight:300;
   color:rgba(251,241,224,.72);
 }
 
 /* ---------- Quellen & Autor ---------- */
 
 .sources{padding:0 var(--gut) 1rem;max-width:calc(72ch + 2 * var(--gut))}
-.sources ol{margin:1.2rem 0 0;padding-left:1.2rem;font-size:.8125rem;line-height:1.7;color:rgba(251,241,224,.55)}
+.sources ol{margin:1.2rem 0 0;padding-left:1.2rem;font-size:.8125rem;line-height:1.7;color:rgba(251,241,224,.72)}
 .sources li{margin-bottom:.7em}
 
 .byline{
@@ -324,7 +324,7 @@ body.page{overflow-x:hidden}
   padding:2rem var(--gut) 0;max-width:calc(72ch + 2 * var(--gut));
 }
 .byline img{width:52px;height:52px;border-radius:50%;object-fit:cover;object-position:center 18%}
-.byline__txt{font-size:.8125rem;line-height:1.5;color:rgba(251,241,224,.6)}
+.byline__txt{font-size:.8125rem;line-height:1.5;color:rgba(251,241,224,.78)}
 .byline__txt b{display:block;font-weight:500;color:var(--cream);letter-spacing:.02em}
 
 /* ---------- Blog-Übersicht ---------- */
@@ -365,7 +365,7 @@ body.page{overflow-x:hidden}
 .lead__more{
   margin:1.9rem 0 0;
   font-size:.625rem;letter-spacing:.2em;text-transform:uppercase;
-  color:rgba(251,241,224,.55);
+  color:rgba(251,241,224,.72);
 }
 .lead__more span{color:var(--orange)}
 .lead:focus-visible{outline:2px solid var(--orange);outline-offset:-4px}
@@ -391,7 +391,7 @@ body.page{overflow-x:hidden}
   padding:.72em 1.15em;
   border:1px solid rgba(251,241,224,.2);border-radius:100px;
   font-size:.75rem;font-weight:500;letter-spacing:.12em;text-transform:uppercase;
-  text-decoration:none;color:rgba(251,241,224,.82);
+  text-decoration:none;color:rgba(251,241,224,.9);
   transition:color .25s var(--ease-out),border-color .25s var(--ease-out),
              background-color .25s var(--ease-out);
 }
@@ -421,7 +421,7 @@ body.page{overflow-x:hidden}
   font-size:.8125rem;font-weight:900;letter-spacing:.06em;
   color:var(--orange);font-variant-numeric:tabular-nums;
 }
-.rail__n::after{content:" Artikel";font-weight:200;color:rgba(251,241,224,.42);letter-spacing:.12em;
+.rail__n::after{content:" Artikel";font-weight:300;color:rgba(251,241,224,.42);letter-spacing:.12em;
   font-size:.625rem;text-transform:uppercase}
 .rail__nav{display:flex;gap:.5rem}
 .rail__btn{
@@ -532,7 +532,7 @@ body.page{overflow-x:hidden}
   padding:.72em 1.15em;cursor:pointer;
   background:none;border:1px solid rgba(251,241,224,.2);border-radius:100px;
   font:inherit;font-size:.75rem;font-weight:500;letter-spacing:.12em;text-transform:uppercase;
-  color:rgba(251,241,224,.82);
+  color:rgba(251,241,224,.9);
   transition:color .25s var(--ease-out),border-color .25s var(--ease-out),
              background-color .25s var(--ease-out);
 }
@@ -543,6 +543,19 @@ body.page{overflow-x:hidden}
 .teamfilter button[aria-pressed="true"]{background:var(--cream);border-color:var(--cream);color:var(--pine-black)}
 .teamfilter button[aria-pressed="true"] .teamfilter__n{color:var(--pine-black)}
 .teamfilter button:focus-visible{outline:2px solid var(--orange);outline-offset:3px}
+
+/* Auf dem Handy brauchten die beiden Leisten umgebrochen sechs Zeilen — man
+   scrollte an zweihundert Pixeln Knoepfen vorbei, bevor das erste Gesicht kam.
+   Je Achse eine Zeile, die seitlich wegläuft: dieselbe Geste wie die Galerie
+   darunter, und die Reihe faengt oben im Bild an. */
+@media (max-width:767px){
+  .teamfilter{
+    flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;
+    padding-bottom:1.4rem;
+  }
+  .teamfilter::-webkit-scrollbar{display:none}
+  .teamfilter button{flex:0 0 auto}
+}
 
 .gal{padding:0 0 clamp(2rem,5vh,3rem)}
 .member[hidden]{display:none}
@@ -606,7 +619,7 @@ body.page{overflow-x:hidden}
 @media (hover:hover){.member:hover .member__cap{opacity:1}}
 @media (prefers-reduced-motion:reduce){.member__cap{opacity:1}}
 .member__name{display:block;font-size:1rem;font-weight:500;letter-spacing:.01em;color:var(--cream)}
-.member__role{display:block;margin-top:.3rem;font-size:.75rem;line-height:1.5;font-weight:200;color:rgba(251,241,224,.6)}
+.member__role{display:block;margin-top:.3rem;font-size:.75rem;line-height:1.5;font-weight:300;color:rgba(251,241,224,.78)}
 
 .gal__bar{
   margin:0 var(--gut);height:1px;background:rgba(251,241,224,.16);
