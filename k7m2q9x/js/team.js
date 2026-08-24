@@ -263,6 +263,22 @@
     };
     verdrahten(bereich, 'filter', w => { wahlBereich = w; });
     verdrahten(ortLeiste, 'ort', w => { wahlOrt = w; });
+
+    // Die Standortseiten verlinken hierher mit #ort=scharnhorststrasse. Der Wert
+    // wird Knopf fuer Knopf verglichen, nicht per Selektor gesucht: „Buero &
+    // Verwaltung" traegt zwei Adressen mit Leerzeichen im data-ort.
+    const ausHash = () => {
+      const wunsch = (location.hash.match(/ort=([\w-]+)/) || [])[1];
+      if (!wunsch || !ortLeiste) return;
+      const knopf = [...ortLeiste.querySelectorAll('button')]
+        .find(b => b.dataset.ort === wunsch);
+      if (!knopf) return;
+      ortLeiste.querySelectorAll('button')
+        .forEach(x => x.setAttribute('aria-pressed', String(x === knopf)));
+      wahlOrt = wunsch;
+    };
+    ausHash();
+    addEventListener('hashchange', () => { ausHash(); anwenden(); });
     anwenden();
   }
 })();
