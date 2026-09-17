@@ -80,18 +80,24 @@ a{color:inherit}
 }
 .beat__video[data-laeuft="true"]{opacity:1}
 
+/* Alle Alphas auf 0,85 des vorherigen Werts (Ansage Aric 2026-09-17: „ein
+   bisschen weniger dunkel"). Die Grenze ist gemessen, nicht geschaetzt: bei
+   Faktor 0,72 faellt die Lede im Kapitel Standorte auf 3,96:1, bei 0,80 auf
+   4,84:1. 0,85 laesst ueberall mindestens 5,4:1 stehen. Wer hier weiter
+   aufhellt, muss pruefung/kontrast-messen.py erneut laufen lassen — das Kapitel
+   Standorte bindet, sein Foto hat die hellste Flaeche. */
 .beat__scrim{
   position:absolute;inset:0;
   background:
-    linear-gradient(96deg, rgba(11,22,17,.95) 0%, rgba(11,22,17,.86) 30%, rgba(11,22,17,.74) 44%, rgba(11,22,17,.28) 68%, rgba(11,22,17,.46) 100%),
-    linear-gradient(to top, rgba(11,22,17,.7) 0%, rgba(11,22,17,0) 40%);
+    linear-gradient(96deg, rgba(11,22,17,.807) 0%, rgba(11,22,17,.731) 30%, rgba(11,22,17,.629) 44%, rgba(11,22,17,.238) 68%, rgba(11,22,17,.391) 100%),
+    linear-gradient(to top, rgba(11,22,17,.595) 0%, rgba(11,22,17,0) 40%);
 }
 /* Radial statt flach: hinter der zentrierten Schrift bleibt es so dunkel wie zuvor,
    zu den Rändern hin öffnet es sich — sonst schluckt die Deckfläche die Kamerafahrt. */
 .beat__scrim--full{
   background:
-    radial-gradient(ellipse 64% 80% at 50% 46%, rgba(11,22,17,.88) 0%, rgba(11,22,17,.85) 42%, rgba(11,22,17,.58) 76%, rgba(11,22,17,.40) 100%),
-    linear-gradient(to top, rgba(11,22,17,.60) 0%, rgba(11,22,17,0) 36%);
+    radial-gradient(ellipse 64% 80% at 50% 46%, rgba(11,22,17,.748) 0%, rgba(11,22,17,.722) 42%, rgba(11,22,17,.493) 76%, rgba(11,22,17,.340) 100%),
+    linear-gradient(to top, rgba(11,22,17,.510) 0%, rgba(11,22,17,0) 36%);
 }
 
 .beat__inner{
@@ -104,6 +110,14 @@ a{color:inherit}
 
 /* ---------- Typo ---------- */
 
+/* Eigener Grund statt blankes Foto. Orange #D99129 kommt gegen JEDEN helleren
+   Untergrund auf hoechstens 2,61:1 — der Kicker lebt also allein davon, dass es
+   hinter ihm dunkel bleibt. Auf dem Foto liegend deckelte er damit jede
+   Aufhellung des Scrims und fiel gemessen schon vorher durch (Standort-Hero
+   3,34:1, Blog-Aufmacher 1,69:1 auf dem Telefon). Der Block loest ihn vom Bild:
+   .88 haelt auch ueber der hellsten Fensterflaeche noch ueber 5:1.
+   Formal ist er das dunkle Gegenstueck zum Cream-Block der Kopfzeile darunter —
+   gleiche Kante, gleiches Prinzip, invertiert. */
 .kicker{
   margin:0 0 1.35rem;
   font-size:.6875rem;         /* 11px */
@@ -111,6 +125,12 @@ a{color:inherit}
   letter-spacing:.22em;
   text-transform:uppercase;
   color:var(--orange);
+  display:inline-block;
+  background:rgba(11,22,17,.88);
+  padding:.45em .7em .4em;
+  /* Die Laufweite haengt rechts ein Leerzeichen an; ohne Ausgleich sitzt der
+     Text im Block sichtbar links. */
+  text-indent:.22em;
 }
 
 .hl{
@@ -493,6 +513,21 @@ html.cinema,html.cinema body{height:100%;overflow:hidden}
   .wordmark img{height:22px}
   .beat{padding:7.5rem 0 6rem}
   .lede{max-width:34rem}   /* Zeilenmass bleibt lesbar; auf Telefonen bindet ohnehin die Gasse */
+
+  /* Gleichmaessig statt seitenbetont — das war ein echter Lesefehler, kein
+     Geschmack. Der 96deg-Verlauf oeffnet sich ab 68% absichtlich aufs Foto;
+     ausgelegt ist das fuer den Desktop, wo der Text nur die linken 507 von
+     1248px belegt. Auf dem Telefon spannt dieselbe Lede ueber die volle Breite
+     und ragt damit in den offenen Teil hinein. Gemessen stand der Fliesstext
+     im Kapitel Standorte dort auf 1,84:1 — auf dem Screenshot ueber einer
+     hellen Fensterflaeche kaum noch zu lesen.
+     Ein staerkerer Seitenverlauf haette das nicht geheilt, nur verschoben.
+     Links wird es dadurch heller als vorher, rechts dunkler; die Gesamthelle
+     bleibt etwa gleich, die Lesbarkeit steigt auf ueber 6:1. */
+  .beat__scrim,.beat__scrim--full{
+    background:linear-gradient(to bottom,
+      rgba(11,22,17,.78) 0%, rgba(11,22,17,.72) 46%, rgba(11,22,17,.68) 100%);
+  }
 }
 
 @media (prefers-reduced-motion:reduce){

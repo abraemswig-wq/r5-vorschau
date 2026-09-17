@@ -40,11 +40,12 @@ body.page{overflow-x:hidden}
 
 .artcover{position:relative;min-height:min(74svh,640px);display:flex;align-items:flex-end;overflow:hidden}
 .artcover__bg{position:absolute;inset:0;background-size:cover;background-position:center 32%}
+/* Faktor 0,85 wie bei .beat__scrim — siehe Begruendung dort. */
 .artcover__scrim{
   position:absolute;inset:0;
   background:
-    linear-gradient(to top, rgba(11,22,17,.97) 4%, rgba(11,22,17,.72) 38%, rgba(11,22,17,.34) 72%),
-    linear-gradient(96deg, rgba(11,22,17,.72) 0%, rgba(11,22,17,.12) 62%);
+    linear-gradient(to top, rgba(11,22,17,.825) 4%, rgba(11,22,17,.612) 38%, rgba(11,22,17,.289) 72%),
+    linear-gradient(96deg, rgba(11,22,17,.612) 0%, rgba(11,22,17,.102) 62%);
 }
 .artcover__inner{position:relative;z-index:2;padding:0 var(--gut) clamp(2.5rem,6vh,4rem);width:100%}
 
@@ -352,11 +353,12 @@ body.page{overflow-x:hidden}
   background-size:cover;background-position:center 28%;
   transition:transform 1.2s var(--ease-out);
 }
+/* Faktor 0,85 wie bei .beat__scrim — siehe Begruendung dort. */
 .lead__scrim{
   position:absolute;inset:0;
   background:
-    linear-gradient(96deg, rgba(11,22,17,.94) 0%, rgba(11,22,17,.82) 32%, rgba(11,22,17,.34) 64%, rgba(11,22,17,.5) 100%),
-    linear-gradient(to top, rgba(11,22,17,.86) 0%, rgba(11,22,17,0) 48%);
+    linear-gradient(96deg, rgba(11,22,17,.799) 0%, rgba(11,22,17,.697) 32%, rgba(11,22,17,.289) 64%, rgba(11,22,17,.425) 100%),
+    linear-gradient(to top, rgba(11,22,17,.731) 0%, rgba(11,22,17,0) 48%);
 }
 .lead__inner{
   position:relative;z-index:2;width:100%;
@@ -782,9 +784,11 @@ body.page{overflow-x:hidden}
   position:absolute;inset:0;z-index:-2;
   width:100%;height:100%;object-fit:cover;display:block;
 }
+/* Faktor 0,85 wie bei .beat__scrim — siehe Begruendung dort. Der unterste Stopp
+   war voll deckend (var(--pine-black)) und ist jetzt ebenfalls durchlaessig. */
 .ohero__scrim{
   position:absolute;inset:0;z-index:-1;
-  background:linear-gradient(to top,var(--pine-black) 4%,rgba(11,22,17,.82) 38%,rgba(11,22,17,.28) 100%);
+  background:linear-gradient(to top,rgba(11,22,17,.850) 4%,rgba(11,22,17,.697) 38%,rgba(11,22,17,.238) 100%);
 }
 .ohero__inner{max-width:44rem}
 .ohero .hl{margin:.6rem 0 0}
@@ -900,4 +904,18 @@ body.page{overflow-x:hidden}
 @media (max-width:820px){
   .ofakten{grid-template-columns:1fr;gap:1.6rem}
   .owechsel__l{grid-template-columns:1fr;gap:1rem;align-items:start}
+
+  /* Gleiche Begruendung wie bei .beat__scrim in style.css: auf dem Telefon
+     spannt der Text ueber die volle Breite und geraet in den absichtlich
+     offenen Teil des Seitenverlaufs. Der Blog-Aufmacher stand dort gemessen
+     auf 4,06:1. Hier faellt der Verlauf nach unten hin auf, weil Kicker und
+     Kopfzeile am unteren Rand sitzen. */
+  .lead__scrim{
+    background:linear-gradient(to bottom,
+      rgba(11,22,17,.78) 0%, rgba(11,22,17,.72) 46%, rgba(11,22,17,.68) 100%);
+  }
+  .ohero__scrim,.artcover__scrim{
+    background:linear-gradient(to top,
+      rgba(11,22,17,.88) 6%, rgba(11,22,17,.72) 52%, rgba(11,22,17,.54) 100%);
+  }
 }
