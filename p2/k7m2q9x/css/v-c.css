@@ -1,0 +1,29 @@
+/* Entwurf C — Ein Knopf, Rest leise */
+
+/* Variante C — eine Handlung wird gross, die drei anderen werden eine ruhige
+   Zeile darunter. Die schaerfste Hierarchie der drei: wer nichts liest,
+   sieht genau einen Knopf. Preis dafuer ist, dass „Befund ohne Rezept" —
+   das eigentliche Angebot fuer Selbstzahler — mit nach unten rutscht. */
+.cta{flex-direction:row;flex-wrap:wrap;align-items:center;gap:.55rem 1.3rem;margin-top:2.5rem}
+.cta li:first-child{flex:0 0 100%;margin-bottom:.55rem}
+.cta__primaer{
+  display:inline-flex;align-items:center;gap:.55em;
+  background:var(--orange);color:var(--pine-black);
+  padding:.62em 1.1em;
+}
+.cta__primaer::after{
+  content:"";width:.4em;height:.4em;
+  border:solid currentColor;border-width:0 2px 2px 0;transform:rotate(-45deg);
+}
+@media (hover:hover) and (pointer:fine){
+  .cta__primaer:hover{background:var(--orange-lt);color:var(--pine-black)}
+}
+.cta li:not(:first-child) a{
+  font-size:.8125rem;font-weight:500;letter-spacing:.14em;
+  color:rgba(251,241,224,.78);
+  padding:.45em 0;min-height:32px;display:inline-flex;align-items:center;
+  border-bottom:1px solid rgba(251,241,224,.3);
+}
+@media (hover:hover) and (pointer:fine){
+  .cta li:not(:first-child) a:hover{background:none;color:var(--cream);border-color:var(--orange)}
+}

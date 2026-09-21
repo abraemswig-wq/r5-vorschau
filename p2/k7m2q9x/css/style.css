@@ -1,0 +1,582 @@
+/* REHAB FIVE — Fünf Säulen
+   Struktur/Grammatik nach cornrevolution.resn.global (Resn), Marke komplett eigen.
+   Basis = normal scrollende Sektionen; die Kino-Mechanik legt JS als .cinema darüber. */
+
+:root{
+  --pine-black:#0B1611;
+  --pine:#1F342D;
+  --pine-lift:#2C4539;
+  --cream:#FBF1E0;
+  --orange:#D99129;
+  --orange-lt:#F0B860;
+
+  --gut:6.667vw;              /* 96px @1440 — aus der Referenz gemessen */
+  --hl-size:clamp(2.25rem,4.69vw,4.75rem);   /* 67.5px @1440 */
+  --hl-lh:1.0;
+  --body-size:clamp(.9rem,1.04vw,.9375rem);  /* 15px @1440 */
+  --body-lh:1.6;
+  --lede-w:clamp(20rem,35.2vw,31.7rem);      /* 507px @1440 */
+
+  --ease-out:cubic-bezier(.16,1,.3,1);
+  --ease-io:cubic-bezier(.65,0,.35,1);
+}
+
+*,*::before,*::after{box-sizing:border-box}
+
+html{background:var(--pine-black)}
+
+body{
+  margin:0;
+  font-family:'Barlow',system-ui,-apple-system,sans-serif;
+  /* 300, nicht 200: Barlow ExtraLight hat bei 15px Striche duenner als ein
+     Pixel. Auf dem dunklen Grund frisst das Antialiasing sie weg — gemessen
+     kam der Fliesstext auf 5,7:1 wirksamen Kontrast statt der 13,4:1, die die
+     CSS-Farbe verspricht. Kein 400 waehlen: den Schnitt gibt es lokal nicht,
+     er fiele still auf 500. */
+  font-weight:300;
+  color:var(--cream);
+  background:var(--pine-black);
+  overflow-x:hidden;
+}
+
+img{max-width:100%;height:auto;display:block}
+a{color:inherit}
+
+/* ---------- Beats (Basis: normaler Fluss) ---------- */
+
+.story{position:relative}
+
+.beat{
+  position:relative;
+  min-height:100svh;
+  display:flex;
+  align-items:center;
+  overflow:hidden;
+}
+
+.beat__media{position:absolute;inset:0;z-index:0}
+
+.beat__bg{
+  position:absolute;inset:-4%;
+  /* Zoom als eigenständige `scale`-Property, damit die Schleife pro Frame nur
+     translate3d schreibt. Ein wechselndes scale() zwingt die 2400px-Platte in
+     jedem Frame zum Neu-Rastern — gemessen: p95 26.6ms → 13.1ms. */
+  scale:1.09;
+  will-change:transform;
+}
+
+/* Das Kapitelbild war bis 2026-09-18 ein `background-image` auf .beat__bg. Als
+   Hintergrund kann es aber keine Auflösungsstufen anbieten: das Telefon lud
+   dieselbe Platte wie der Retina-Desktop. Jetzt steht ein echtes <img> mit
+   srcset darin, und `sizes:108vw` sagt dem Browser die wahre Darstellungsbreite
+   — 108 %, weil .beat__bg durch `inset:-4%` acht Prozent breiter ist als das
+   Kapitel. Die Zuschnitt-Rechnung bleibt identisch: `object-fit:cover` mit
+   `object-position:center` schneidet wie `background-size:cover` mit
+   `background-position:center`, und weil das <img> im selben Kasten liegt,
+   erbt es Zoom und Parallaxe unverändert. */
+.beat__img{
+  position:absolute;inset:0;
+  width:100%;height:100%;
+  object-fit:cover;
+  object-position:center;
+  display:block;
+}
+
+/* Das Video liegt IN der Bildebene, nicht daneben: so erbt es Zoom und Parallaxe
+   und das Standbild darunter bleibt Poster. Wird das Video nie angehängt (Mobil,
+   reduzierte Bewegung, Ladefehler), sieht man genau dieses Standbild — es ist
+   derselbe Frame, auf dem das Video startet. Es liegt im Markup vor dem Video,
+   beide sind absolut positioniert, also deckt das Video es ab. */
+.beat__video{
+  position:absolute;inset:0;
+  width:100%;height:100%;
+  object-fit:cover;
+  opacity:0;
+  transition:opacity .9s var(--ease-out);
+}
+.beat__video[data-laeuft="true"]{opacity:1}
+
+/* Alle Alphas auf 0,85 des vorherigen Werts (Ansage Aric 2026-09-17: „ein
+   bisschen weniger dunkel"). Die Grenze ist gemessen, nicht geschaetzt: bei
+   Faktor 0,72 faellt die Lede im Kapitel Standorte auf 3,96:1, bei 0,80 auf
+   4,84:1. 0,85 laesst ueberall mindestens 5,4:1 stehen. Wer hier weiter
+   aufhellt, muss pruefung/kontrast-messen.py erneut laufen lassen — das Kapitel
+   Standorte bindet, sein Foto hat die hellste Flaeche. */
+.beat__scrim{
+  position:absolute;inset:0;
+  background:
+    linear-gradient(96deg, rgba(11,22,17,.807) 0%, rgba(11,22,17,.731) 30%, rgba(11,22,17,.629) 44%, rgba(11,22,17,.238) 68%, rgba(11,22,17,.391) 100%),
+    linear-gradient(to top, rgba(11,22,17,.595) 0%, rgba(11,22,17,0) 40%);
+}
+/* Radial statt flach: hinter der zentrierten Schrift bleibt es so dunkel wie zuvor,
+   zu den Rändern hin öffnet es sich — sonst schluckt die Deckfläche die Kamerafahrt. */
+.beat__scrim--full{
+  background:
+    radial-gradient(ellipse 64% 80% at 50% 46%, rgba(11,22,17,.748) 0%, rgba(11,22,17,.722) 42%, rgba(11,22,17,.493) 76%, rgba(11,22,17,.340) 100%),
+    linear-gradient(to top, rgba(11,22,17,.510) 0%, rgba(11,22,17,0) 36%);
+}
+
+.beat__inner{
+  position:relative;z-index:2;
+  padding:0 var(--gut);
+  width:100%;
+  transform:translate3d(0,0,0);
+}
+.beat__inner--center{text-align:center;display:flex;flex-direction:column;align-items:center}
+
+/* ---------- Typo ---------- */
+
+/* Eigener Grund statt blankes Foto. Orange #D99129 kommt gegen JEDEN helleren
+   Untergrund auf hoechstens 2,61:1 — der Kicker lebt also allein davon, dass es
+   hinter ihm dunkel bleibt. Auf dem Foto liegend deckelte er damit jede
+   Aufhellung des Scrims und fiel gemessen schon vorher durch (Standort-Hero
+   3,34:1, Blog-Aufmacher 1,69:1 auf dem Telefon). Der Block loest ihn vom Bild:
+   .88 haelt auch ueber der hellsten Fensterflaeche noch ueber 5:1.
+   Formal ist er das dunkle Gegenstueck zum Cream-Block der Kopfzeile darunter —
+   gleiche Kante, gleiches Prinzip, invertiert. */
+.kicker{
+  margin:0 0 1.35rem;
+  font-size:.6875rem;         /* 11px */
+  font-weight:500;
+  letter-spacing:.22em;
+  text-transform:uppercase;
+  color:var(--orange);
+  display:inline-block;
+  background:rgba(11,22,17,.88);
+  padding:.45em .7em .4em;
+  /* Die Laufweite haengt rechts ein Leerzeichen an; ohne Ausgleich sitzt der
+     Text im Block sichtbar links. */
+  text-indent:.22em;
+}
+
+.hl{
+  margin:0;
+  font-weight:900;
+  font-size:var(--hl-size);
+  line-height:var(--hl-lh);
+  letter-spacing:-.022em;
+  text-transform:uppercase;
+  display:flex;flex-direction:column;align-items:flex-start;
+}
+.hl--center{align-items:center}
+
+/* Signature der Referenz: Cream-Block, Schrift ausgestanzt */
+.hl__line{
+  display:inline-block;
+  background:var(--cream);
+  color:var(--pine-black);
+  padding:.08em .16em .12em;   /* Zeilenblock 81px bei 67.5px Schrift — Referenzmass */
+  white-space:pre;
+  transform-origin:left center;
+  /* Rückfallebene zur Glyphenwahl im Scramble: was die Breite doch sprengt,
+     wird abgeschnitten statt auf dem Foto ohne Cream-Grund zu landen. */
+  overflow:hidden;
+}
+.hl--center .hl__line{transform-origin:center}
+
+.lede{
+  margin:1.6rem 0 0;
+  max-width:var(--lede-w);
+  font-size:var(--body-size);
+  line-height:var(--body-lh);
+  font-weight:300;
+  color:var(--cream);
+}
+
+/* ---------- Fünf Säulen (Intro) ----------
+   Der Titel verspricht fünf Säulen; ohne diese Leiste blieben sie unbenannt. */
+
+/* Festes Fünfer-Raster: bei flex-wrap fiel die fünfte Säule in eine eigene
+   Zeile und die Aussage „fünf" zerfiel optisch in 4 + 1. */
+.saeulen{
+  list-style:none;margin:2.4rem 0 0;padding:0;
+  display:grid;grid-template-columns:repeat(5,minmax(0,1fr));
+  gap:0 1.2rem;max-width:48rem;
+}
+.saeulen li{
+  display:flex;align-items:baseline;gap:.5em;
+  padding:.55rem 0;
+  font-size:.75rem;font-weight:500;letter-spacing:.1em;text-transform:uppercase;
+  color:rgba(251,241,224,.92);
+  border-top:1px solid rgba(251,241,224,.22);
+}
+/* Sichtbar ist der Grundzustand. Nur im Kino-Modus wird versteckt und
+   eingeblendet — sonst bliebe die Leiste mobil und bei reduzierter
+   Bewegung dauerhaft auf opacity:0. */
+.cinema .saeulen li{opacity:0;transform:translateY(10px)}
+.saeulen li i{font-style:normal;font-weight:900;font-size:.6875rem;color:var(--orange)}
+.cinema .beat[data-live="true"] .saeulen li,
+.cinema .beat[data-seen="true"] .saeulen li{
+  opacity:1;transform:none;
+  transition:opacity .5s var(--ease-out), transform .5s var(--ease-out);
+  transition-delay:calc(320ms + var(--i) * 70ms);
+}
+
+/* ---------- Standorte ---------- */
+
+.orte{
+  display:grid;grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:3rem;margin:2rem 0 0;max-width:52rem;
+}
+/* Der Block ist seit 2026-08-21 ein Link auf die Standortseite. Die Kante oben
+   ist zugleich die Anzeige dafuer: sie faerbt sich orange und laeuft von links
+   durch. Ein Rahmen um die ganze Karte haette das Kapitel in Kaesten zerlegt. */
+.ort{
+  display:block;text-decoration:none;color:inherit;
+  border-top:1px solid rgba(251,241,224,.22);padding-top:1rem;position:relative;
+}
+.ort::before{
+  content:"";position:absolute;top:-1px;left:0;right:0;height:1px;
+  background:var(--orange);transform:scaleX(0);transform-origin:left;
+  transition:transform .5s var(--ease-out);
+}
+.ort:hover::before,.ort:focus-visible::before{transform:scaleX(1)}
+.ort:focus-visible{outline:2px solid var(--orange);outline-offset:6px}
+.ort__go{
+  display:inline-flex;align-items:center;gap:.5em;margin-top:1rem;
+  font-size:.6875rem;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--orange);
+}
+.ort__go::after{content:"→";transition:transform .4s var(--ease-out)}
+.ort:hover .ort__go::after{transform:translateX(.35em)}
+.cinema .ort{opacity:0;transform:translateY(12px)}
+.cinema .beat[data-live="true"] .ort,
+.cinema .beat[data-seen="true"] .ort{
+  opacity:1;transform:none;
+  transition:opacity .55s var(--ease-out), transform .55s var(--ease-out);
+  transition-delay:calc(300ms + var(--i) * 110ms);
+}
+.ort__n{
+  margin:0;font-size:.9375rem;font-weight:900;letter-spacing:.02em;
+  text-transform:uppercase;color:var(--cream);
+}
+.ort__a{margin:.2rem 0 0;font-size:.8125rem;font-weight:300;color:rgba(251,241,224,.8)}
+.ort__z{margin:.9rem 0 0;font-size:.8125rem;font-weight:300}
+.ort__z > div{display:flex;gap:.75em;padding:.22rem 0}
+.ort__z dt{min-width:4.2em;color:var(--orange);font-weight:500;letter-spacing:.08em}
+.ort__z dd{margin:0;color:rgba(251,241,224,.9)}
+
+.bewertung{
+  margin:1rem 0 0;display:flex;align-items:center;gap:.55em;
+  font-size:.75rem;letter-spacing:.04em;color:rgba(251,241,224,.72);
+}
+.bewertung__s{color:var(--orange);letter-spacing:.1em;font-size:.7rem}
+
+.ort__fuss{
+  margin:.7rem 0 0;font-size:.75rem;letter-spacing:.06em;
+  color:rgba(251,241,224,.72);
+}
+.ort__fuss a{color:inherit;text-decoration:none;border-bottom:1px solid rgba(251,241,224,.3)}
+.ort__fuss a:focus-visible{outline:2px solid var(--orange);outline-offset:3px}
+
+@media (max-width:820px){
+  .orte{grid-template-columns:1fr;gap:1.6rem}
+  .saeulen{grid-template-columns:repeat(2,minmax(0,1fr));gap:0 1.1rem}
+}
+
+/* ---------- Outro ---------- */
+
+.beat--outro{text-align:center}
+
+.cta{list-style:none;margin:2.75rem 0 0;padding:0;display:flex;flex-direction:column;gap:.5rem}
+.cta a{
+  display:inline-block;
+  font-weight:900;
+  font-size:clamp(1.25rem,2.5vw,2.25rem);
+  letter-spacing:-.01em;
+  text-transform:uppercase;
+  text-decoration:none;
+  color:var(--cream);
+  padding:.18em .3em;
+  transition:color .18s var(--ease-out), background-color .18s var(--ease-out);
+}
+@media (hover:hover) and (pointer:fine){
+  .cta a:hover{background:var(--orange);color:var(--pine-black)}
+}
+.cta a:focus-visible{outline:2px solid var(--orange);outline-offset:4px}
+
+.outro-foot{
+  margin:3rem 0 0;
+  font-size:.75rem;letter-spacing:.06em;line-height:2;
+  color:rgba(251,241,224,.72);
+}
+.outro-foot a{text-decoration:none;border-bottom:1px solid rgba(251,241,224,.3)}
+
+/* ---------- Chrome ---------- */
+
+.chrome-top{
+  position:fixed;top:0;left:0;right:0;z-index:60;
+  display:flex;align-items:center;gap:1.5rem;
+  padding:3.3rem var(--gut);           /* 53px oben, gemessen */
+  pointer-events:none;
+}
+.chrome-top > *{pointer-events:auto}
+
+.burger{
+  width:20px;height:14px;padding:0;border:0;background:none;cursor:pointer;
+  display:flex;flex-direction:column;justify-content:center;gap:5px;
+}
+.burger span{display:block;height:1.5px;background:var(--cream);transition:transform .38s var(--ease-out),opacity .2s linear}
+.burger[aria-expanded="true"] span:first-child{transform:translateY(3.25px) rotate(45deg)}
+.burger[aria-expanded="true"] span:last-child{transform:translateY(-3.25px) rotate(-45deg)}
+.burger:focus-visible{outline:2px solid var(--orange);outline-offset:6px}
+
+/* Der Wortmarke ist zugleich der Weg zurück auf die Hauptseite. Bei 15px stand
+   sie kleiner da als der Burger daneben und las sich wie eine Fußnote. */
+.wordmark{display:block;transition:opacity .25s var(--ease-out)}
+.wordmark img{display:block;width:auto;height:27px}
+.wordmark:hover{opacity:.72}
+.wordmark:focus-visible{outline:2px solid var(--orange);outline-offset:8px}
+
+/* Kapitelmenü */
+.chapters{
+  position:fixed;inset:0;z-index:55;
+  background:rgba(11,22,17,.94);
+  backdrop-filter:blur(14px);
+  display:flex;flex-direction:column;justify-content:center;
+  padding:0 var(--gut);
+  opacity:0;visibility:hidden;
+  transition:opacity .4s var(--ease-out),visibility .4s;
+}
+.chapters[data-open="true"]{opacity:1;visibility:visible}
+.chapters[hidden]{display:flex}
+
+.chapters__list{list-style:none;margin:0;padding:0;counter-reset:ch}
+.chapters__list li{overflow:hidden}
+.chapters__list button{
+  display:block;width:fit-content;text-align:left;
+  border:0;background:none;cursor:pointer;color:var(--cream);
+  font-family:inherit;font-weight:900;text-transform:uppercase;
+  font-size:clamp(1.5rem,4vw,3.5rem);line-height:1.14;letter-spacing:-.02em;
+  padding:.06em 0;
+  opacity:0;transform:translateY(110%);
+  /* Transitions statt Keyframes: schnelles Auf/Zu setzt neu an, statt bei 0 neu
+     zu starten. Die Staffelung liegt nur auf dem offenen Zustand — Schliessen
+     fährt ohne Verzögerung zusammen. */
+  transition:opacity .34s var(--ease-out),transform .42s var(--ease-out),color .2s var(--ease-out);
+}
+.chapters[data-open="true"] button{
+  opacity:1;transform:translateY(0);
+  transition-delay:var(--d,0s);
+}
+.chapters__list button span{
+  font-weight:300;font-size:.28em;letter-spacing:.2em;
+  color:var(--orange);margin-right:1.1em;vertical-align:middle;
+}
+@media (hover:hover) and (pointer:fine){
+  .chapters__list button:hover{color:var(--orange)}
+}
+.chapters__list button[aria-current="true"]{color:var(--orange)}
+.chapters__foot{
+  margin-top:3rem;font-size:.6875rem;letter-spacing:.16em;text-transform:uppercase;
+  color:rgba(251,241,224,.45);
+  display:flex;flex-wrap:wrap;align-items:baseline;gap:.6rem 2rem;
+}
+.chapters__links{display:flex;gap:1.6rem}
+.chapters__links a{
+  color:var(--cream);text-decoration:none;
+  border-bottom:1px solid var(--orange);padding-bottom:.2em;
+}
+.chapters__links a:focus-visible{outline:2px solid var(--orange);outline-offset:4px}
+
+/* Fortschrittsring rechts */
+.progress{
+  position:fixed;z-index:50;right:calc(var(--gut) * .55);top:50%;
+  transform:translateY(-50%);
+  display:flex;align-items:center;gap:.75rem;flex-direction:row-reverse;
+}
+.progress__ring{width:34px;height:34px;transform:rotate(-90deg)}
+.progress__track{fill:none;stroke:rgba(251,241,224,.22);stroke-width:1.5}
+.progress__fill{
+  fill:none;stroke:var(--orange);stroke-width:1.5;stroke-linecap:round;
+  /* Kein transition: die rAF-Schleife schreibt den Offset pro Frame und `cur`
+     ist bereits gedämpft. Eine Transition würde nur permanent nachhinken. */
+  stroke-dasharray:119.4;stroke-dashoffset:119.4;
+}
+.progress__label{
+  font-size:.625rem;letter-spacing:.2em;text-transform:uppercase;
+  color:rgba(251,241,224,.84);white-space:nowrap;
+}
+
+/* Rotierendes Siegel */
+.seal{
+  position:fixed;z-index:50;left:var(--gut);bottom:2.6rem;
+  width:86px;height:86px;
+  display:grid;place-items:center;
+  opacity:.85;
+}
+.seal__spin{position:absolute;inset:0;width:100%;height:100%;animation:spin 26s linear infinite}
+.seal text{fill:rgba(251,241,224,.72);font-size:9.4px;letter-spacing:.11em;font-weight:500;text-transform:uppercase}
+.seal__glyph{width:28px;height:auto;fill:var(--orange)}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* Scroll-Hinweis */
+.hint{
+  position:fixed;z-index:50;left:50%;bottom:2.4rem;transform:translateX(-50%);
+  display:flex;flex-direction:column;align-items:center;gap:.7rem;
+  font-size:.625rem;letter-spacing:.24em;text-transform:uppercase;
+  color:rgba(251,241,224,.78);
+  transition:opacity .5s var(--ease-out);
+}
+.hint i{display:block;width:1px;height:30px;background:linear-gradient(var(--orange),transparent);animation:drop 2s var(--ease-io) infinite}
+@keyframes drop{0%{transform:scaleY(0);transform-origin:top}45%{transform:scaleY(1);transform-origin:top}55%{transform:scaleY(1);transform-origin:bottom}100%{transform:scaleY(0);transform-origin:bottom}}
+.hint[data-off="true"]{opacity:0;pointer-events:none}
+
+/* Preloader */
+.preloader{
+  position:fixed;inset:0;z-index:100;
+  background:var(--pine-black);
+  display:grid;place-items:center;
+  transition:opacity .7s var(--ease-out),visibility .7s;
+}
+.preloader[data-done="true"]{opacity:0;visibility:hidden}
+.preloader__mark{
+  font-weight:900;text-transform:uppercase;letter-spacing:-.02em;
+  font-size:clamp(1.5rem,4vw,3rem);color:var(--cream);
+  display:flex;align-items:center;
+}
+.preloader__long{
+  display:block;overflow:hidden;white-space:nowrap;max-width:14ch;
+  transition:max-width .62s var(--ease-io),opacity .3s linear;
+}
+.preloader__short{
+  display:block;color:var(--orange);opacity:0;transform:scale(.94);
+  transition:opacity .4s .28s var(--ease-out),transform .4s .28s var(--ease-out);
+}
+.preloader[data-contract="true"] .preloader__long{max-width:0;opacity:0}
+.preloader[data-contract="true"] .preloader__short{opacity:1;transform:scale(1)}
+.preloader__bar{margin-top:1.6rem;width:120px;height:1px;background:rgba(251,241,224,.2);position:absolute;bottom:22%;left:50%;transform:translateX(-50%)}
+.preloader__bar i{
+  display:block;height:100%;width:100%;background:var(--orange);
+  transform:scaleX(var(--p,0));transform-origin:left center;
+  transition:transform .3s linear;
+}
+
+/* ---------- Kino-Modus (JS-Enhancement) ---------- */
+
+html.cinema,html.cinema body{height:100%;overflow:hidden}
+
+/* Weder .story noch .beat dürfen einen Stacking-Context aufmachen — sonst
+   liegt die Konstellation zwangsläufig über ODER unter beiden Ebenen.
+   Drei globale Ebenen: Bild (--zi) < Konstellation (20) < Typo (30+). */
+.cinema .story{position:absolute;inset:0}
+
+.cinema .beat{
+  position:absolute;inset:0;
+  min-height:0;height:100%;
+}
+/* Diagonaler Wipe: nur die Medienebene wird beschnitten, die Typo bleibt ganz —
+   genau wie in der Referenz (Headline läuft über die Kante). */
+.cinema .beat__media{
+  z-index:var(--zi,0);
+  clip-path:polygon(0 var(--wipe,115%),100% calc(var(--wipe,115%) + 15%),100% 200%,0 200%);
+}
+.cinema .beat:first-child .beat__media{clip-path:none}
+
+.cinema .beat__inner{
+  z-index:calc(30 + var(--zi,0));
+  padding-bottom:14vh;           /* Headline landet auf dem Referenz-Anker (246/900) */
+  opacity:var(--o,0);
+  transform:translate3d(0,var(--ty,0px),0);
+  will-change:opacity,transform;
+}
+.cinema .beat--outro .beat__inner{padding-bottom:0}
+
+.cinema .beat--outro{align-items:center;justify-content:center}
+
+/* ---------- Reveal der Headline-Blöcke ---------- */
+
+.hl__line{
+  transform:scaleX(var(--sx,1));
+  transition:transform .42s var(--ease-out);
+  transition-delay:var(--hd,0s);
+}
+.cinema .hl__line{--sx:0}
+/* data-seen bleibt gesetzt: der Block zieht einmal auf und klappt beim
+   Weiterscrollen nicht wieder zu. Das Ein- und Ausblenden macht allein --o. */
+.cinema .beat[data-live="true"] .hl__line,
+.cinema .beat[data-seen="true"] .hl__line{--sx:1}
+
+/* ---------- Mobiler / Flow-Modus ---------- */
+
+@media (max-width:820px){
+  :root{--gut:7vw;--hl-size:clamp(1.9rem,8.4vw,3rem)}
+  .progress{display:none}
+  /* Das Siegel wird auf dem Telefon nicht kleiner: Die Schriftgroesse steht
+     in viewBox-Einheiten, die Umschrift schrumpft also mit dem Rahmen mit.
+     Bei 64px waere sie 5 CSS-Pixel hoch; 78px halten dieselben ~6,5px wie
+     auf dem Desktop. */
+  .seal{width:78px;height:78px;bottom:1.4rem;opacity:.75}
+  .seal__glyph{width:26px}
+  /* Der Hinweis stand mittig und lag damit auf dem Siegel. */
+  .hint{left:auto;right:var(--gut);transform:none;align-items:flex-end;text-align:right}
+  .chrome-top{padding:1.4rem var(--gut)}
+  /* Im Fliess-Layout scrollt der Inhalt unter der fixierten Kopfleiste durch.
+     Die ist transparent, also lief der Text bisher mitten durch den Schriftzug.
+     Deckend ueber der Leiste selbst, ausgeblendet erst darunter: ein Verlauf,
+     der schon am Schriftzug faellt, laesst den Text durchscheinen.
+     `z-index:-1` ist noetig: die Kopfleiste hat keine positionierten Kinder,
+     ein absolut gesetztes ::before wuerde sonst ueber Logo und Burger malen.
+     Die Kopfleiste hat `z-index:60`, das Negativ bleibt also in ihrem Stapel
+     und faellt nicht hinter den Seiteninhalt. */
+  .chrome-top::before{
+    content:"";position:absolute;z-index:-1;
+    left:0;right:0;top:0;height:calc(100% + 3.4rem);
+    background:linear-gradient(to bottom,
+      rgba(11,22,17,.97) 0%, rgba(11,22,17,.97) 56%, rgba(11,22,17,0) 100%);
+    pointer-events:none;
+  }
+  .wordmark img{height:22px}
+  .beat{padding:7.5rem 0 6rem}
+  .lede{max-width:34rem}   /* Zeilenmass bleibt lesbar; auf Telefonen bindet ohnehin die Gasse */
+
+  /* Gleichmaessig statt seitenbetont — das war ein echter Lesefehler, kein
+     Geschmack. Der 96deg-Verlauf oeffnet sich ab 68% absichtlich aufs Foto;
+     ausgelegt ist das fuer den Desktop, wo der Text nur die linken 507 von
+     1248px belegt. Auf dem Telefon spannt dieselbe Lede ueber die volle Breite
+     und ragt damit in den offenen Teil hinein. Gemessen stand der Fliesstext
+     im Kapitel Standorte dort auf 1,84:1 — auf dem Screenshot ueber einer
+     hellen Fensterflaeche kaum noch zu lesen.
+     Ein staerkerer Seitenverlauf haette das nicht geheilt, nur verschoben.
+     Links wird es dadurch heller als vorher, rechts dunkler; die Gesamthelle
+     bleibt etwa gleich, die Lesbarkeit steigt auf ueber 6:1. */
+  .beat__scrim,.beat__scrim--full{
+    background:linear-gradient(to bottom,
+      rgba(11,22,17,.78) 0%, rgba(11,22,17,.72) 46%, rgba(11,22,17,.68) 100%);
+  }
+}
+
+@media (prefers-reduced-motion:reduce){
+  /* Nicht auf Null, sondern ohne Bewegung: Deckkraft und Farbe bleiben,
+     Verschiebungen und Dauerschleifen fallen weg. */
+  .seal__spin,.hint i{animation:none}
+  .hl__line{transition-duration:.01ms}
+  .chapters__list button{transform:none;transition:opacity .2s linear,color .2s linear}
+  .chapters[data-open="true"] button{transform:none;transition-delay:0s}
+  .preloader__short{transform:none}
+  .beat__bg{scale:1}
+  *,*::before,*::after{scroll-behavior:auto!important}
+}
+
+/* ===================== Punkt 2: Termin im Kopf ===================== */
+/* Gefuellt orange, dunkle Schrift: 6,99:1 und unabhaengig vom Foto darunter.
+   Umrandet mit orangem Text waere auf helleren Bildstellen nicht zu retten
+   (Orange kommt gegen Helleres nie ueber 2,61:1). */
+.termin-top{
+  margin-left:auto;
+  display:inline-flex;align-items:center;gap:.5em;
+  /* 44px Mindesthoehe, nicht geschaetzt: das ist die kleinste Flaeche, die
+     eine Fingerkuppe zuverlaessig trifft. */
+  min-height:44px;padding:.62em 1.05em;
+  background:var(--orange);color:var(--pine-black);
+  font-weight:900;font-size:.8125rem;letter-spacing:.1em;text-transform:uppercase;
+  text-decoration:none;white-space:nowrap;
+  transition:background-color .18s var(--ease-out),transform .18s var(--ease-out);
+}
+.termin-top::after{content:"";width:.5em;height:.5em;border:solid currentColor;
+  border-width:0 1.5px 1.5px 0;transform:rotate(-45deg);margin-top:-1px}
+@media (hover:hover) and (pointer:fine){
+  .termin-top:hover{background:var(--orange-lt);transform:translateY(-1px)}
+}
+.termin-top:focus-visible{outline:2px solid var(--cream);outline-offset:3px}
+

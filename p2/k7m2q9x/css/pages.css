@@ -1,0 +1,991 @@
+/* REHAB FIVE — Blog & Team
+   Dieselben Tokens und dieselbe Typo wie die Kino-Seite, aber normal scrollend.
+   style.css wird davor geladen; hier steht nur, was Fließseiten zusätzlich brauchen. */
+
+body.page{overflow-x:hidden}
+
+/* ---------- Kopf ---------- */
+
+.page-top{
+  position:sticky;top:0;z-index:60;
+  display:flex;align-items:center;justify-content:space-between;gap:1.5rem;
+  padding:1.6rem var(--gut);
+  background:rgba(11,22,17,.86);
+  backdrop-filter:blur(14px);
+  border-bottom:1px solid rgba(251,241,224,.1);
+}
+.page-top .wordmark img{height:24px;width:auto}
+
+.page-nav{display:flex;gap:1.5rem;align-items:center}
+.page-nav a{
+  font-size:.6875rem;font-weight:500;letter-spacing:.18em;text-transform:uppercase;
+  text-decoration:none;color:rgba(251,241,224,.8);
+  padding:.4em 0;border-bottom:1px solid transparent;
+  transition:color .18s var(--ease-out),border-color .18s var(--ease-out);
+}
+.page-nav a:hover,.page-nav a[aria-current="page"]{color:var(--cream);border-color:var(--orange)}
+.page-nav a:focus-visible{outline:2px solid var(--orange);outline-offset:4px}
+
+/* ---------- Seitenkopf ---------- */
+
+.masthead{
+  position:relative;
+  padding:clamp(4rem,11vh,7.5rem) var(--gut) clamp(3rem,7vh,4.5rem);
+  overflow:hidden;
+}
+.masthead__inner{position:relative;z-index:2}
+.masthead .lede{margin-top:1.9rem}
+
+/* ---------- Artikelkopf ---------- */
+
+.artcover{position:relative;min-height:min(74svh,640px);display:flex;align-items:flex-end;overflow:hidden}
+/* Deckflaechen trugen das Bild bis 2026-09-18 als `background-image` und konnten
+   damit keine Auflaesungsstufen anbieten — das Telefon lud die 1600-px-Platte.
+   Jetzt liegt ein <img> mit srcset darin. Der Ausschnitt muss unveraendert
+   bleiben: `background-position:center 32%` bedeutet als `object-position`
+   dasselbe, die Prozentangabe verteilt in beiden Faellen den Ueberhang. Wer den
+   Wert aendert, verschiebt den Bildausschnitt auf 33 Seiten. */
+.artcover__bg{position:absolute;inset:0}
+.artcover__bg>img{
+  width:100%;height:100%;display:block;
+  object-fit:cover;object-position:center 32%;
+}
+/* Faktor 0,85 wie bei .beat__scrim — siehe Begruendung dort. */
+.artcover__scrim{
+  position:absolute;inset:0;
+  background:
+    linear-gradient(to top, rgba(11,22,17,.825) 4%, rgba(11,22,17,.612) 38%, rgba(11,22,17,.289) 72%),
+    linear-gradient(96deg, rgba(11,22,17,.612) 0%, rgba(11,22,17,.102) 62%);
+}
+.artcover__inner{position:relative;z-index:2;padding:0 var(--gut) clamp(2.5rem,6vh,4rem);width:100%}
+
+.arttitle{
+  margin:0;
+  max-width:20ch;
+  font-weight:900;text-transform:uppercase;
+  font-size:clamp(1.75rem,3.6vw,3.25rem);
+  line-height:1.04;letter-spacing:-.022em;
+  color:var(--cream);
+  text-wrap:balance;
+}
+
+.artmeta{
+  margin:1.5rem 0 0;
+  display:flex;flex-wrap:wrap;gap:.5rem 1.4rem;
+  font-size:.6875rem;letter-spacing:.16em;text-transform:uppercase;
+  color:rgba(251,241,224,.78);
+}
+
+/* ---------- Fließtext ---------- */
+
+/* Der Satz bleibt auf Lesebreite — breiter zu setzen wäre der bequeme, aber
+   falsche Weg. Stattdessen bekommt die freie Spalte rechts eine Aufgabe. */
+.artbody{
+  display:grid;
+  grid-template-columns:minmax(0,calc(72ch)) minmax(0,19rem);
+  gap:clamp(2.5rem,5vw,5rem);
+  max-width:calc(72ch + 19rem + 5rem + 2 * var(--gut));
+  padding:0 var(--gut);
+}
+.artbody > .prose{padding-left:0;padding-right:0;max-width:none}
+
+.artside{
+  padding-top:clamp(3rem,7vh,5rem);
+  align-self:start;position:sticky;top:6.5rem;
+}
+
+.toc{
+  border-top:1px solid rgba(251,241,224,.22);
+  padding-top:1.1rem;margin-bottom:2.2rem;
+}
+.toc__h{
+  margin:0 0 .9rem;
+  font-size:.625rem;font-weight:500;letter-spacing:.22em;text-transform:uppercase;
+  color:rgba(251,241,224,.45);
+}
+.toc__l{margin:0;padding:0;list-style:none;counter-reset:toc}
+.toc__l li{counter-increment:toc}
+.toc__l a{
+  display:grid;grid-template-columns:1.9em 1fr;gap:.2em;
+  padding:.42rem 0;
+  font-size:.8125rem;line-height:1.35;font-weight:300;
+  text-decoration:none;color:rgba(251,241,224,.78);
+  transition:color .22s var(--ease-out);
+}
+.toc__l a::before{
+  content:counter(toc,decimal-leading-zero);
+  font-weight:900;font-size:.625rem;color:rgba(251,241,224,.3);
+  font-variant-numeric:tabular-nums;padding-top:.22em;
+  transition:color .22s var(--ease-out);
+}
+@media (hover:hover){.toc__l a:hover{color:var(--cream)}}
+.toc__l a:focus-visible{outline:2px solid var(--orange);outline-offset:2px}
+.toc__l a[aria-current="true"]{color:var(--cream)}
+.toc__l a[aria-current="true"]::before{color:var(--orange)}
+
+.artcard{border-top:1px solid rgba(251,241,224,.22);padding-top:1.1rem}
+.artcard__h{
+  margin:0 0 .7rem;
+  font-size:.625rem;font-weight:500;letter-spacing:.22em;text-transform:uppercase;
+  color:var(--orange);
+}
+.artcard__t{margin:0 0 1rem;font-size:.8125rem;line-height:1.6;font-weight:300;color:rgba(251,241,224,.84)}
+.artcard__l{margin:0;padding:0;list-style:none}
+.artcard__l li + li{margin-top:.5rem}
+.artcard__l a{
+  font-size:.8125rem;font-weight:500;letter-spacing:.04em;
+  text-decoration:none;color:var(--cream);
+  border-bottom:1px solid rgba(251,241,224,.28);
+  transition:border-color .22s var(--ease-out);
+}
+@media (hover:hover){.artcard__l a:hover{border-color:var(--orange)}}
+.artcard__l a:focus-visible{outline:2px solid var(--orange);outline-offset:3px}
+
+/* Unter 1024px trägt eine zweite Spalte nicht mehr: das Verzeichnis fällt weg
+   (der Text ist dann ohnehin einen Wisch entfernt), die Termin-Karte bleibt. */
+@media (max-width:1023px){
+  .artbody{grid-template-columns:minmax(0,1fr);max-width:calc(72ch + 2 * var(--gut))}
+  .artside{position:static;padding-top:2.5rem}
+  .toc{display:none}
+}
+
+.prose{
+  padding:clamp(3rem,7vh,5rem) var(--gut) 0;
+  max-width:calc(72ch + 2 * var(--gut));
+  font-size:clamp(.95rem,1.12vw,1.0625rem);
+  line-height:1.78;
+  font-weight:300;
+  color:rgba(251,241,224,.88);
+}
+.prose > p{margin:0 0 1.35em}
+.prose h2{
+  margin:2.9em 0 .9em;
+  font-size:clamp(1.1rem,1.8vw,1.5rem);
+  font-weight:900;text-transform:uppercase;letter-spacing:-.01em;line-height:1.2;
+  color:var(--cream);
+  padding-top:1.4rem;
+  border-top:1px solid rgba(251,241,224,.16);
+}
+.prose h2:first-child{margin-top:0}
+.prose h2[id]{scroll-margin-top:6rem}   /* der Seitenkopf klebt oben */
+.prose ul{margin:0 0 1.5em;padding:0;list-style:none}
+.prose li{position:relative;padding-left:1.5rem;margin-bottom:.75em}
+.prose li::before{
+  content:"";position:absolute;left:0;top:.72em;
+  width:9px;height:1.5px;background:var(--orange);
+}
+.prose strong{font-weight:500;color:var(--cream)}
+
+/* Zitat der Referenz-Grammatik: keine Anführungsgrafik, nur Maßstabswechsel */
+.pull{
+  margin:2.4em 0;padding-left:1.4rem;
+  border-left:2px solid var(--orange);
+  font-size:clamp(1.05rem,1.7vw,1.375rem);
+  line-height:1.45;font-weight:300;font-style:normal;
+  color:var(--cream);
+}
+
+/* ---------- Kurz gesagt ---------- */
+
+.tldr{
+  margin:0 0 3rem;
+  background:var(--cream);color:var(--pine-black);
+  padding:1.7rem 1.9rem 1.9rem;
+}
+.tldr__label{
+  margin:0 0 .7rem;
+  font-size:.6875rem;font-weight:500;letter-spacing:.22em;text-transform:uppercase;
+  color:#8a5a12;
+}
+.tldr p{margin:0;font-size:1rem;line-height:1.62;font-weight:300}
+
+/* ---------- FAQ ---------- */
+
+.faq{padding:clamp(3.5rem,8vh,5.5rem) var(--gut);max-width:calc(72ch + 2 * var(--gut))}
+.faq__list{margin:2rem 0 0;border-top:1px solid rgba(251,241,224,.16)}
+.faq details{border-bottom:1px solid rgba(251,241,224,.16)}
+.faq summary{
+  list-style:none;cursor:pointer;
+  padding:1.15rem 2.5rem 1.15rem 0;position:relative;
+  font-size:clamp(.95rem,1.25vw,1.0625rem);font-weight:500;line-height:1.4;
+  color:var(--cream);
+}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary::after{
+  content:"";position:absolute;right:.4rem;top:50%;
+  width:11px;height:11px;margin-top:-6px;
+  border-right:1.5px solid var(--orange);border-bottom:1.5px solid var(--orange);
+  transform:rotate(45deg);transition:transform .28s var(--ease-out);
+}
+.faq details[open] summary::after{transform:rotate(-135deg)}
+.faq summary:focus-visible{outline:2px solid var(--orange);outline-offset:3px}
+.faq__a{margin:0;padding:0 2.5rem 1.4rem 0;font-size:.9375rem;line-height:1.72;font-weight:300;color:rgba(251,241,224,.9)}
+
+/* Eine Angabe, die uns fehlt, steht sichtbar als Luecke da. Eine erfundene
+   Wartezeit merkt niemand — bis jemand deswegen anruft. */
+.fehlt{
+  font-style:normal;font-size:.8125rem;letter-spacing:.1em;text-transform:uppercase;
+  color:rgba(251,241,224,.42);
+}
+
+/* ---------- Leistungspositionen ---------- */
+/* Kein Icon-Raster, keine Karten: das hier ist eine Liste dessen, was auf einem
+   Rezept stehen kann. Die Abrechnungsposition ist die Ueberschrift, weil genau
+   danach gesucht wird — „KG am Geraet", nicht „Trainingstherapie". */
+
+.prose .pos{margin:0 0 2.6em;padding:0;list-style:none;border-top:1px solid rgba(251,241,224,.16)}
+.prose .pos__i{
+  padding:1.25rem 0;margin:0;
+  border-bottom:1px solid rgba(251,241,224,.16);
+  display:grid;grid-template-columns:minmax(11rem,22%) 1fr;gap:.4rem 2rem;
+  align-items:baseline;
+}
+.prose .pos__i::before{display:none}
+.pos__n{
+  font-weight:900;text-transform:uppercase;letter-spacing:-.005em;line-height:1.24;
+  font-size:.9375rem;color:var(--cream);
+}
+.pos__t{font-weight:300;line-height:1.7;color:rgba(251,241,224,.9)}
+
+.pos__k{
+  display:inline-block;margin-left:.4rem;padding:.1rem .4rem;
+  border:1px solid rgba(217,145,41,.55);border-radius:2px;
+  font-size:.6875rem;font-weight:500;letter-spacing:.08em;color:var(--orange-lt);
+}
+.pos__l{
+  display:inline-block;margin-left:.35rem;white-space:nowrap;
+  color:var(--orange-lt);text-decoration:none;
+  border-bottom:1px solid rgba(217,145,41,.4);
+}
+.pos__l:hover{border-bottom-color:var(--orange-lt)}
+
+@media (max-width:760px){
+  .prose .pos__i{grid-template-columns:1fr;gap:.45rem}
+}
+
+/* ---------- Inline-Bild im Fliesstext ---------- */
+
+.bild{margin:2.8em 0;padding:0}
+.bild img{display:block;width:100%;height:auto;border-radius:2px}
+.bild figcaption{
+  margin-top:.7rem;font-size:.8125rem;line-height:1.6;font-weight:300;
+  color:rgba(251,241,224,.5);
+}
+
+/* ---------- Weitere Leistungen ---------- */
+
+.weiter{padding:clamp(3.5rem,8vh,6rem) var(--gut) 0;max-width:calc(96ch + 2 * var(--gut))}
+.weiter__h{
+  margin:0 0 1.6rem;padding-top:1.4rem;border-top:1px solid rgba(251,241,224,.18);
+  font-size:.75rem;font-weight:900;text-transform:uppercase;letter-spacing:.16em;
+  color:rgba(251,241,224,.5);
+}
+.weiter__l{margin:0;padding:0;list-style:none;display:grid;gap:.5rem;
+  grid-template-columns:repeat(auto-fit,minmax(15rem,1fr))}
+.weiter__l a{
+  display:flex;align-items:baseline;justify-content:space-between;gap:1rem;
+  padding:1rem 1.1rem;text-decoration:none;
+  background:rgba(251,241,224,.045);border:1px solid rgba(251,241,224,.1);border-radius:2px;
+  transition:background .3s var(--ease-out),border-color .3s var(--ease-out);
+}
+.weiter__l a:hover{background:rgba(251,241,224,.09);border-color:rgba(217,145,41,.5)}
+.weiter__l span{font-weight:500;font-size:.9375rem;line-height:1.3;color:var(--cream)}
+.weiter__l i{font-style:normal;font-size:.6875rem;letter-spacing:.08em;color:var(--orange-lt)}
+.weiter__all{margin:1.6rem 0 0;font-size:.875rem;font-weight:300}
+.weiter__all a{color:var(--orange-lt);text-decoration:none;border-bottom:1px solid rgba(217,145,41,.4)}
+.weiter__all a:hover{border-bottom-color:var(--orange-lt)}
+
+/* ---------- Leistungsuebersicht ---------- */
+
+.lkarten{
+  margin:0;padding:clamp(2.5rem,6vh,4rem) var(--gut) 0;list-style:none;
+  display:grid;gap:clamp(1rem,2vw,1.75rem);
+  grid-template-columns:repeat(auto-fit,minmax(min(22rem,100%),1fr));
+}
+.lkarte a{display:block;text-decoration:none;color:inherit}
+.lkarte__b{display:block;overflow:hidden;border-radius:2px;background:var(--pine)}
+.lkarte__b img{
+  display:block;width:100%;height:auto;
+  transition:transform .7s var(--ease-out),opacity .4s var(--ease-out);
+  opacity:.82;
+}
+.lkarte a:hover .lkarte__b img{transform:scale(1.04);opacity:1}
+.lkarte__t{display:block;padding:1.1rem 0 0}
+.lkarte__n{
+  display:block;font-weight:900;text-transform:uppercase;font-size:1rem;line-height:1.22;
+  letter-spacing:-.01em;color:var(--cream);
+}
+.lkarte__n i{
+  font-style:normal;font-size:.6875rem;font-weight:500;letter-spacing:.08em;
+  color:var(--orange-lt);margin-left:.4rem;vertical-align:.12em;
+}
+.lkarte__x{
+  display:block;margin-top:.5rem;font-size:.875rem;line-height:1.65;font-weight:300;
+  color:rgba(251,241,224,.72);
+}
+
+/* ---------- Quellen & Autor ---------- */
+
+.sources{padding:0 var(--gut) 1rem;max-width:calc(72ch + 2 * var(--gut))}
+.sources ol{margin:1.2rem 0 0;padding-left:1.2rem;font-size:.8125rem;line-height:1.7;color:rgba(251,241,224,.72)}
+.sources li{margin-bottom:.7em}
+
+.byline{
+  display:flex;align-items:center;gap:1rem;
+  padding:2rem var(--gut) 0;max-width:calc(72ch + 2 * var(--gut));
+}
+.byline img{width:52px;height:52px;border-radius:50%;object-fit:cover;object-position:center 18%}
+.byline__txt{font-size:.8125rem;line-height:1.5;color:rgba(251,241,224,.78)}
+.byline__txt b{display:block;font-weight:500;color:var(--cream);letter-spacing:.02em}
+
+/* ---------- Blog-Übersicht ---------- */
+
+/* ---------- Blog-Übersicht: Aufmacher + Leisten ---------- */
+/* Der Aufmacher ist der Kopf der Seite: eine Titelseite hat keine Ueberschrift
+   ueber der Ueberschrift. Darunter die Artikel in waagerechten Leisten,
+   nach Koerperregion. */
+
+/* Der Aufmacher bekommt nicht den ganzen Bildschirm, sondern den Rest.
+   Vorher stand hier 84svh — gemessen blieb davon auf dem Laptop 11px und auf
+   dem Handy 10px fuer alles Weitere uebrig, also null Pixel einer Artikelkarte.
+   Die Seite endete optisch am Aufmacher. Jetzt sind unten 21rem reserviert
+   (Kopfleiste ~7.5rem + Leistenkopf ~5.5rem + 8rem angeschnittene Karte), und
+   der Aufmacher nimmt, was uebrig bleibt. Die angeschnittene Karte ist das
+   ehrlichste Weiter-Zeichen, das es gibt: kein Symbol fuer Inhalt, sondern
+   Inhalt. */
+.lead{
+  position:relative;display:flex;align-items:flex-end;
+  min-height:clamp(20rem, calc(100svh - 21rem), 44rem);overflow:hidden;
+  text-decoration:none;color:inherit;
+}
+/* Wie .artcover__bg — siehe Begruendung dort. Der Zoom beim Ueberfahren bleibt
+   auf dem div: das <img> darin faehrt mit, und die Transition muss nur eine
+   Ebene bewegen statt einen Hintergrund neu zu rastern. */
+.lead__bg{
+  position:absolute;inset:0;
+  transition:transform 1.2s var(--ease-out);
+}
+.lead__bg>img{
+  width:100%;height:100%;display:block;
+  object-fit:cover;object-position:center 28%;
+}
+/* Faktor 0,85 wie bei .beat__scrim — siehe Begruendung dort. */
+.lead__scrim{
+  position:absolute;inset:0;
+  background:
+    linear-gradient(96deg, rgba(11,22,17,.799) 0%, rgba(11,22,17,.697) 32%, rgba(11,22,17,.289) 64%, rgba(11,22,17,.425) 100%),
+    linear-gradient(to top, rgba(11,22,17,.731) 0%, rgba(11,22,17,0) 48%);
+}
+.lead__inner{
+  position:relative;z-index:2;width:100%;
+  padding:0 var(--gut) clamp(2.6rem,6vh,4.4rem);
+}
+.lead__more{
+  margin:1.9rem 0 0;
+  font-size:.625rem;letter-spacing:.2em;text-transform:uppercase;
+  color:rgba(251,241,224,.72);
+}
+.lead__more span{color:var(--orange)}
+.lead:focus-visible{outline:2px solid var(--orange);outline-offset:-4px}
+@media (hover:hover){.lead:hover .lead__bg{transform:scale(1.04)}}
+
+/* Die Artikel stehen in einer Leiste, nicht in einem Raster mit fester
+   Spaltenzahl. Ein Raster laesst bei jeder Artikelzahl, die nicht aufgeht,
+   eine Zelle leer — eine Leiste traegt beliebig viele. */
+.rail-wrap{
+  border-top:1px solid rgba(251,241,224,.14);
+  margin-bottom:clamp(4rem,9vh,6rem);
+}
+/* Sprungleiste: die fünf Bereiche stehen einmal beieinander, bevor man sich
+   durch fünf Leisten scrollt. Ohne sie ist die Gliederung erst nach dem
+   Durchscrollen erkennbar. */
+.rubriken{
+  display:flex;flex-wrap:wrap;gap:.6rem;
+  padding:2.2rem var(--gut) 2.6rem;
+  border-top:1px solid rgba(251,241,224,.14);
+}
+.rubriken a{
+  display:inline-flex;align-items:baseline;gap:.6em;
+  padding:.72em 1.15em;
+  border:1px solid rgba(251,241,224,.2);border-radius:100px;
+  font-size:.75rem;font-weight:500;letter-spacing:.12em;text-transform:uppercase;
+  text-decoration:none;color:rgba(251,241,224,.9);
+  transition:color .25s var(--ease-out),border-color .25s var(--ease-out),
+             background-color .25s var(--ease-out);
+}
+.rubriken__n{
+  font-weight:900;font-size:.6875rem;color:var(--orange);
+  font-variant-numeric:tabular-nums;
+}
+@media (hover:hover){
+  .rubriken a:hover{background:var(--cream);border-color:var(--cream);color:var(--pine-black)}
+  .rubriken a:hover .rubriken__n{color:var(--pine-black)}
+}
+.rubriken a:focus-visible{outline:2px solid var(--orange);outline-offset:3px}
+
+.rail__head{
+  display:flex;align-items:baseline;justify-content:space-between;gap:1rem;
+  padding:2.4rem var(--gut) 1.5rem;
+}
+/* Vorher 11px in halber Deckkraft — die Gliederung des Blogs war damit leiser
+   als die Artikeltitel darunter. Jetzt trägt sie. */
+.rail__t{
+  margin:0;font-size:clamp(1.5rem,3vw,2.1rem);font-weight:900;line-height:1;
+  letter-spacing:-.005em;text-transform:uppercase;color:var(--cream);
+  scroll-margin-top:6.5rem;   /* der Seitenkopf klebt oben und würde sonst die Zeile verdecken */
+}
+.rail__n{
+  margin:.15em auto 0 .45rem;align-self:flex-start;
+  font-size:.8125rem;font-weight:900;letter-spacing:.06em;
+  color:var(--orange);font-variant-numeric:tabular-nums;
+}
+.rail__n::after{content:" Artikel";font-weight:300;color:rgba(251,241,224,.42);letter-spacing:.12em;
+  font-size:.625rem;text-transform:uppercase}
+.rail__nav{display:flex;gap:.5rem}
+.rail__btn{
+  width:2.75rem;height:2.75rem;display:grid;place-items:center;
+  background:none;color:var(--cream);cursor:pointer;
+  border:1px solid rgba(251,241,224,.22);border-radius:50%;
+  transition:border-color .3s var(--ease-out),background-color .3s var(--ease-out),
+             color .3s var(--ease-out),opacity .3s var(--ease-out);
+}
+.rail__btn svg{width:1.05rem;height:1.05rem;display:block}
+.rail__btn:disabled{opacity:.28;cursor:default}
+.rail__btn:focus-visible{outline:2px solid var(--orange);outline-offset:3px}
+@media (hover:hover){
+  .rail__btn:not(:disabled):hover{
+    background:var(--orange);border-color:var(--orange);color:var(--pine-black);
+  }
+}
+
+.rail{
+  --blende-l:0px;--blende-r:0px;
+  display:flex;gap:0;
+  overflow-x:auto;overscroll-behavior-x:contain;
+  scroll-snap-type:x proximity;
+  scroll-padding-left:var(--gut);
+  padding-left:var(--gut);
+  border-top:1px solid rgba(251,241,224,.14);
+  scrollbar-width:none;
+  /* Der Anschnitt an den Raendern sagt ohne Worte, dass die Leiste weitergeht. */
+  -webkit-mask-image:linear-gradient(90deg,transparent 0,#000 var(--blende-l),
+                     #000 calc(100% - var(--blende-r)),transparent 100%);
+          mask-image:linear-gradient(90deg,transparent 0,#000 var(--blende-l),
+                     #000 calc(100% - var(--blende-r)),transparent 100%);
+}
+.rail::-webkit-scrollbar{display:none}
+.rail:focus-visible{outline:2px solid var(--orange);outline-offset:-2px}
+/* Abstandhalter statt padding-right: das rechte Innenpolster einer Flex-Leiste
+   fiel in aelteren Browsern beim Scrollen unter den Tisch. */
+.rail::after{content:"";flex:0 0 var(--gut)}
+
+.rail__bar{
+  height:1px;margin:0 var(--gut);
+  background:rgba(251,241,224,.14);overflow:hidden;
+}
+.rail__fill{
+  display:block;height:100%;width:100%;
+  background:var(--orange);transform-origin:0 50%;
+  transition:transform .12s linear;
+}
+
+.qc{
+  flex:0 0 clamp(15.5rem,23vw,20.5rem);
+  scroll-snap-align:start;
+  display:flex;flex-direction:column;
+  background:var(--pine-black);text-decoration:none;color:inherit;
+  padding-bottom:1.7rem;
+  border-right:1px solid rgba(251,241,224,.14);
+  transition:background-color .3s var(--ease-out);
+}
+.qc:focus-visible{outline:2px solid var(--orange);outline-offset:-2px}
+.qc__img{display:block;overflow:hidden;aspect-ratio:16/10;background:var(--pine)}
+.qc__img img{
+  width:100%;height:100%;object-fit:cover;filter:saturate(.9);
+  transition:transform .55s var(--ease-out);
+}
+.qc__ind{
+  display:block;padding:1.35rem 1.4rem .75rem;
+  font-size:.625rem;font-weight:500;letter-spacing:.2em;
+  text-transform:uppercase;color:var(--orange);
+}
+.qc__t{
+  display:block;padding:0 1.4rem;
+  font-weight:500;font-size:clamp(1.0625rem,1.35vw,1.1875rem);line-height:1.26;
+  color:var(--cream);text-wrap:balance;
+}
+.qc__meta{
+  display:block;margin-top:auto;padding:1.3rem 1.4rem 0;
+  font-size:.625rem;letter-spacing:.2em;text-transform:uppercase;
+  color:rgba(251,241,224,.42);
+}
+@media (hover:hover){
+  .qc:hover{background:var(--pine)}
+  .qc:hover .qc__img img{transform:scale(1.045)}
+}
+@media (max-width:600px){
+  .qc{flex-basis:76vw}
+  .rail__head{padding-top:1.25rem}
+  .rail__nav{display:none}   /* auf dem Touchscreen wischt man ohnehin */
+}
+
+
+/* ---------- Team: Galerie ---------- */
+
+/* Die Reihe laeuft rechts aus dem Bild statt am Rand zu enden — das zeigt
+   ohne Beschriftung, dass da noch mehr kommt. */
+/* Zwei Achsen, zwei Leisten: Bereich oben, Standort darunter. Sie schneiden
+   sich, deshalb dürfen sie nicht wie eine lange Reihe aussehen. */
+.teamfilter{
+  display:flex;flex-wrap:wrap;gap:.6rem;
+  padding:0 var(--gut) 2.2rem;
+}
+.teamfilter:not(.teamfilter--ort){padding-bottom:.7rem}
+.teamfilter--ort button{border-style:dashed}
+.teamfilter--ort button[aria-pressed="true"]{border-style:solid}
+/* Kombination ohne Treffer: der Knopf bleibt lesbar, ist aber kein Angebot mehr. */
+.teamfilter button[disabled]{opacity:.3;cursor:default}
+.teamfilter button{
+  display:inline-flex;align-items:baseline;gap:.6em;
+  padding:.72em 1.15em;cursor:pointer;
+  background:none;border:1px solid rgba(251,241,224,.2);border-radius:100px;
+  font:inherit;font-size:.75rem;font-weight:500;letter-spacing:.12em;text-transform:uppercase;
+  color:rgba(251,241,224,.9);
+  transition:color .25s var(--ease-out),border-color .25s var(--ease-out),
+             background-color .25s var(--ease-out);
+}
+.teamfilter__n{font-weight:900;font-size:.6875rem;color:var(--orange);font-variant-numeric:tabular-nums}
+@media (hover:hover){
+  .teamfilter button:hover{border-color:var(--cream);color:var(--cream)}
+}
+.teamfilter button[aria-pressed="true"]{background:var(--cream);border-color:var(--cream);color:var(--pine-black)}
+.teamfilter button[aria-pressed="true"] .teamfilter__n{color:var(--pine-black)}
+.teamfilter button:focus-visible{outline:2px solid var(--orange);outline-offset:3px}
+
+/* Auf dem Handy brauchten die beiden Leisten umgebrochen sechs Zeilen — man
+   scrollte an zweihundert Pixeln Knoepfen vorbei, bevor das erste Gesicht kam.
+   Je Achse eine Zeile, die seitlich wegläuft: dieselbe Geste wie die Galerie
+   darunter, und die Reihe faengt oben im Bild an. */
+@media (max-width:767px){
+  .teamfilter{
+    flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;
+    padding-bottom:1.4rem;
+  }
+  .teamfilter::-webkit-scrollbar{display:none}
+  .teamfilter button{flex:0 0 auto}
+}
+
+.gal{padding:0 0 clamp(2rem,5vh,3rem)}
+.member[hidden]{display:none}
+.gal__rail{
+  --karte:clamp(14rem,26vw,23rem);
+  display:flex;gap:clamp(.9rem,1.8vw,1.6rem);
+  /* Die aktive Person steht in der Mitte, nicht am linken Rand. Die Einrueckung
+     ist deshalb genau so breit, dass auch die erste und die letzte Karte dort
+     hinkommen — sonst waeren Anfang und Ende der Reihe nie scharf gestellt. */
+  padding:0 calc(50% - var(--karte)/2) 1.4rem;
+  overflow-x:auto;overscroll-behavior-x:contain;
+  scroll-snap-type:x mandatory;
+  scrollbar-width:none;
+  cursor:grab;
+  /* Bezugspunkt fuer offsetLeft der Karten: js/team.js rechnet in Layout-
+     Koordinaten, weil die gedrehten Boxen selbst keine brauchbaren liefern. */
+  position:relative;
+}
+.gal__rail::-webkit-scrollbar{display:none}
+.gal__rail.is-zieht{cursor:grabbing;scroll-snap-type:none}
+.gal__rail:focus-visible{outline:2px solid var(--orange);outline-offset:-2px}
+
+.member{
+  flex:0 0 var(--karte);
+  scroll-snap-align:center;
+  display:block;margin:0;padding:0;border:0;background:none;
+  font:inherit;color:inherit;text-align:left;cursor:pointer;
+  -webkit-tap-highlight-color:transparent;user-select:none;
+}
+/* Tiefe und Helligkeit setzt js/team.js hier — die Kurve haengt am Abstand zur
+   Mitte und laesst sich nicht in Klassen abbilden. */
+.member__d{display:block;transform-origin:50% 50%}
+.gal__rail.is-zieht .member{cursor:grabbing}
+.member__img{
+  display:block;aspect-ratio:3/4;overflow:hidden;background:var(--pine);
+  position:relative;
+}
+.member__img img{
+  width:100%;height:100%;object-fit:cover;display:block;
+  transition:transform .5s var(--ease-out),filter .5s var(--ease-out);
+}
+.member:hover .member__img img,
+.member:focus-visible .member__img img{transform:scale(1.04)}
+/* Orange Kante beim Ueberfahren: dieselbe Geste wie bei den Blog-Karten. */
+.member__img::after{
+  content:"";position:absolute;inset:auto 0 0;height:3px;background:var(--orange);
+  transform:scaleX(0);transform-origin:left;transition:transform .45s var(--ease-out);
+}
+.member:hover .member__img::after,
+.member:focus-visible .member__img::after,
+.member.is-mitte .member__img::after{transform:scaleX(1)}
+.member:focus-visible{outline:2px solid var(--orange);outline-offset:4px}
+
+/* Nur die Mitte ist beschriftet. 33 gleich laute Namen nebeneinander sind eine
+   Liste; ein einziger Name unter dem scharfen Bild ist eine Person. */
+.member__cap{display:block;padding:.9rem 0 0;opacity:.14;transition:opacity .45s var(--ease-out)}
+.member.is-mitte .member__cap,
+.member:focus-visible .member__cap{opacity:1}
+/* Nur bei echter Maus: auf dem Touchscreen bleibt :hover nach dem Antippen
+   haengen, dann stuenden zwei Namen gleichzeitig da. */
+@media (hover:hover){.member:hover .member__cap{opacity:1}}
+@media (prefers-reduced-motion:reduce){.member__cap{opacity:1}}
+.member__name{display:block;font-size:1rem;font-weight:500;letter-spacing:.01em;color:var(--cream)}
+.member__role{display:block;margin-top:.3rem;font-size:.75rem;line-height:1.5;font-weight:300;color:rgba(251,241,224,.78)}
+
+.gal__bar{
+  margin:0 var(--gut);height:1px;background:rgba(251,241,224,.16);
+}
+.gal__bar-fill{
+  display:block;height:100%;background:var(--orange);
+  transform:scaleX(0);transform-origin:left;
+}
+.gal__hint{
+  display:flex;align-items:center;justify-content:space-between;gap:1rem;
+  padding:1rem var(--gut) 0;
+  font-size:.6875rem;letter-spacing:.16em;text-transform:uppercase;
+  color:rgba(251,241,224,.45);
+}
+.gal__nav{display:flex;gap:.5rem}
+.gal__arrow{
+  width:2.5rem;height:2.5rem;flex:0 0 auto;
+  display:grid;place-items:center;
+  border:1px solid rgba(251,241,224,.25);background:none;color:var(--cream);
+  font-size:.9rem;cursor:pointer;
+  transition:background .3s var(--ease-out),border-color .3s var(--ease-out),color .3s var(--ease-out);
+}
+.gal__arrow:hover:not(:disabled){background:var(--orange);border-color:var(--orange);color:var(--pine-black)}
+.gal__arrow:disabled{opacity:.3;cursor:default}
+.gal__arrow:focus-visible{outline:2px solid var(--orange);outline-offset:3px}
+
+/* ---------- Team: Profilkarte ---------- */
+
+/* Die Karte hat keine gesetzte Hoehe: sie ist so hoch wie die hoehere ihrer
+   beiden Spalten. Bei den meisten Personen ist heute nur wenig hinterlegt —
+   eine kleine, ruhige Karte ist dann richtiger als eine grosse mit einem Loch. */
+.pc{
+  width:min(56rem,92vw);max-width:none;max-height:88vh;
+  padding:0;border:0;background:var(--pine);color:var(--cream);
+  box-shadow:0 40px 120px rgba(0,0,0,.6);
+}
+.pc::backdrop{background:rgba(11,22,17,.86);backdrop-filter:blur(6px)}
+.pc[open]{animation:pc-auf .4s var(--ease-out) both}
+@keyframes pc-auf{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+
+.pc__x{
+  position:absolute;top:.75rem;right:.75rem;z-index:2;
+  width:2.5rem;height:2.5rem;display:grid;place-items:center;
+  border:0;background:rgba(11,22,17,.55);color:var(--cream);
+  font-size:1.5rem;line-height:1;cursor:pointer;
+  transition:background .3s var(--ease-out)}
+.pc__x:hover{background:var(--orange);color:var(--pine-black)}
+
+.pc__body{display:grid;grid-template-columns:minmax(0,.85fr) minmax(0,1fr)}
+.pc__shot{background:var(--pine-black);aspect-ratio:3/4}
+.pc__shot img{width:100%;height:100%;object-fit:cover;display:block}
+
+/* Mittig statt oben und unten auseinandergezogen: was fehlt, hinterlaesst dann
+   Luft auf beiden Seiten statt eines Lochs ueber der Navigation. */
+.pc__txt{
+  padding:clamp(1.6rem,3.4vw,2.6rem);
+  display:flex;flex-direction:column;justify-content:center;
+  overflow-y:auto;
+}
+.pc__kicker{
+  margin:0 0 1.1rem;
+  font-size:.6875rem;font-weight:500;letter-spacing:.22em;text-transform:uppercase;
+  color:var(--orange);
+}
+/* Namensschild in der Signatur der Seite: Cream-Block, Schrift ausgestanzt. */
+.pc__name{
+  margin:0;align-self:flex-start;
+  background:var(--cream);color:var(--pine-black);
+  padding:.08em .16em .12em;
+  font-weight:900;text-transform:uppercase;letter-spacing:-.022em;
+  font-size:clamp(1.5rem,2.9vw,2.4rem);line-height:1.06;
+}
+
+.pc__facts{
+  margin:clamp(1.6rem,3vw,2.4rem) 0 0;
+  display:grid;grid-template-columns:auto 1fr;gap:.55rem 1.4rem;
+  border-top:1px solid rgba(251,241,224,.16);padding-top:1.4rem;
+  font-size:.8125rem;
+}
+.pc__facts dt{
+  font-size:.625rem;letter-spacing:.18em;text-transform:uppercase;
+  color:rgba(251,241,224,.45);padding-top:.15em;
+}
+.pc__facts dd{margin:0;line-height:1.6}
+/* Fehlender Inhalt wird als Luecke gezeigt, nicht kaschiert. */
+.is-leer{color:rgba(251,241,224,.3);font-style:italic}
+
+.pc__satz{margin:1.4rem 0 0;font-size:.9375rem;line-height:1.7;color:rgba(251,241,224,.8)}
+
+.pc__nav{
+  padding-top:clamp(1.6rem,3vw,2.4rem);
+  display:flex;align-items:center;gap:1rem;
+}
+.pc__zaehler{
+  font-size:.6875rem;letter-spacing:.16em;color:rgba(251,241,224,.45);
+}
+
+@media (max-width:820px){
+  /* Am unteren Rand angesetzt und nur so hoch wie noetig: eine formatfuellende
+     Karte mit drei Zeilen Inhalt sah aus, als fehle der Rest der Seite. */
+  .pc{width:100vw;max-height:92dvh;margin:auto 0 0}
+  .pc__body{grid-template-columns:1fr}
+  .pc__shot{aspect-ratio:4/3}
+  .pc__shot img{object-position:50% 22%}
+  .pc__txt{justify-content:flex-start}
+}
+
+.team-note{
+  padding:0 var(--gut) clamp(4rem,9vh,6rem);
+  max-width:calc(60ch + 2 * var(--gut));
+  font-size:.8125rem;line-height:1.7;color:rgba(251,241,224,.45);
+}
+
+/* ---------- Abschluss ---------- */
+
+.tail{
+  padding:clamp(4rem,10vh,7rem) var(--gut);
+  border-top:1px solid rgba(251,241,224,.16);
+  text-align:center;
+}
+.tail .hl{align-items:center;margin-bottom:0}
+.tail .cta{align-items:center}
+
+.page-foot{
+  padding:0 var(--gut) 3.5rem;text-align:center;
+  font-size:.75rem;letter-spacing:.06em;line-height:2;color:rgba(251,241,224,.45);
+}
+.page-foot a{text-decoration:none;border-bottom:1px solid rgba(251,241,224,.25)}
+
+/* ---------- Klein ---------- */
+
+@media (max-width:820px){
+  .page-top{padding:1.1rem var(--gut)}
+  .page-top .wordmark img{height:20px}
+  .page-nav{gap:1rem}
+  .page-nav a{font-size:.625rem;letter-spacing:.12em}
+  .artcover{min-height:60svh}
+  .tldr{padding:1.4rem 1.4rem 1.6rem}
+}
+
+@media (prefers-reduced-motion:reduce){
+  .lead__bg,.qc__img img{transition:none}
+  .lead:hover .lead__bg,.qc:hover .qc__img img{transform:none}
+  .member__img img{transition:none}
+  .member:hover .member__img img{transform:none}
+  .pc[open]{animation:none}
+  .gal__rail{scroll-behavior:auto}
+}
+
+/* ---------- Standortseite ---------- */
+
+/* Der Hero traegt das Bild als echtes <img>, nicht als Hintergrund: ein Raum
+   ist hier der Inhalt der Seite und gehoert deshalb in den Alt-Text. */
+.ohero{
+  position:relative;isolation:isolate;
+  min-height:min(78vh,44rem);display:flex;align-items:flex-end;
+  padding:calc(var(--gut) + 3rem) var(--gut) clamp(2.5rem,6vh,4.5rem);
+}
+.ohero__bg{
+  position:absolute;inset:0;z-index:-2;
+  width:100%;height:100%;object-fit:cover;display:block;
+}
+/* Faktor 0,85 wie bei .beat__scrim — siehe Begruendung dort. Der unterste Stopp
+   war voll deckend (var(--pine-black)) und ist jetzt ebenfalls durchlaessig. */
+.ohero__scrim{
+  position:absolute;inset:0;z-index:-1;
+  background:linear-gradient(to top,rgba(11,22,17,.850) 4%,rgba(11,22,17,.697) 38%,rgba(11,22,17,.238) 100%);
+}
+.ohero__inner{max-width:44rem}
+.ohero .hl{margin:.6rem 0 0}
+.ohero .lede{margin-top:1.4rem;max-width:34rem}
+
+.ofakten{
+  display:grid;grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:clamp(1.6rem,4vw,3.5rem);
+  padding:clamp(2.5rem,6vh,4rem) var(--gut) clamp(2rem,5vh,3rem);
+}
+.ofakt{border-top:1px solid rgba(251,241,224,.22);padding-top:1rem}
+.ofakt__h{
+  margin:0 0 .8rem;font-size:.6875rem;font-weight:500;
+  letter-spacing:.18em;text-transform:uppercase;color:var(--orange);
+}
+.ofakt__t{margin:.25rem 0 0;font-size:.9375rem;font-weight:300;line-height:1.6;color:rgba(251,241,224,.9)}
+.ofakt__t--leise{color:rgba(251,241,224,.6);font-size:.8125rem}
+.ofakt__t a{color:inherit;text-decoration:none;border-bottom:1px solid rgba(251,241,224,.32)}
+.ofakt__t a:hover{border-color:var(--orange);color:var(--orange)}
+.ofakt__t a:focus-visible{outline:2px solid var(--orange);outline-offset:3px}
+.ofakt .ort__z{margin:0}
+
+.os{padding-top:clamp(1rem,3vh,2rem)}
+.os__h{
+  margin:0 0 1.4rem;padding:0 var(--gut);
+  font-size:.6875rem;font-weight:500;letter-spacing:.18em;
+  text-transform:uppercase;color:rgba(251,241,224,.5);
+}
+/* Anders als die Team-Reihe faengt die Bildstrecke links am Satzspiegel an und
+   laeuft rechts aus dem Bild: die Bilder sind quer und breit, zentriert stuende
+   links eine halbe Spalte leer. */
+.os__rail{
+  --bild:clamp(19rem,42vw,34rem);
+  display:flex;gap:clamp(.8rem,1.6vw,1.4rem);
+  padding:0 var(--gut) 1.4rem;
+  overflow-x:auto;overscroll-behavior-x:contain;
+  /* Ohne scroll-padding rechnet der Fangpunkt die Polsterung nicht mit: der
+     Browser schob die Reihe beim Laden um genau var(--gut) nach links, das
+     erste Bild klebte am Fensterrand statt am Satzspiegel. */
+  scroll-snap-type:x mandatory;scroll-padding-left:var(--gut);
+  scrollbar-width:none;cursor:grab;
+}
+.os__rail::-webkit-scrollbar{display:none}
+.os__rail.is-zieht{cursor:grabbing;scroll-snap-type:none}
+.os__rail:focus-visible{outline:2px solid var(--orange);outline-offset:-2px}
+
+.os__bild{
+  flex:0 0 var(--bild);scroll-snap-align:start;
+  display:block;margin:0;padding:0;border:0;background:none;
+  font:inherit;color:inherit;text-align:left;cursor:pointer;position:relative;
+  -webkit-tap-highlight-color:transparent;
+}
+.os__rail.is-zieht .os__bild{cursor:grabbing}
+.os__bild img{
+  display:block;width:100%;aspect-ratio:3/2;object-fit:cover;
+  background:var(--pine);
+  transition:filter .5s var(--ease-out);
+  filter:brightness(.82) saturate(.9);
+}
+.os__bild:hover img,.os__bild:focus-visible img{filter:none}
+.os__bild:focus-visible{outline:2px solid var(--orange);outline-offset:4px}
+.os__cap{
+  display:block;padding:.8rem 0 0;
+  font-size:.75rem;font-weight:300;letter-spacing:.04em;
+  color:rgba(251,241,224,.72);
+}
+
+.oslb{
+  width:min(96vw,84rem);max-width:none;max-height:92vh;
+  padding:0;border:0;background:var(--pine-black);
+  box-shadow:0 40px 120px rgba(0,0,0,.7);
+}
+.oslb::backdrop{background:rgba(11,22,17,.9);backdrop-filter:blur(6px)}
+.oslb[open]{animation:pc-auf .35s var(--ease-out) both}
+.oslb img{display:block;width:100%;height:auto;max-height:92vh;object-fit:contain}
+
+.owechsel{padding:clamp(2.5rem,6vh,4rem) var(--gut) 0}
+.owechsel__k{
+  margin:0 0 1rem;font-size:.6875rem;font-weight:500;letter-spacing:.18em;
+  text-transform:uppercase;color:rgba(251,241,224,.5);
+}
+.owechsel__l{
+  display:grid;grid-template-columns:minmax(0,14rem) minmax(0,1fr);
+  gap:clamp(1.2rem,3vw,2.4rem);align-items:center;
+  text-decoration:none;color:inherit;
+  border-top:1px solid rgba(251,241,224,.22);padding-top:1.2rem;position:relative;
+}
+.owechsel__l::before{
+  content:"";position:absolute;top:-1px;left:0;right:0;height:1px;
+  background:var(--orange);transform:scaleX(0);transform-origin:left;
+  transition:transform .5s var(--ease-out);
+}
+.owechsel__l:hover::before,.owechsel__l:focus-visible::before{transform:scaleX(1)}
+.owechsel__l:focus-visible{outline:2px solid var(--orange);outline-offset:6px}
+.owechsel__l img{
+  display:block;width:100%;aspect-ratio:2/1;object-fit:cover;
+  filter:brightness(.8) saturate(.85);transition:filter .5s var(--ease-out);
+}
+.owechsel__l:hover img{filter:none}
+.owechsel__l b{
+  display:block;font-size:clamp(1.1rem,2.4vw,1.6rem);font-weight:900;
+  letter-spacing:.01em;text-transform:uppercase;color:var(--cream);
+}
+.owechsel__l i{
+  display:block;margin-top:.5rem;font-style:normal;
+  font-size:.875rem;font-weight:300;line-height:1.6;color:rgba(251,241,224,.72);
+}
+.owechsel__t{margin:1.6rem 0 0;font-size:.8125rem;letter-spacing:.04em}
+.owechsel__t a{color:var(--orange);text-decoration:none;border-bottom:1px solid rgba(217,145,41,.4)}
+.owechsel__t a:hover{border-color:var(--orange)}
+.owechsel__t a:focus-visible{outline:2px solid var(--orange);outline-offset:3px}
+
+@media (max-width:820px){
+  .ofakten{grid-template-columns:1fr;gap:1.6rem}
+  .owechsel__l{grid-template-columns:1fr;gap:1rem;align-items:start}
+
+  /* Gleiche Begruendung wie bei .beat__scrim in style.css: auf dem Telefon
+     spannt der Text ueber die volle Breite und geraet in den absichtlich
+     offenen Teil des Seitenverlaufs. Der Blog-Aufmacher stand dort gemessen
+     auf 4,06:1. Hier faellt der Verlauf nach unten hin auf, weil Kicker und
+     Kopfzeile am unteren Rand sitzen. */
+  .lead__scrim{
+    background:linear-gradient(to bottom,
+      rgba(11,22,17,.78) 0%, rgba(11,22,17,.72) 46%, rgba(11,22,17,.68) 100%);
+  }
+  .ohero__scrim,.artcover__scrim{
+    background:linear-gradient(to top,
+      rgba(11,22,17,.88) 6%, rgba(11,22,17,.72) 52%, rgba(11,22,17,.54) 100%);
+  }
+}
+
+/* Unterseiten: Kopf ist space-between mit zwei Kindern. Der Knopf kommt in eine
+   Gruppe mit der Navigation, sonst reisst space-between die drei auseinander. */
+.page-top__rechts{display:flex;align-items:center;gap:clamp(.9rem,2vw,1.8rem)}
+.page-top .termin-top{margin-left:0}
+
+/* ============ Punkt 3: Kopfmenue der Unterseiten unter 820px ============
+   Der Termin-Knopf allein sprengt den Kopf: Wortmarke, vier Links und ein
+   Knopf passen auf 390px nicht nebeneinander — die Zeile brach um und schnitt
+   die Wortmarke ab. Ausserdem waren die Links mit 21 bis 33px Trefferflaeche
+   ohnehin zu klein. Beides loest derselbe Griff. */
+.kopfburger{
+  display:none;
+  width:44px;height:44px;padding:0;border:0;background:none;cursor:pointer;
+  flex-direction:column;align-items:center;justify-content:center;gap:5px;
+}
+.kopfburger span{display:block;width:20px;height:1.5px;background:var(--cream);
+  transition:transform .38s var(--ease-out),opacity .2s linear}
+.kopfburger[aria-expanded="true"] span:first-child{transform:translateY(3.25px) rotate(45deg)}
+.kopfburger[aria-expanded="true"] span:last-child{transform:translateY(-3.25px) rotate(-45deg)}
+.kopfburger:focus-visible{outline:2px solid var(--orange);outline-offset:4px}
+
+@media (max-width:820px){
+  .kopfburger{display:flex}
+  /* Die Flaeche uebernimmt die Sprache des Kapitelmenues der Startseite:
+     dieselbe Deckung, dieselbe Unschaerfe, dieselbe Schriftgroesse.
+
+     position:absolute, NICHT fixed: .page-top traegt backdrop-filter, und ein
+     backdrop-filter erzeugt einen Container fuer fixed positionierte Kinder.
+     Mit fixed war das Menue deshalb in die 60px hohe Kopfzeile eingesperrt —
+     die Links standen oben raus, der dunkle Grund war unsichtbar, und von
+     aussen sah es aus, als greife die Regel gar nicht.
+     Der Kopf bleibt dabei sichtbar ueber der Flaeche stehen: der Burger, der
+     sie wieder schliesst, ist derselbe, der sie geoeffnet hat. */
+  .page-nav{
+    position:absolute;top:100%;left:0;right:0;height:100vh;z-index:70;
+    flex-direction:column;justify-content:flex-start;align-items:flex-start;
+    gap:.2rem;padding:clamp(2rem,8vh,4rem) var(--gut) 0;
+    background:rgba(11,22,17,.97);backdrop-filter:blur(14px);
+    opacity:0;visibility:hidden;
+    transition:opacity .34s var(--ease-out),visibility .34s;
+  }
+  .page-nav[data-offen="true"]{opacity:1;visibility:visible}
+  /* 10000, weil die Online-Rezeption gemessen auf 9999 liegt. */
+  html[data-kopfmenue="auf"] .page-top{z-index:10000}
+  .page-nav a{
+    font-size:clamp(1.75rem,8vw,2.75rem);font-weight:900;letter-spacing:-.02em;
+    text-transform:uppercase;color:var(--cream);
+    padding:.22em 0;border-bottom:0;
+    /* 44px Mindesthoehe kommt hier aus der Schriftgroesse selbst — bei 28px
+       Grundgroesse sind .22em Innenabstand oben und unten rund 62px. */
+  }
+  .page-nav a[aria-current="page"]{color:var(--orange-lt)}
+}

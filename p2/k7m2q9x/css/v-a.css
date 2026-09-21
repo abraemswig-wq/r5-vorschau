@@ -1,0 +1,23 @@
+/* Entwurf A — Solider Block */
+
+/* Variante A — der Termin wird ein gefuellter Block, die drei anderen treten
+   eine Stufe zurueck. Nimmt den Hover-Zustand auf, den .cta a schon hatte
+   (orange Flaeche, dunkle Schrift), und macht ihn beim Termin zum Normalfall. */
+.cta{gap:.85rem}
+.cta__primaer{
+  background:var(--orange);color:var(--pine-black);
+  padding:.5em .85em;
+}
+.cta__primaer::after{content:" →"}
+@media (hover:hover) and (pointer:fine){
+  .cta__primaer:hover{background:var(--orange-lt);color:var(--pine-black)}
+}
+.cta li:not(:first-child) a{
+  font-size:clamp(.9375rem,1.5vw,1.25rem);
+  color:rgba(251,241,224,.82);
+  padding:.28em 0;margin-left:.3em;
+  border-bottom:1px solid rgba(251,241,224,.28);
+}
+@media (hover:hover) and (pointer:fine){
+  .cta li:not(:first-child) a:hover{background:none;color:var(--cream);border-color:var(--orange)}
+}

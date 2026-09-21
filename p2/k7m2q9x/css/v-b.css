@@ -1,0 +1,35 @@
+/* Entwurf B — Editorial-Zeilen */
+
+/* Variante B — jede Handlung wird eine Zeile mit Haarlinie und Pfeil, wie das
+   Kapitelmenue und der Artikelwechsel es schon tun. Die ganze Zeile ist
+   klickbar, nicht nur das Wort: auf dem Telefon ist das der Unterschied
+   zwischen 21px und 56px Trefferflaeche. */
+/* Feste Spaltenbreite: der Abschluss ist zentriert, ohne Breite waere jede
+   Zeile so breit wie ihr eigener Text und der Pfeil haette keine Kante, an
+   der er steht. */
+.cta{
+  gap:0;margin-top:2.25rem;
+  width:min(26rem,100%);margin-inline:auto;
+  border-top:1px solid rgba(251,241,224,.3);
+}
+.cta li{border-bottom:1px solid rgba(251,241,224,.3)}
+.cta a{
+  display:flex;align-items:center;justify-content:space-between;
+  width:100%;box-sizing:border-box;
+  font-size:clamp(1rem,1.8vw,1.5rem);
+  padding:.85em .2em;
+}
+.cta a::after{
+  content:"";width:.42em;height:.42em;flex:none;
+  border:solid currentColor;border-width:0 1.5px 1.5px 0;
+  transform:rotate(-45deg);
+  transition:transform .2s var(--ease-out);
+}
+.cta__primaer{
+  background:var(--orange);color:var(--pine-black);
+  padding-left:.7em;padding-right:.7em;
+}
+@media (hover:hover) and (pointer:fine){
+  .cta a:hover::after{transform:rotate(-45deg) translate(3px,3px)}
+  .cta__primaer:hover{background:var(--orange-lt);color:var(--pine-black)}
+}
