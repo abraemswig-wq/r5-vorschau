@@ -164,7 +164,12 @@
     const bild = el('pcimg');
     // Pfad aus der Reihe uebernehmen statt aus den Daten: nur dort steht er in
     // der Form, die auch auf dem Server stimmt.
-    bild.src = karten[aktiv].querySelector('img').src;
+    /* currentSrc statt src: das Gitterbild hat seit 2026-09-18 ein srcset, und
+       currentSrc ist die Datei, die der Browser dafuer wirklich geholt hat.
+       Ueber src wuerde die Karte eine zweite Stufe nachladen, obwohl eine
+       passende schon im Cache liegt. */
+    const gitter = karten[aktiv].querySelector('img');
+    bild.src = gitter.currentSrc || gitter.src;
     bild.alt = d.ohne ? `${d.name} — noch kein Portrait` : d.name;
     el('pcname').textContent = d.name;
     el('pcrole').textContent = d.rolle;

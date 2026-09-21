@@ -58,8 +58,6 @@ a{color:inherit}
 
 .beat__bg{
   position:absolute;inset:-4%;
-  background-size:cover;
-  background-position:center;
   /* Zoom als eigenständige `scale`-Property, damit die Schleife pro Frame nur
      translate3d schreibt. Ein wechselndes scale() zwingt die 2400px-Platte in
      jedem Frame zum Neu-Rastern — gemessen: p95 26.6ms → 13.1ms. */
@@ -67,10 +65,28 @@ a{color:inherit}
   will-change:transform;
 }
 
+/* Das Kapitelbild war bis 2026-09-18 ein `background-image` auf .beat__bg. Als
+   Hintergrund kann es aber keine Auflösungsstufen anbieten: das Telefon lud
+   dieselbe Platte wie der Retina-Desktop. Jetzt steht ein echtes <img> mit
+   srcset darin, und `sizes:108vw` sagt dem Browser die wahre Darstellungsbreite
+   — 108 %, weil .beat__bg durch `inset:-4%` acht Prozent breiter ist als das
+   Kapitel. Die Zuschnitt-Rechnung bleibt identisch: `object-fit:cover` mit
+   `object-position:center` schneidet wie `background-size:cover` mit
+   `background-position:center`, und weil das <img> im selben Kasten liegt,
+   erbt es Zoom und Parallaxe unverändert. */
+.beat__img{
+  position:absolute;inset:0;
+  width:100%;height:100%;
+  object-fit:cover;
+  object-position:center;
+  display:block;
+}
+
 /* Das Video liegt IN der Bildebene, nicht daneben: so erbt es Zoom und Parallaxe
-   und das Standbild darunter bleibt Poster und Preloader-Quelle. Wird das Video
-   nie angehängt (Mobil, reduzierte Bewegung, Ladefehler), sieht man genau dieses
-   Standbild — es ist derselbe Frame, auf dem das Video startet. */
+   und das Standbild darunter bleibt Poster. Wird das Video nie angehängt (Mobil,
+   reduzierte Bewegung, Ladefehler), sieht man genau dieses Standbild — es ist
+   derselbe Frame, auf dem das Video startet. Es liegt im Markup vor dem Video,
+   beide sind absolut positioniert, also deckt das Video es ab. */
 .beat__video{
   position:absolute;inset:0;
   width:100%;height:100%;

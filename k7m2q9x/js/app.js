@@ -20,18 +20,56 @@ const cinema = !reduced && matchMedia('(min-width: 821px)').matches;
 const pre = $('#preloader');
 const bar = $('.preloader__bar i');
 
+/* Der Preloader wartete bis 2026-09-18 mit Promise.all auf ALLE sieben
+   Kapitelbilder. Gemessen auf gebremstem Mobilnetz hielt er die Seite damit
+   20,9 Sekunden schwarz — obwohl zu diesem Zeitpunkt nur das erste Kapitel
+   sichtbar ist. Jetzt wartet er auf genau dieses eine Bild, und auch darauf nur
+   begrenzt: KAPPE ist eine harte Obergrenze. Ein hängendes Bild kann die Seite
+   nicht mehr zuhalten, es taucht dann eben verspätet auf. */
+const KAPPE = 2500;
+
 function preload() {
-  /* Pfad aus dem Markup ziehen statt neu zusammenzusetzen: beim Ausliefern
-     werden die Asset-Pfade umgeschrieben, ein zweiter hart kodierter Pfad
-     liefe dabei still auf 404 — der Preloader zählt Fehler wie Treffer. */
-  const srcs = beats.map(b => b.querySelector('.beat__bg').style.backgroundImage.slice(5, -2));
-  let done = 0;
-  return Promise.all(srcs.map(src => new Promise(res => {
-    const i = new Image();
-    const tick = () => { done++; bar.style.setProperty('--p', done / srcs.length); res(); };
-    i.onload = i.onerror = tick;
-    i.src = src;
-  })));
+  /* Nicht mehr selbst laden: das <img> im Markup ist längst unterwegs (srcset,
+     fetchpriority). Ein zweiter `new Image()` mit selbst gebautem Pfad würde
+     beim Ausliefern still auf 404 laufen — und der Preloader zählte Fehler wie
+     Treffer, hätte es also nie gemeldet. */
+  const erstes = beats[0] && beats[0].querySelector('.beat__img');
+
+  /* Der Balken lief vorher pro geladenem Bild eine Stufe weiter. Bei einem
+     einzigen Bild gäbe es nichts zu zeigen, also läuft er auf der Zeit — bis
+     0,9, den Rest setzt der Abschluss. Ohne das stünde er still und die Seite
+     sähe eingefroren aus. */
+  const start = performance.now();
+  let laeuft = true;
+  (function ticken() {
+    if (!laeuft) return;
+    bar.style.setProperty('--p', Math.min(.9, (performance.now() - start) / KAPPE).toFixed(3));
+    requestAnimationFrame(ticken);
+  })();
+
+  const bild = !erstes || erstes.complete
+    ? Promise.resolve()
+    : new Promise(res => {
+        erstes.addEventListener('load',  res, { once: true });
+        erstes.addEventListener('error', res, { once: true });
+      });
+
+  return Promise.race([bild, new Promise(res => setTimeout(res, KAPPE))])
+    .then(() => { laeuft = false; bar.style.setProperty('--p', '1'); });
+}
+
+/* Im Kino-Layout liegen alle sieben Kapitel übereinander im Viewport — der
+   Browser holt die Bilder dort ohnehin, loading="lazy" greift nicht. Es
+   trotzdem zurückzustellen ist die Absicherung für den Fall, dass ein Browser
+   die Überdeckung anders bewertet: hier wird nach dem Aufdecken ausdrücklich
+   nachgeladen. Im Fluss-Layout bleibt "lazy" richtig und wird nicht angetastet
+   — dort ist das Zurückstellen der ganze Gewinn. */
+function restNachladen() {
+  if (!cinema) return;
+  beats.slice(1).forEach(b => {
+    const i = b.querySelector('.beat__img');
+    if (i) i.loading = 'eager';
+  });
 }
 
 /* ---------------- Scramble ---------------- */
@@ -310,6 +348,8 @@ function bindVideo() {
 
   pre.dataset.contract = 'true';
   setTimeout(() => { pre.dataset.done = 'true'; }, 780);
+
+  restNachladen();
 })();
 
 })();

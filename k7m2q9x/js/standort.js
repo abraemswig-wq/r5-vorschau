@@ -80,6 +80,12 @@
       // Nach dem Ziehen liegt der Zeiger auf irgendeinem Bild — ohne die Schwelle
       // oeffnete jedes Wischen am Ende eine Grossansicht.
       if (weit > 6) return;
+      // srcset vor src: die Grossansicht ist min(96vw,84rem) breit, ein
+      // Telefon braucht davon rund 1200 px, ein 1440er Laptop rund 2700. Ein
+      // fester Pfad muesste sich fuer eines von beiden entscheiden — bis zum
+      // 18.09.2026 war das das Original-JPEG mit bis zu 509 kB fuer alle.
+      img.srcset = b.dataset.vollset || '';
+      img.sizes = '(min-width:1400px) 1344px, 96vw';
       img.src = b.dataset.voll;
       img.alt = b.querySelector('img').alt;
       lb.showModal();
@@ -87,7 +93,11 @@
     document.getElementById('oslbx').addEventListener('click', () => lb.close());
     lb.addEventListener('click', e => { if (e.target === lb) lb.close(); });
     // removeAttribute statt src='': ein leeres src laesst den Browser die Seite
-    // selbst noch einmal als Bild anfordern.
-    lb.addEventListener('close', () => { img.removeAttribute('src'); });
+    // selbst noch einmal als Bild anfordern. Das srcset muss mit weg — sonst
+    // laedt der Browser weiter daraus, obwohl kein src mehr steht.
+    lb.addEventListener('close', () => {
+      img.removeAttribute('src');
+      img.removeAttribute('srcset');
+    });
   }
 })();

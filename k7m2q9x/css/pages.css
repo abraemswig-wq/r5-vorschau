@@ -39,7 +39,17 @@ body.page{overflow-x:hidden}
 /* ---------- Artikelkopf ---------- */
 
 .artcover{position:relative;min-height:min(74svh,640px);display:flex;align-items:flex-end;overflow:hidden}
-.artcover__bg{position:absolute;inset:0;background-size:cover;background-position:center 32%}
+/* Deckflaechen trugen das Bild bis 2026-09-18 als `background-image` und konnten
+   damit keine Auflaesungsstufen anbieten — das Telefon lud die 1600-px-Platte.
+   Jetzt liegt ein <img> mit srcset darin. Der Ausschnitt muss unveraendert
+   bleiben: `background-position:center 32%` bedeutet als `object-position`
+   dasselbe, die Prozentangabe verteilt in beiden Faellen den Ueberhang. Wer den
+   Wert aendert, verschiebt den Bildausschnitt auf 33 Seiten. */
+.artcover__bg{position:absolute;inset:0}
+.artcover__bg>img{
+  width:100%;height:100%;display:block;
+  object-fit:cover;object-position:center 32%;
+}
 /* Faktor 0,85 wie bei .beat__scrim — siehe Begruendung dort. */
 .artcover__scrim{
   position:absolute;inset:0;
@@ -348,10 +358,16 @@ body.page{overflow-x:hidden}
   min-height:clamp(20rem, calc(100svh - 21rem), 44rem);overflow:hidden;
   text-decoration:none;color:inherit;
 }
+/* Wie .artcover__bg — siehe Begruendung dort. Der Zoom beim Ueberfahren bleibt
+   auf dem div: das <img> darin faehrt mit, und die Transition muss nur eine
+   Ebene bewegen statt einen Hintergrund neu zu rastern. */
 .lead__bg{
   position:absolute;inset:0;
-  background-size:cover;background-position:center 28%;
   transition:transform 1.2s var(--ease-out);
+}
+.lead__bg>img{
+  width:100%;height:100%;display:block;
+  object-fit:cover;object-position:center 28%;
 }
 /* Faktor 0,85 wie bei .beat__scrim — siehe Begruendung dort. */
 .lead__scrim{
