@@ -13,8 +13,56 @@
   // greift ueber den Index auf die Daten zu, und der muss stabil bleiben.
   const offen = () => karten.filter(k => !k.hidden);
 
+  /* ---------- Passt die Auswahl ins Bild? ---------- */
+  // Bei „Mediendesign" oder „Ernaehrung & Praevention" bleiben zwei Personen
+  // uebrig. Als Reihe behandelt standen die dann in der linken Haelfte, die
+  // rechte war leer, eine der beiden war weggekippt und abgedunkelt, und die
+  // Pfeile boten ein Blaettern an, das nichts mehr bewegte. Das sah wie ein
+  // Fehler aus und war es der Wirkung nach auch (Aric, 21.09.2026).
+  //
+  // Gemessen wird der reine Platzbedarf der Karten, NICHT scrollWidth: die
+  // Einrueckung der Reihe ist eine halbe Fensterbreite pro Seite, damit auch
+  // die erste und letzte Person in die Mitte kommen. scrollWidth zaehlt sie mit
+  // und meldete deshalb selbst bei einer einzigen Karte Ueberlauf.
+  const gal = rail.closest('.gal');
+  const hintZeile = gal && gal.querySelector('.gal__hint');
+  const hinweis = hintZeile && hintZeile.querySelector('span');
+  const HINWEIS_REIHE = hinweis ? hinweis.textContent : '';
+
+  const platzbedarf = () => {
+    const s = offen();
+    if (!s.length) return 0;
+    // offsetWidth, nicht die sichtbare Box: die Karten sind gedreht und
+    // verschoben, ihre Bildschirmkanten sind kein Layoutmass.
+    const lz = parseFloat(getComputedStyle(rail).columnGap) || 0;
+    return s.reduce((a, k) => a + k.offsetWidth, 0) + lz * (s.length - 1);
+  };
+  // Der Rand links und rechts ist --gut, und den gibt es nur als vw-Wert. Statt
+  // ihn nachzurechnen wird er dort abgelesen, wo er als Pixelwert im Layout
+  // steht: die Hinweiszeile unter der Galerie hat genau dieses Innenmass.
+  const rand = () => (hintZeile ? parseFloat(getComputedStyle(hintZeile).paddingLeft) || 0 : 0);
+  // Ab wie wenigen Personen ein Wischen nichts mehr taugt: bei drei Karten auf
+  // dem Telefon bleibt genau ein Schritt Weg. Wer wischt, erwartet mehr als das.
+  const STAPEL_BIS = 3;
+  let knapp = false;          // gruppe ODER stapel — beides ohne Reihen-Logik
+  let art = 'reihe';
+  const modus = () => {
+    // Rahmenbreite, nicht clientWidth: clientWidth haengt an der Einrueckung,
+    // und die aendert dieses Verfahren selbst — die Messung wuerde sich bei
+    // jedem Durchlauf ihr eigenes Ergebnis bestaetigen.
+    const n = offen().length;
+    const passt = platzbedarf() <= rail.getBoundingClientRect().width - 2 * rand();
+    art = passt ? 'gruppe' : (n && n <= STAPEL_BIS ? 'stapel' : 'reihe');
+    knapp = art !== 'reihe';
+    rail.dataset.modus = art;
+    if (gal) gal.dataset.modus = art;
+    if (hinweis) hinweis.textContent = knapp ? 'Antippen für das Profil' : HINWEIS_REIHE;
+    return knapp;
+  };
+
   /* ---------- Fortschritt ---------- */
   const mess = () => {
+    if (knapp) return;   // Strich und Pfeile sind in diesem Modus ausgeblendet
     const rest = rail.scrollWidth - rail.clientWidth;
     bar.style.transform = `scaleX(${rest > 0 ? rail.scrollLeft / rest : 1})`;
     el('railprev').disabled = rail.scrollLeft < 4;
@@ -34,7 +82,26 @@
   // Bilder weg, ruecken zurueck und dunkeln ab. Der Blick hat dadurch einen
   // Platz, an dem er haengenbleibt, statt 33 gleich laute Karten zu sehen.
   const flach = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  // Ausgeblendete Karten behalten sonst is-mitte und die letzte Transformation.
+  // Sichtbar ist das nicht (display:none), aber jede Zaehlung ueber .is-mitte
+  // liest danach Personen mit, die gar nicht mehr in der Auswahl sind — der
+  // Bereich „Ernaehrung & Praevention" meldete drei Mitten bei zwei Karten.
+  const zuruecksetzen = k => {
+    k.classList.remove('is-mitte');
+    const d = k.firstElementChild;
+    if (d) { d.style.transform = ''; d.style.filter = ''; }
+    k.style.zIndex = '';
+  };
+
   const raum = () => {
+    karten.forEach(k => { if (k.hidden) zuruecksetzen(k); });
+    // Passt alles ins Bild, gibt es keine Mitte: dann steht jede Person gerade,
+    // hell und beschriftet da. Eine Tiefenkurve ueber zwei Karten sortiert
+    // nichts, sie dunkelt nur eine der beiden ohne Grund ab.
+    if (knapp) {
+      offen().forEach(k => { zuruecksetzen(k); k.classList.add('is-mitte'); });
+      return;
+    }
     const blick = rail.scrollLeft + rail.clientWidth / 2;
     // Gemessen wird in Karten, nicht in Bruchteilen der Reihenbreite: sonst haengt
     // die Staerke am Viewport. Auf dem Handy passen keine zwei Karten neben die
@@ -78,6 +145,9 @@
   const anfang = () => {
     const s = offen();
     if (!s.length) return;
+    // Im knappen Modus gibt es nichts einzurücken: die Gruppe steht zentriert
+    // und die Reihe hat gar keinen Scrollweg mehr.
+    if (modus()) { rail.scrollLeft = 0; return; }
     const raster = schritt();
     const platz = Math.max(0, Math.floor((rail.clientWidth / raster - 1) / 2));
     const z = s[Math.min(platz, s.length - 1)];
@@ -85,7 +155,10 @@
   };
 
   let angefordert = false;
-  const zeichne = () => { angefordert = false; mess(); raum(); };
+  // modus() zuerst: mess() und raum() rechnen beide anders, je nachdem ob die
+  // Auswahl ins Bild passt. Stuende die Pruefung hinter ihnen, arbeitete der
+  // erste Durchlauf nach jedem Filterwechsel noch mit dem alten Modus.
+  const zeichne = () => { angefordert = false; modus(); mess(); raum(); };
   const anfordern = () => {
     if (angefordert) return;
     angefordert = true;
@@ -131,6 +204,10 @@
   let zieht = false, startX = 0, startL = 0, weit = false;
   rail.addEventListener('pointerdown', e => {
     if (e.pointerType !== 'mouse' || e.button !== 0) return;
+    // Im knappen Modus gibt es keinen Scrollweg. Ohne diese Sperre haette ein
+    // Zug den anschliessenden Klick verschluckt — die Profilkarte oeffnete dann
+    // manchmal nicht, und zwar ohne sichtbaren Grund.
+    if (knapp) return;
     zieht = true; weit = false;
     startX = e.clientX; startL = rail.scrollLeft;
     rail.classList.add('is-zieht');
@@ -164,12 +241,15 @@
     const bild = el('pcimg');
     // Pfad aus der Reihe uebernehmen statt aus den Daten: nur dort steht er in
     // der Form, die auch auf dem Server stimmt.
-    /* currentSrc statt src: das Gitterbild hat seit 2026-09-18 ein srcset, und
-       currentSrc ist die Datei, die der Browser dafuer wirklich geholt hat.
-       Ueber src wuerde die Karte eine zweite Stufe nachladen, obwohl eine
-       passende schon im Cache liegt. */
     const gitter = karten[aktiv].querySelector('img');
-    bild.src = gitter.currentSrc || gitter.src;
+    /* srcset MUSS mitgesetzt werden, und zwar vor src. Im Markup traegt #pcimg
+       ein festes srcset auf aric-braemswig-*.webp — das ist nur der Zustand vor
+       dem ersten Klick. Ein vorhandenes srcset schlaegt src aber immer. Solange
+       hier nur src gesetzt wurde, zeigte die Profilkarte deshalb bei JEDER
+       Person Arics Portrait, unter dem fremden Namen. Gemessen am 21.09.2026:
+       64 von 66 Oeffnungen (33 Personen x 2 Fenstergroessen). */
+    bild.srcset = gitter.getAttribute('srcset') || '';
+    bild.src = gitter.getAttribute('src');
     bild.alt = d.ohne ? `${d.name} — noch kein Portrait` : d.name;
     el('pcname').textContent = d.name;
     el('pcrole').textContent = d.rolle;

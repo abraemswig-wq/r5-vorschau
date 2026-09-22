@@ -165,8 +165,16 @@ beats.forEach((b, i) => {
 });
 const navBtns = $$('button', navList);
 
-function openNav()  { nav.dataset.open = 'true';  burger.setAttribute('aria-expanded', 'true');  navBtns[0].focus(); }
-function closeNav() { nav.dataset.open = 'false'; burger.setAttribute('aria-expanded', 'false'); burger.focus(); }
+/* Der DocMedico-Teaser wird von aussen eingehaengt und bringt z-index:9999 mit;
+   das Menue liegt auf 55 und verschwand deshalb dahinter. Aric hat entschieden,
+   dass das Menue davor liegt. Die Marke am <html> hebt Menue und Kopfleiste NUR
+   solange das Menue offen ist — dauerhaft hochzusetzen wuerde die Kopfleiste
+   auch ueber den geoeffneten Buchungsdialog legen, und der gehoert nach vorn. */
+const OFFEN = 'menue-offen';
+function openNav()  { nav.dataset.open = 'true';  burger.setAttribute('aria-expanded', 'true');
+                      document.documentElement.classList.add(OFFEN); navBtns[0].focus(); }
+function closeNav() { nav.dataset.open = 'false'; burger.setAttribute('aria-expanded', 'false');
+                      document.documentElement.classList.remove(OFFEN); burger.focus(); }
 burger.addEventListener('click', () => nav.dataset.open === 'true' ? closeNav() : openNav());
 addEventListener('keydown', e => { if (e.key === 'Escape' && nav.dataset.open === 'true') closeNav(); });
 

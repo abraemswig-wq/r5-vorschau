@@ -596,6 +596,48 @@ body.page{overflow-x:hidden}
 .gal__rail.is-zieht{cursor:grabbing;scroll-snap-type:none}
 .gal__rail:focus-visible{outline:2px solid var(--orange);outline-offset:-2px}
 
+/* Drei Zustaende, nicht einer. Welcher gilt, kann nur js/team.js entscheiden —
+   es haengt an der Zahl der gefilterten Personen und an der Fensterbreite.
+
+   „reihe"  — der Normalfall: mehr Personen als ins Bild passen.
+   „gruppe" — alle passen nebeneinander. Dann ist alles falsch, was eine Reihe
+              braucht: die halbe Fensterbreite Einrueckung parkt zwei Karten in
+              der linken Haelfte und laesst die rechte leer, die Tiefenkurve
+              dunkelt eine der beiden dauerhaft ab, und Pfeile wie
+              Fortschrittsstrich versprechen ein Blaettern, das nichts bewegt.
+   „stapel" — auf dem Telefon passen zwei Karten nie nebeneinander. Als Reihe
+              blieb genau ein Wisch-Schritt uebrig: eine Geste, die fast nichts
+              tut. Untereinander stehen alle Gesichter gleichzeitig da, und das
+              Scrollen macht die Seite selbst.
+   Aric, 21.09.2026: „bei Design oder Praevention/Ernaehrung kann man da nicht
+   scrollen" — beide Sonderfaelle kamen aus derselben Reihen-Logik. */
+.gal__rail[data-modus="gruppe"]{
+  padding-inline:var(--gut);
+  justify-content:center;
+  scroll-snap-type:none;
+  overflow-x:hidden;
+  cursor:default;
+}
+.gal__rail[data-modus="stapel"]{
+  flex-direction:column;
+  align-items:center;
+  padding:0 var(--gut) 1.4rem;
+  gap:clamp(1.6rem,6vw,2.4rem);
+  scroll-snap-type:none;
+  overflow-x:hidden;
+  cursor:default;
+}
+.gal__rail[data-modus="stapel"] .member{flex:0 0 auto;width:min(78vw,22rem)}
+.gal__rail[data-modus="gruppe"] .member,
+.gal__rail[data-modus="stapel"] .member{cursor:pointer}
+.gal[data-modus="gruppe"] .gal__bar,
+.gal[data-modus="gruppe"] .gal__nav,
+.gal[data-modus="stapel"] .gal__bar,
+.gal[data-modus="stapel"] .gal__nav{display:none}
+/* Der Hinweis bleibt stehen, verliert aber das Wischen: antippen geht weiter. */
+.gal[data-modus="gruppe"] .gal__hint,
+.gal[data-modus="stapel"] .gal__hint{justify-content:flex-start}
+
 .member{
   flex:0 0 var(--karte);
   scroll-snap-align:center;

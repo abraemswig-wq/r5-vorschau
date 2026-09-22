@@ -274,6 +274,99 @@ a{color:inherit}
   .saeulen{grid-template-columns:repeat(2,minmax(0,1fr));gap:0 1.1rem}
 }
 
+/* ---------- Kapitel 06: Türen ---------- */
+/* Dieselbe Geste wie bei den Standorten — Haarlinie oben, die beim Ueberfahren
+   orange durchlaeuft. Kaesten haetten das Kapitel in Kacheln zerlegt; hier soll
+   eine Liste stehen, die man von oben nach unten liest. */
+.tueren{
+  display:grid;grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:2.2rem 3rem;margin:1.8rem 0 0;max-width:56rem;
+  position:relative;isolation:isolate;
+}
+/* Ortsschleier nur unter den Tueren.
+   Gemessen am 21.09.2026: die linke Spalte liegt ueber der dunklen Bildhaelfte
+   und kommt auf 10–13:1, die rechte Spalte ueber dem hellen Fenster auf
+   1.9–3.2:1 — unter dem Minimum von 4.5:1. Den ganzen Beat abzudunkeln waere
+   der falsche Hebel: Aric wollte die Seite ausdruecklich HELLER. Also faellt der
+   Schleier nur dort, wo Schrift steht, und rechts staerker als links.
+   isolation:isolate haelt das z-index:-1 in diesem Kasten, damit der Schleier
+   nicht hinter das Beat-Bild rutscht. */
+.tueren::before{
+  content:"";position:absolute;z-index:-1;
+  inset:-1.5rem -2rem -1.2rem -2rem;
+  background:linear-gradient(100deg,
+    rgba(11,22,17,.30) 0%, rgba(11,22,17,.38) 38%,
+    rgba(11,22,17,.60) 62%, rgba(11,22,17,.68) 100%);
+  /* weiche Kanten, damit kein Kasten im Bild steht */
+  -webkit-mask-image:linear-gradient(to bottom,transparent 0,#000 9%,#000 90%,transparent 100%);
+  mask-image:linear-gradient(to bottom,transparent 0,#000 9%,#000 90%,transparent 100%);
+  pointer-events:none;
+}
+@supports (backdrop-filter:blur(2px)){
+  .tueren::before{backdrop-filter:saturate(.9) blur(1.5px)}
+}
+.tueren__t{
+  margin:0;font-size:.6875rem;letter-spacing:.18em;text-transform:uppercase;
+  color:rgba(251,241,224,.5);
+}
+.tueren__l{list-style:none;margin:.55rem 0 0;padding:0}
+.tuer{
+  display:grid;grid-template-columns:1fr auto;align-items:baseline;
+  column-gap:1rem;
+  text-decoration:none;color:inherit;position:relative;
+  border-top:1px solid rgba(251,241,224,.22);
+  padding:.65rem 0 .75rem;
+}
+.tuer::before{
+  content:"";position:absolute;top:-1px;left:0;right:0;height:1px;
+  background:var(--orange);transform:scaleX(0);transform-origin:left;
+  transition:transform .5s var(--ease-out);
+}
+a.tuer:hover::before,a.tuer:focus-visible::before{transform:scaleX(1)}
+.tuer:focus-visible{outline:2px solid var(--orange);outline-offset:6px}
+.tuer__n{
+  font-size:.9375rem;font-weight:900;letter-spacing:.02em;
+  text-transform:uppercase;color:var(--cream);
+}
+.tuer__s{
+  grid-column:1/-1;margin-top:.2rem;
+  font-size:.78rem;font-weight:300;line-height:1.5;
+  color:rgba(251,241,224,.72);max-width:26rem;
+}
+.tuer__go{font-size:.95rem;color:var(--orange);transition:transform .4s var(--ease-out)}
+a.tuer:hover .tuer__go{transform:translateX(.35em)}
+/* Der HEALTH CLUB ist kein Link, und das muss man sehen, bevor man klickt:
+   kein Pfeil, keine laufende Kante, und die Ankuendigung steht im Klartext. */
+.tuer--bald{cursor:default}
+.tuer--bald .tuer__n{color:rgba(251,241,224,.72)}
+.tuer__go--bald{
+  font-size:.625rem;letter-spacing:.16em;text-transform:uppercase;
+  color:rgba(251,241,224,.45);white-space:nowrap;
+}
+/* Einlauf wie bei den Standorten. Die Verzoegerung steht hier statt als --i im
+   Markup: sechs feste Zeilen brauchen keine Zaehlvariable. */
+.cinema .tueren__g,.cinema .tueren li{opacity:0;transform:translateY(12px)}
+.cinema .beat[data-live="true"] .tueren__g,
+.cinema .beat[data-seen="true"] .tueren__g,
+.cinema .beat[data-live="true"] .tueren li,
+.cinema .beat[data-seen="true"] .tueren li{
+  opacity:1;transform:none;
+  transition:opacity .5s var(--ease-out), transform .5s var(--ease-out);
+}
+.cinema .beat[data-live="true"] .tueren__g,
+.cinema .beat[data-seen="true"] .tueren__g{transition-delay:260ms}
+.cinema .beat[data-live="true"] .tueren li:nth-child(1),
+.cinema .beat[data-seen="true"] .tueren li:nth-child(1){transition-delay:340ms}
+.cinema .beat[data-live="true"] .tueren li:nth-child(2),
+.cinema .beat[data-seen="true"] .tueren li:nth-child(2){transition-delay:430ms}
+.cinema .beat[data-live="true"] .tueren li:nth-child(3),
+.cinema .beat[data-seen="true"] .tueren li:nth-child(3){transition-delay:520ms}
+
+@media (max-width:820px){
+  .tueren{grid-template-columns:1fr;gap:1.7rem;margin-top:1.4rem}
+  .tuer__s{max-width:none}
+}
+
 /* ---------- Outro ---------- */
 
 .beat--outro{text-align:center}
@@ -328,6 +421,13 @@ a{color:inherit}
 .wordmark:hover{opacity:.72}
 .wordmark:focus-visible{outline:2px solid var(--orange);outline-offset:8px}
 
+/* Solange das Menue offen ist, liegt es vor dem eingehaengten DocMedico-Teaser
+   (z-index:9999) — so von Aric entschieden. Der Teaser selbst bleibt, er ist
+   gewollt; er tritt nur fuer die Dauer des offenen Menues zurueck. Die
+   Kopfleiste steigt mit, sonst waere der Schliessen-Knopf nicht mehr oben. */
+.menue-offen .chapters{z-index:10000}
+.menue-offen .chrome-top{z-index:10010}
+
 /* Kapitelmenü */
 .chapters{
   position:fixed;inset:0;z-index:55;
@@ -367,17 +467,56 @@ a{color:inherit}
   .chapters__list button:hover{color:var(--orange)}
 }
 .chapters__list button[aria-current="true"]{color:var(--orange)}
+/* Zwei Spalten: Kapitel links, Seiten rechts. Seit das Kapitel 06 dazukam,
+   waeren acht Kapitelzeilen plus eine zweite Liste untereinander auf einem
+   1280x720-Bildschirm nicht mehr aufgegangen. Nebeneinander passt beides —
+   und die Trennung sagt schon durch die Anordnung, dass rechts etwas anderes
+   steht als links. */
+.chapters__in{
+  display:grid;grid-template-columns:1fr auto;
+  align-items:center;gap:2rem 4rem;
+}
+.chapters__mehr{min-width:11rem}
+.chapters__t{
+  margin:0 0 .5rem;font-size:.625rem;letter-spacing:.2em;text-transform:uppercase;
+  color:rgba(251,241,224,.45);
+}
+.chapters__t + ul + .chapters__t{margin-top:1.6rem}
+.chapters__seiten{list-style:none;margin:0;padding:0}
+.chapters__seiten a{
+  display:block;padding:.18em 0;
+  color:var(--cream);text-decoration:none;
+  font-weight:900;text-transform:uppercase;letter-spacing:-.01em;
+  font-size:clamp(1.05rem,1.9vw,1.55rem);line-height:1.2;
+  opacity:0;transform:translateY(60%);
+  transition:opacity .34s var(--ease-out),transform .42s var(--ease-out),color .2s var(--ease-out);
+}
+.chapters__seiten--zwei a{font-size:clamp(.95rem,1.5vw,1.2rem);color:rgba(251,241,224,.82)}
+.chapters[data-open="true"] .chapters__seiten a{
+  opacity:1;transform:none;
+  /* Nach den Kapiteln, nicht mit ihnen: die linke Spalte laeuft zuerst ein. */
+  transition-delay:.34s;
+}
+@media (hover:hover) and (pointer:fine){
+  .chapters__seiten a:hover{color:var(--orange)}
+}
+.chapters__seiten a:focus-visible{outline:2px solid var(--orange);outline-offset:4px}
+
 .chapters__foot{
-  margin-top:3rem;font-size:.6875rem;letter-spacing:.16em;text-transform:uppercase;
+  margin-top:2.4rem;font-size:.6875rem;letter-spacing:.16em;text-transform:uppercase;
   color:rgba(251,241,224,.45);
   display:flex;flex-wrap:wrap;align-items:baseline;gap:.6rem 2rem;
 }
-.chapters__links{display:flex;gap:1.6rem}
-.chapters__links a{
-  color:var(--cream);text-decoration:none;
-  border-bottom:1px solid var(--orange);padding-bottom:.2em;
+
+/* Unter 820px steht alles untereinander, und dann kann es hoeher werden als
+   der Bildschirm. Ohne diese Zeilen waere die letzte Zeile nicht erreichbar —
+   das Menue ist position:fixed und scrollt von sich aus nicht mit. */
+@media (max-width:820px){
+  .chapters{overflow-y:auto;padding-block:5.5rem 2rem;justify-content:flex-start}
+  .chapters__in{grid-template-columns:1fr;gap:1.8rem}
+  .chapters__list button{font-size:clamp(1.3rem,6.4vw,2rem)}
+  .chapters__seiten a{font-size:clamp(1.05rem,4.6vw,1.4rem)}
 }
-.chapters__links a:focus-visible{outline:2px solid var(--orange);outline-offset:4px}
 
 /* Fortschrittsring rechts */
 .progress{
