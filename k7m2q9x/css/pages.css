@@ -566,10 +566,43 @@ body.page{overflow-x:hidden}
    scrollte an zweihundert Pixeln Knoepfen vorbei, bevor das erste Gesicht kam.
    Je Achse eine Zeile, die seitlich wegläuft: dieselbe Geste wie die Galerie
    darunter, und die Reihe faengt oben im Bild an. */
+
+/* Gemessen am 22.09.2026 auf dem Handy: von sechs Bereichs-Knoepfen stehen vier
+   ausserhalb des Bildes, von vier Standort-Knoepfen drei. Erreichbar sind alle
+   (nachgewiesen), aber der Schnitt sass hart an der Bildkante — das sieht nach
+   abgeschnitten aus, nicht nach "geht weiter". Deshalb eine weiche Kante.
+   Wo Scroll-Zeitleisten da sind, zieht sie sich am jeweiligen Ende zurueck,
+   damit nicht der letzte Knopf selbst angefressen wirkt. */
+@property --kanteL{syntax:'<length>';inherits:false;initial-value:0px}
+@property --kanteR{syntax:'<length>';inherits:false;initial-value:0px}
+@keyframes teamfilter-kante{
+  0%  {--kanteL:0px;    --kanteR:2.6rem}
+  7%  {--kanteL:1.5rem; --kanteR:2.6rem}
+  93% {--kanteL:1.5rem; --kanteR:2.6rem}
+  100%{--kanteL:1.5rem; --kanteR:0px}
+}
 @media (max-width:767px){
   .teamfilter{
     flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;
     padding-bottom:1.4rem;
+    /* Rueckfall ohne Scroll-Zeitleiste: die Kante ist genau so breit wie der
+       rechte Innenrand der Zeile. Steht die Reihe am Ende, liegt sie also nur
+       ueber leerem Rand und ist unsichtbar; mitten im Weg weicht sie den
+       angeschnittenen Knopf auf. */
+    --kanteL:0px;--kanteR:var(--gut);
+    -webkit-mask-image:linear-gradient(to right,
+      transparent 0,#000 var(--kanteL),
+      #000 calc(100% - var(--kanteR)),transparent 100%);
+    mask-image:linear-gradient(to right,
+      transparent 0,#000 var(--kanteL),
+      #000 calc(100% - var(--kanteR)),transparent 100%);
+  }
+  @supports (animation-timeline:scroll()){
+    .teamfilter{
+      --kanteR:2.6rem;
+      animation:teamfilter-kante linear both;
+      animation-timeline:scroll(self inline);
+    }
   }
   .teamfilter::-webkit-scrollbar{display:none}
   .teamfilter button{flex:0 0 auto}
