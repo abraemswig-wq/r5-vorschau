@@ -16,9 +16,15 @@
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@200;300;500;900&display=swap" rel="stylesheet">
+<!-- Barlow selbst ausgeliefert. Hier zaehlt das doppelt: diese Seite ist die
+     einzige unverschluesselte, sie laedt bei JEDEM Empfaenger des Links, und
+     sie laedt noch vor jeder Eingabe. Ein Abruf bei Google waere genau der
+     Fall, den man von aussen wirklich sehen kann.
+     Vorgeladen wird 200 (Einleitungssatz) und 900 (die Zeile "Fünf Säulen");
+     die 300 sitzt in Eingabefeld und Meldung, also unter der Aufmerksamkeit. -->
+<link rel="preload" href="../k7m2q9x/css/fonts/barlow-200-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="../k7m2q9x/css/fonts/barlow-900-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="../k7m2q9x/css/schriften.css">
 <style>
   *{box-sizing:border-box}
   html,body{height:100%}
