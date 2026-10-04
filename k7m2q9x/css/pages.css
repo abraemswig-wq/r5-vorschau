@@ -59,6 +59,18 @@ body.page{overflow-x:hidden}
 }
 .artcover__inner{position:relative;z-index:2;padding:0 var(--gut) clamp(2.5rem,6vh,4rem);width:100%}
 
+/* "Sportphysiotherapie" ist mit 19 Zeichen das laengste Wort, das auf dieser
+   Seite in einer Headline steht. .hl__line hat white-space:pre und
+   overflow:hidden (Rueckfallebene fuer die Scramble-Animation), kann also
+   nicht umbrechen: bei 320px Fenster lief das Wort 30px ueber die Kante und
+   wurde einfach abgeschnitten, bei 360px blieben 7px statt des Satzspiegels.
+   Eigene Stufe statt --hl-size global zu senken, weil das die Headlines auf
+   allen 42 Seiten verkleinern wuerde, um ein Wort auf einer unterzubringen.
+   Ab ~630px greift wieder --hl-size, min() nimmt dort den kleineren Wert. */
+@media (max-width:820px){
+  .artcover .hl--lang{font-size:min(var(--hl-size),7.6vw)}
+}
+
 .arttitle{
   margin:0;
   max-width:20ch;
@@ -294,6 +306,26 @@ body.page{overflow-x:hidden}
 .weiter__all{margin:1.6rem 0 0;font-size:.875rem;font-weight:300}
 .weiter__all a{color:var(--orange-lt);text-decoration:none;border-bottom:1px solid rgba(217,145,41,.4)}
 .weiter__all a:hover{border-bottom-color:var(--orange-lt)}
+
+/* Vereinskarten mit Logo hinter dem Namen. Eigene Stufe statt .weiter__l
+   anzufassen: dieselbe Liste traegt auf 42 Seiten die Leistungen, dort steht
+   kein Bild drin. Das Plaettchen ist weiss und nicht cream, weil die vier
+   Logos unterschiedlich gebaut sind: UBC bringt einen deckend weissen Grund
+   mit (verschmilzt nur auf Weiss), der Preussen-Adler ist schwarz auf
+   transparent und waere auf dem Pine-Grund fast unsichtbar, RVM ist weiss
+   plus Marineblau. Auf Weiss lesen alle vier, gegengeprueft am Kontaktabzug.
+   Dateien sind 64px fuer 34px Anzeige, also genau 2x fuer Retina. */
+/* Breitere Spalten als die Leistungsliste: bei 865px Satzspiegel ergaben die
+   geerbten 15rem drei Spalten zu 283px, und darin passt "Ruderverein Muenster
+   von 1882" plus Plaettchen nicht mehr in eine Zeile. Die Sportart klappte
+   dann bei drei von vier Karten nach unten und bei USC nicht, was unruhig
+   aussah. 20rem ergibt gemessen 2 Spalten zu 428px, also ein 2x2-Raster mit
+   vier einzeiligen Karten, und bleibt auf dem Tablet bei zwei Spalten. */
+.weiter__l--v{grid-template-columns:repeat(auto-fit,minmax(min(100%,20rem),1fr))}
+.weiter__l--v a{align-items:center;flex-wrap:wrap;row-gap:.45rem}
+.weiter__l--v .vl__n{display:flex;align-items:center;gap:.55rem;min-width:0}
+.vl__logo{flex:0 0 auto;width:34px;height:34px;padding:3px;box-sizing:border-box;
+  background:#fff;border-radius:2px}
 
 /* ---------- Leistungsuebersicht ---------- */
 
@@ -845,9 +877,14 @@ body.page{overflow-x:hidden}
 /* ---------- Klein ---------- */
 
 @media (max-width:820px){
-  .page-top{padding:1.1rem var(--gut)}
+  /* Seit dem fuenften Eintrag passt die Nav nicht mehr in eine Telefonzeile:
+     gemessen 368px bei 360px Fenster, das Dokument lief dadurch 57px nach
+     rechts aus (bei 390px: 29px). Darum stapelt der Kopf und die Nav darf
+     umbrechen, statt einen Eintrag mobil zu verstecken —
+     "Sportphysiotherapie" ist als interner Ankertext zu wertvoll dafuer. */
+  .page-top{padding:1.1rem var(--gut);flex-wrap:wrap;row-gap:.9rem}
   .page-top .wordmark img{height:20px}
-  .page-nav{gap:1rem}
+  .page-nav{gap:.55rem 1rem;flex-wrap:wrap;width:100%}
   .page-nav a{font-size:.625rem;letter-spacing:.12em}
   .artcover{min-height:60svh}
   .tldr{padding:1.4rem 1.4rem 1.6rem}
