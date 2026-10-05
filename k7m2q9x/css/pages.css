@@ -94,12 +94,35 @@ body.page{overflow-x:hidden}
    falsche Weg. Stattdessen bekommt die freie Spalte rechts eine Aufgabe. */
 .artbody{
   display:grid;
-  grid-template-columns:minmax(0,calc(72ch)) minmax(0,19rem);
+  /* Die zweite Spalte nimmt den Rest, statt auf 19rem festzustehen. Sonst
+     bleiben an der breitesten Stelle 8 px uebrig, die das Raster nicht
+     verteilt: die Seitenspalte endete bei 1121 px, der Block darunter bei
+     1129 px.
+     19rem bleibt dabei die UNTERGRENZE, nicht die feste Breite. Mit
+     minmax(0,1fr) zog die Textspalte ihre vollen 72ch an sich und drueckte die
+     Seitenspalte bei 1024 px auf 188 px zusammen: das Verzeichnis hat dort
+     nach jedem zweiten Wort umgebrochen. */
+  grid-template-columns:minmax(0,calc(72ch)) minmax(19rem,1fr);
   gap:clamp(2.5rem,5vw,5rem);
   max-width:calc(72ch + 19rem + 5rem + 2 * var(--gut));
   padding:0 var(--gut);
 }
 .artbody > .prose{padding-left:0;padding-right:0;max-width:none}
+
+/* Blogartikel haben genau einen Textblock, die Leistungs- und die
+   Sportphysio-Seite mehrere: Text, Vereine, Text, Fragen. Die duerfen nicht
+   einzeln ins Raster, sonst verteilt die automatische Platzierung sie
+   abwechselnd auf beide Spalten und der zweite Block stuende neben dem ersten
+   statt darunter. Sie kommen deshalb zusammen in .artmain, und .artbody hat
+   weiterhin genau zwei Kinder.
+   Der Umweg ueber einen Wrapper statt „grid-row:1 / -1" an der Seitenspalte
+   ist Absicht: -1 zaehlt nur bis zum Ende des ausdruecklichen Rasters, und das
+   ist hier eine Zeile. Die Spalte haette also nur neben dem ersten Block
+   geklebt und waere danach mitgescrollt. */
+.artmain{min-width:0}
+.artmain > .prose,
+.artmain > .faq,
+.artmain > .weiter{padding-left:0;padding-right:0;max-width:none}
 
 .artside{
   padding-top:clamp(3rem,7vh,5rem);
@@ -286,7 +309,22 @@ body.page{overflow-x:hidden}
 
 /* ---------- Weitere Leistungen ---------- */
 
-.weiter{padding:clamp(3.5rem,8vh,6rem) var(--gut) 0;max-width:calc(96ch + 2 * var(--gut))}
+/* Dieselbe Breite wie .artbody, nicht breiter und nicht schmaler. Der Block
+   steht direkt unter dem Artikel, und vorher endete er bei 961 px, waehrend der
+   Artikel daneben bis 1121 px lief: drei verschiedene rechte Kanten auf einer
+   Seite. Beide Angaben muessen zusammen geaendert werden.
+   `ch` loest sich an der Schriftgroesse des Elements auf. Beide erben sie vom
+   body, deshalb kommt hier derselbe Wert heraus; in :root waere er ein anderer. */
+.weiter{padding:clamp(3.5rem,8vh,6rem) var(--gut) 0;
+        max-width:calc(72ch + 19rem + 5rem + 2 * var(--gut))}
+/* Faellt der Artikel auf eine Spalte zurueck, muss der Block darunter mitgehen,
+   sonst steht er 238 px weiter rechts als der Text darueber.
+   Diese Abfrage steht hier und nicht oben bei .artbody: gleiche Spezifitaet,
+   also entscheidet die Reihenfolge. Weiter oben wurde sie von der Grundregel
+   zwei Zeilen darueber wieder ueberschrieben, und zwar wirkungslos. */
+@media (max-width:1023px){
+  .weiter{max-width:calc(72ch + 2 * var(--gut))}
+}
 .weiter__h{
   margin:0 0 1.6rem;padding-top:1.4rem;border-top:1px solid rgba(251,241,224,.18);
   font-size:.75rem;font-weight:900;text-transform:uppercase;letter-spacing:.16em;
@@ -315,13 +353,17 @@ body.page{overflow-x:hidden}
    transparent und waere auf dem Pine-Grund fast unsichtbar, RVM ist weiss
    plus Marineblau. Auf Weiss lesen alle vier, gegengeprueft am Kontaktabzug.
    Dateien sind 64px fuer 34px Anzeige, also genau 2x fuer Retina. */
-/* Breitere Spalten als die Leistungsliste: bei 865px Satzspiegel ergaben die
-   geerbten 15rem drei Spalten zu 283px, und darin passt "Ruderverein Muenster
-   von 1882" plus Plaettchen nicht mehr in eine Zeile. Die Sportart klappte
-   dann bei drei von vier Karten nach unten und bei USC nicht, was unruhig
-   aussah. 20rem ergibt gemessen 2 Spalten zu 428px, also ein 2x2-Raster mit
-   vier einzeiligen Karten, und bleibt auf dem Tablet bei zwei Spalten. */
-.weiter__l--v{grid-template-columns:repeat(auto-fit,minmax(min(100%,20rem),1fr))}
+/* Breitere Spalten als die Leistungsliste: in die geerbten 15rem passt
+   "Ruderverein Muenster von 1882" plus Plaettchen nicht in eine Zeile. Die
+   Sportart klappt dann nach unten, und zwar nicht bei allen vier Karten, was
+   die Reihe schief aussehen laesst.
+   Der Wert haengt am Satzspiegel und wurde am 05.10.2026 nachgezogen: solange
+   die Liste ueber 865px lief, ergaben 20rem zwei Spalten zu 428px und damit
+   vier einzeilige Karten. Seit sie in der Textspalte steht, sind es 649px,
+   dieselben 20rem ergaeben zwei Spalten zu 320px, und der Ruderverein bricht
+   wieder um. 22rem laesst sie deshalb einspaltig laufen: vier volle Zeilen,
+   alle gleich hoch. Wer die Textspalte wieder verbreitert, misst hier nach. */
+.weiter__l--v{grid-template-columns:repeat(auto-fit,minmax(min(100%,22rem),1fr))}
 .weiter__l--v a{align-items:center;flex-wrap:wrap;row-gap:.45rem}
 .weiter__l--v .vl__n{display:flex;align-items:center;gap:.55rem;min-width:0}
 .vl__logo{flex:0 0 auto;width:34px;height:34px;padding:3px;box-sizing:border-box;
@@ -642,6 +684,11 @@ body.page{overflow-x:hidden}
 
 .gal{padding:0 0 clamp(2rem,5vh,3rem)}
 .member[hidden]{display:none}
+/* Bezugsrahmen fuer die beiden Pfeile. Sie standen bis zum 05.10.2026 unten in
+   der Hinweiszeile, der rechte also genau in der Ecke, in der die
+   DocMedico-Rezeption parkt — dort war er schlicht verdeckt. Aric: „da klickt
+   man ja unten rechts, das geht ein bisschen unter". */
+.gal__buehne{position:relative}
 .gal__rail{
   --karte:clamp(14rem,26vw,23rem);
   display:flex;gap:clamp(.9rem,1.8vw,1.6rem);
@@ -695,10 +742,23 @@ body.page{overflow-x:hidden}
 .gal__rail[data-modus="stapel"] .member{flex:0 0 auto;width:min(78vw,22rem)}
 .gal__rail[data-modus="gruppe"] .member,
 .gal__rail[data-modus="stapel"] .member{cursor:pointer}
+/* Im Rundlauf gibt es keinen Anfang und kein Ende mehr. Die halbe Fensterbreite
+   Einrueckung war genau dafuer da, die erste und die letzte Karte noch in die
+   Mitte zu bekommen — im Band gibt es weder die eine noch die andere, und die
+   Einrueckung hinterliesse nur eine leere Bildschirmhaelfte.
+   Der Fangpunkt bleibt an. Er faengt ab, was nach einem Zug mit der Maus oder
+   einem Wisch uebrig bleibt — ohne ihn steht die Reihe zwischen zwei Karten und
+   keine traegt mehr ihren Namen. Mit dem Versatz vertraegt er sich: das Band ist
+   um genau eine Satzbreite periodisch, der Fangpunkt nach dem Sprung also
+   derselbe wie davor. */
+.gal__rail[data-loop="1"]{padding-inline:0}
+/* Ausserhalb des Rundlaufs haben die Klone nichts zu suchen: bei einem Filter
+   auf zwei Personen stuenden sonst sechs Karten da. */
+.gal__rail:not([data-loop="1"]) .member[data-klon]{display:none}
 .gal[data-modus="gruppe"] .gal__bar,
-.gal[data-modus="gruppe"] .gal__nav,
+.gal[data-modus="gruppe"] .gal__arrow,
 .gal[data-modus="stapel"] .gal__bar,
-.gal[data-modus="stapel"] .gal__nav{display:none}
+.gal[data-modus="stapel"] .gal__arrow{display:none}
 /* Der Hinweis bleibt stehen, verliert aber das Wischen: antippen geht weiter. */
 .gal[data-modus="gruppe"] .gal__hint,
 .gal[data-modus="stapel"] .gal__hint{justify-content:flex-start}
@@ -759,17 +819,36 @@ body.page{overflow-x:hidden}
   font-size:.6875rem;letter-spacing:.16em;text-transform:uppercase;
   color:rgba(251,241,224,.45);
 }
-.gal__nav{display:flex;gap:.5rem}
+/* Die Pfeile liegen jetzt auf der Reihe, auf Hoehe der Gesichter, und sind
+   dauerhaft sichtbar — nicht erst beim Ueberfahren. Ein Hinweis, den nur eine
+   Maus hervorholt, erreicht niemanden mit Touchscreen oder Tastatur.
+   Ausgegraut werden sie nicht mehr: im Rundlauf gibt es kein Ende, an dem ein
+   Pfeil nichts mehr zu tun haette. */
 .gal__arrow{
-  width:2.5rem;height:2.5rem;flex:0 0 auto;
+  /* z-index ueber 40: js/team.js stapelt die Karten per Inline-Stil bis 40, um
+     die Tiefenkurve zu ordnen. Auf 20 lag der Pfeil hinter den Portraits und
+     war genau dort nicht anklickbar, wo er sichtbar war. */
+  position:absolute;top:38%;transform:translateY(-50%);z-index:60;
+  width:3.25rem;height:3.25rem;flex:0 0 auto;
   display:grid;place-items:center;
-  border:1px solid rgba(251,241,224,.25);background:none;color:var(--cream);
-  font-size:.9rem;cursor:pointer;
-  transition:background .3s var(--ease-out),border-color .3s var(--ease-out),color .3s var(--ease-out);
+  border:1px solid rgba(251,241,224,.3);border-radius:50%;
+  /* Deckende Flaeche, nicht nur ein Rand: der Pfeil steht ueber Portraits, und
+     ein blosser Umriss verschwand auf hellen Bildstellen. */
+  background:rgba(13,26,21,.72);backdrop-filter:blur(6px);
+  color:var(--cream);font-size:1.1rem;line-height:1;cursor:pointer;
+  transition:background .3s var(--ease-out),border-color .3s var(--ease-out),
+             color .3s var(--ease-out),transform .3s var(--ease-out);
 }
-.gal__arrow:hover:not(:disabled){background:var(--orange);border-color:var(--orange);color:var(--pine-black)}
-.gal__arrow:disabled{opacity:.3;cursor:default}
+.gal__arrow--l{left:clamp(.5rem,2vw,1.6rem)}
+.gal__arrow--r{right:clamp(.5rem,2vw,1.6rem)}
+.gal__arrow:hover{background:var(--orange);border-color:var(--orange);color:var(--pine-black)}
+.gal__arrow--l:hover{transform:translateY(-50%) translateX(-3px)}
+.gal__arrow--r:hover{transform:translateY(-50%) translateX(3px)}
+.gal__arrow:active{transform:translateY(-50%) scale(.94)}
 .gal__arrow:focus-visible{outline:2px solid var(--orange);outline-offset:3px}
+@media (prefers-reduced-motion:reduce){
+  .gal__arrow,.gal__arrow:hover,.gal__arrow:active{transform:translateY(-50%)}
+}
 
 /* ---------- Team: Profilkarte ---------- */
 

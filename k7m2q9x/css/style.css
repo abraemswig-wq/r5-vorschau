@@ -491,7 +491,15 @@ a.tuer:hover .tuer__go{transform:translateX(.35em)}
   opacity:0;transform:translateY(60%);
   transition:opacity .34s var(--ease-out),transform .42s var(--ease-out),color .2s var(--ease-out);
 }
-.chapters__seiten--zwei a{font-size:clamp(.95rem,1.5vw,1.2rem);color:rgba(251,241,224,.82)}
+/* Die Zusammenarbeit-Liste stand kleiner und blasser da. Das war als Rangfolge
+   gedacht, las sich aber wie eine Fussnote. Die Ueberschrift darueber sagt
+   ohnehin, dass dort etwas anderes steht; beide Listen laufen jetzt in einer
+   Groesse. Der Pfeil bleibt als einziger Unterschied: diese zwei Ziele fuehren
+   auf die Hauptseite, nicht in die Vorschau. */
+.chapters__seiten--zwei a::after{
+  content:"\2197";margin-left:.35em;font-weight:400;
+  font-size:.7em;vertical-align:.15em;color:rgba(251,241,224,.5);
+}
 .chapters[data-open="true"] .chapters__seiten a{
   opacity:1;transform:none;
   /* Nach den Kapiteln, nicht mit ihnen: die linke Spalte laeuft zuerst ein. */

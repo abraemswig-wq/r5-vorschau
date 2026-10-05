@@ -9,9 +9,74 @@
   const el = id => document.getElementById(id);
   const bar = el('railbar');
 
+  /* ---------- Rundlauf ---------- */
+  // Die Reihe hatte zwei harte Enden. Wer ganz nach links blaetterte, sah Aric
+  // allein in der Mitte und daneben eine leere Bildschirmhaelfte; rechts
+  // dasselbe mit Borna. Aric, 05.10.2026: „dass ich da quasi nicht als einziger
+  // nachher da stehe."
+  //
+  // Das Band besteht deshalb aus drei Saetzen. Die ECHTEN Karten bleiben der
+  // mittlere: nur sie tragen Fokus und Vorlesereihenfolge, und nur ihr Index
+  // zeigt auf die Daten. Laeuft die Reihe aus dem mittleren Satz heraus, wird
+  // sie um genau eine Satzbreite zurueckversetzt. Zu sehen ist davon nichts,
+  // weil links und rechts dasselbe steht.
+  //
+  // Folge fuer r5-seiten-check: der Lauf meldet seither „220 Woerter entstehen
+  // erst durch JavaScript". Das sind genau die 66 Klon-Namen. Die ausgelieferte
+  // Datei enthaelt jede Person weiterhin GENAU EINMAL (am 05.10.2026
+  // nachgezaehlt: 33 von 33, kein data-klon im Quelltext) — die Sammler von
+  // ChatGPT und Perplexity lesen also nichts doppelt und nichts fehlt.
+  karten.forEach((k, i) => { k.dataset.i = String(i); });
+  const klonsatz = () => {
+    const f = document.createDocumentFragment();
+    karten.forEach(k => {
+      const c = k.cloneNode(true);
+      c.dataset.klon = '1';
+      // Jede Person steht dreimal im Baum. Fuer Vorleseprogramme und die
+      // Tabulatorreihenfolge darf sie trotzdem nur einmal vorkommen.
+      c.setAttribute('aria-hidden', 'true');
+      c.tabIndex = -1;
+      f.appendChild(c);
+    });
+    return f;
+  };
+  rail.insertBefore(klonsatz(), karten[0]);
+  rail.appendChild(klonsatz());
+  const alle = [...rail.querySelectorAll('.member')];
+  const N = karten.length;
+
+  let satz = 0, loop = false;
   // Gefiltert wird durch Ausblenden, nicht durch Umsortieren: die Profilkarte
   // greift ueber den Index auf die Daten zu, und der muss stabil bleiben.
-  const offen = () => karten.filter(k => !k.hidden);
+  // Ausserhalb des Rundlaufs stehen die Klone auf display:none — sie liefern
+  // dann offsetLeft 0 und wuerden jede Messung verderben.
+  const offen = () => alle.filter(k => !k.hidden && (loop || !k.dataset.klon));
+  // Die echten Karten. Alles, was gezaehlt oder auf Daten abgebildet wird,
+  // laeuft hierueber: sonst meldet die Galerie 99 Personen statt 33.
+  const offenEcht = () => karten.filter(k => !k.hidden);
+
+  const messSatz = () => {
+    const j = karten.findIndex(k => !k.hidden);
+    satz = j < 0 ? 0 : alle[N + j].offsetLeft - alle[j].offsetLeft;
+  };
+  // Zwei verschieden weite Fenster, und das ist der Punkt. Die Pfeile holen ihr
+  // Ziel in das ENGE Fenster [0.5, 1.5] zurueck; die Nachfuehrung beim Scrollen
+  // greift erst ausserhalb des WEITEN [0.25, 1.75].
+  // Mit nur einem Fenster schoben sich beide gegenseitig zurueck: der Pfeil
+  // setzte die Reihe knapp unter die Untergrenze, die Nachfuehrung legte sofort
+  // eine Satzbreite drauf und riss den laufenden Lauf ab. Das Band blieb
+  // stehen — gemessen am 05.10.2026: ab Klick 29 fuenfmal dieselbe Person,
+  // 17 Doppelte in einem Umlauf.
+  const ENG = 0.5, WEIT = 0.25;
+  // Haelt die Reihe im mittleren Satz. Gibt den Versatz zurueck, damit ein
+  // laufender Mauszug seinen Bezugspunkt mitfuehren kann.
+  const versetze = () => {
+    if (!loop || !satz) return 0;
+    const d = rail.scrollLeft < satz * WEIT ? satz
+            : rail.scrollLeft > satz * (2 - WEIT) ? -satz : 0;
+    if (d) rail.scrollLeft += d;
+    return d;
+  };
 
   /* ---------- Passt die Auswahl ins Bild? ---------- */
   // Bei „Mediendesign" oder „Ernaehrung & Praevention" bleiben zwei Personen
@@ -30,7 +95,7 @@
   const HINWEIS_REIHE = hinweis ? hinweis.textContent : '';
 
   const platzbedarf = () => {
-    const s = offen();
+    const s = offenEcht();
     if (!s.length) return 0;
     // offsetWidth, nicht die sichtbare Box: die Karten sind gedreht und
     // verschoben, ihre Bildschirmkanten sind kein Layoutmass.
@@ -50,12 +115,24 @@
     // Rahmenbreite, nicht clientWidth: clientWidth haengt an der Einrueckung,
     // und die aendert dieses Verfahren selbst — die Messung wuerde sich bei
     // jedem Durchlauf ihr eigenes Ergebnis bestaetigen.
-    const n = offen().length;
+    const n = offenEcht().length;
     const passt = platzbedarf() <= rail.getBoundingClientRect().width - 2 * rand();
     art = passt ? 'gruppe' : (n && n <= STAPEL_BIS ? 'stapel' : 'reihe');
     knapp = art !== 'reihe';
     rail.dataset.modus = art;
     if (gal) gal.dataset.modus = art;
+    // Der Rundlauf gehoert nur zur Reihe. Und er braucht einen Satz, der breiter
+    // ist als das Fenster: sonst liegt an der Sprungstelle kein Material mehr,
+    // und der Versatz zeigt ein Loch statt der naechsten Person.
+    // Reihenfolge: erst data-loop setzen, dann messen. Die Satzbreite haengt an
+    // der Einrueckung, und die steht in genau dieser Regel.
+    if (knapp) { loop = false; satz = 0; rail.dataset.loop = '0'; }
+    else {
+      rail.dataset.loop = '1';
+      messSatz();
+      loop = satz > rail.clientWidth;
+      if (!loop) { satz = 0; rail.dataset.loop = '0'; }
+    }
     if (hinweis) hinweis.textContent = knapp ? 'Antippen für das Profil' : HINWEIS_REIHE;
     return knapp;
   };
@@ -63,6 +140,15 @@
   /* ---------- Fortschritt ---------- */
   const mess = () => {
     if (knapp) return;   // Strich und Pfeile sind in diesem Modus ausgeblendet
+    if (loop && satz) {
+      // Im Band gibt es kein Ende. Der Strich zeigt die Stelle im Satz, die
+      // Pfeile ruhen nie: beide haben immer eine naechste Person.
+      const p = (((rail.scrollLeft - satz) % satz) + satz) % satz;
+      bar.style.transform = `scaleX(${(p / satz).toFixed(4)})`;
+      el('railprev').disabled = false;
+      el('railnext').disabled = false;
+      return;
+    }
     const rest = rail.scrollWidth - rail.clientWidth;
     bar.style.transform = `scaleX(${rest > 0 ? rail.scrollLeft / rest : 1})`;
     el('railprev').disabled = rail.scrollLeft < 4;
@@ -86,6 +172,9 @@
   // Sichtbar ist das nicht (display:none), aber jede Zaehlung ueber .is-mitte
   // liest danach Personen mit, die gar nicht mehr in der Auswahl sind — der
   // Bereich „Ernaehrung & Praevention" meldete drei Mitten bei zwei Karten.
+  // Zieht mit der Maus: oben deklariert, weil der Rundlauf den Bezugspunkt
+  // mitfuehren muss, wenn er mitten im Zug um eine Satzbreite versetzt.
+  let zieht = false, startX = 0, startL = 0, weit = false;
   const zuruecksetzen = k => {
     k.classList.remove('is-mitte');
     const d = k.firstElementChild;
@@ -94,7 +183,7 @@
   };
 
   const raum = () => {
-    karten.forEach(k => { if (k.hidden) zuruecksetzen(k); });
+    alle.forEach(k => { if (k.hidden) zuruecksetzen(k); });
     // Passt alles ins Bild, gibt es keine Mitte: dann steht jede Person gerade,
     // hell und beschriftet da. Eine Tiefenkurve ueber zwei Karten sortiert
     // nichts, sie dunkelt nur eine der beiden ohne Grund ab.
@@ -143,11 +232,19 @@
   // Reihe startet deshalb so weit eingerueckt, wie links tatsaechlich Karten
   // hinpassen — die Mitte bleibt die Mitte, sie hat nur beide Seiten belegt.
   const anfang = () => {
-    const s = offen();
-    if (!s.length) return;
     // Im knappen Modus gibt es nichts einzurücken: die Gruppe steht zentriert
     // und die Reihe hat gar keinen Scrollweg mehr.
     if (modus()) { rail.scrollLeft = 0; return; }
+    const s = offen();
+    if (!s.length) return;
+    if (loop) {
+      // Auf die erste Person zentriert. Im Band liegt links von ihr der vorige
+      // Satz, der Bildschirm ist also von Anfang an auf beiden Seiten belegt —
+      // genau das, was der alten Reihe an ihren Enden fehlte.
+      const z = offenEcht()[0];
+      if (z) rail.scrollLeft = z.offsetLeft + z.offsetWidth / 2 - rail.clientWidth / 2;
+      return;
+    }
     const raster = schritt();
     const platz = Math.max(0, Math.floor((rail.clientWidth / raster - 1) / 2));
     const z = s[Math.min(platz, s.length - 1)];
@@ -164,14 +261,45 @@
     angefordert = true;
     requestAnimationFrame(zeichne);
   };
-  rail.addEventListener('scroll', anfordern, {passive: true});
+  rail.addEventListener('scroll', () => {
+    // Der Versatz laeuft hier, nicht in zeichne(): er muss vor dem naechsten
+    // pointermove passiert sein, sonst rechnet der Zug noch mit der alten Lage.
+    const d = versetze();
+    if (d) startL += d;
+    anfordern();
+  }, {passive: true});
   addEventListener('resize', anfordern);
   zeichne();
 
   /* ---------- Pfeile ---------- */
   // Um genau ein Kartenraster weiterspringen, nicht um eine feste Pixelzahl:
   // die Kartenbreite haengt am Viewport.
-  const ruecke = d => rail.scrollBy({left: d * schritt(), behavior: 'smooth'});
+  // Absolutes Ziel statt scrollBy: wer zweimal schnell hintereinander klickt,
+  // unterbricht den laufenden weichen Lauf. Relativ gerechnet ist die
+  // angefangene Strecke dann verloren, die Reihe steht zwischen zwei Karten,
+  // und weil is-mitte an genau dieser Lage haengt, trug danach KEINE Person mehr
+  // ihren Namen. Gemessen am 05.10.2026: nach 45 Klicks 36-mal keine Mitte.
+  // Ueber die Kartenmitte gerechnet landet auch der unterbrochene Klick auf
+  // einer Person.
+  const ruecke = d => {
+    const s = offen();
+    if (!s.length) return;
+    const ziel = rail.scrollLeft + rail.clientWidth / 2 + d * schritt();
+    let z = s[0], best = Infinity;
+    for (const k of s) {
+      const ab = Math.abs(k.offsetLeft + k.offsetWidth / 2 - ziel);
+      if (ab < best) { best = ab; z = k; }
+    }
+    let links = z.offsetLeft + z.offsetWidth / 2 - rail.clientWidth / 2;
+    // Erst versetzen, dann laufen. Ein weicher Lauf behaelt sein einmal
+    // gesetztes Ziel; ein Sprung mittendrin liesse es auf die falsche Stelle
+    // zeigen. Mit der Reihe wandert das Ziel mit, beide um eine Satzbreite.
+    if (loop && satz) {
+      while (links < satz * ENG)       { rail.scrollLeft += satz; links += satz; }
+      while (links > satz * (2 - ENG)) { rail.scrollLeft -= satz; links -= satz; }
+    }
+    rail.scrollTo({left: links, behavior: 'smooth'});
+  };
   el('railprev').addEventListener('click', () => ruecke(-1));
   el('railnext').addEventListener('click', () => ruecke(1));
 
@@ -181,10 +309,14 @@
     e.preventDefault();
     // Steht der Fokus auf einer Person, wandert er mit. Sonst scrollte die Reihe
     // unter dem Fokus weg und Enter oeffnete jemanden, den man nicht mehr sieht.
-    const s = offen();
+    // Gewandert wird ueber die echten Karten: die Klone sind aus der
+    // Tabulatorreihenfolge genommen, auf ihnen hat der Fokus nichts verloren.
+    const s = offenEcht();
     const i = s.indexOf(document.activeElement);
     if (i < 0) return ruecke(d);
-    const naechste = s[Math.max(0, Math.min(s.length - 1, i + d))];
+    // Auch die Tastatur laeuft rund: hinter der letzten Person kommt die erste.
+    const naechste = s[loop ? (i + d + s.length) % s.length
+                            : Math.max(0, Math.min(s.length - 1, i + d))];
     naechste.focus();
     // Nur hier zentrieren, nicht bei jedem Fokus: die Maus setzt den Fokus schon
     // beim Druecken, ein Zug wuerde sich sonst gegen das Nachruecken stemmen.
@@ -201,7 +333,6 @@
   // danach jedes weitere pointermove ein — die Reihe bliebe nach 20px stehen.
   rail.addEventListener('dragstart', e => e.preventDefault());
 
-  let zieht = false, startX = 0, startL = 0, weit = false;
   rail.addEventListener('pointerdown', e => {
     if (e.pointerType !== 'mouse' || e.button !== 0) return;
     // Im knappen Modus gibt es keinen Scrollweg. Ohne diese Sperre haette ein
@@ -234,6 +365,17 @@
     knoten.classList.toggle('is-leer', !wert);
   };
 
+  // Welche der drei Instanzen einer Person steht gerade am naechsten? Immer die
+  // echte zu nehmen risse die Reihe quer durch das Band, obwohl dieselbe Person
+  // zwei Karten weiter schon im Bild steht.
+  const instanzNah = i => {
+    if (!loop) return karten[i].hidden ? null : karten[i];
+    const blick = rail.scrollLeft + rail.clientWidth / 2;
+    return [alle[i], alle[N + i], alle[2 * N + i]]
+      .filter(x => x && !x.hidden)
+      .sort((a, b) => Math.abs(a.offsetLeft - blick) - Math.abs(b.offsetLeft - blick))[0];
+  };
+
   let aktiv = 0;
   const zeige = i => {
     aktiv = (i + karten.length) % karten.length;
@@ -256,22 +398,25 @@
     setz(el('pcort'), d.standort);
     setz(el('pcfokus'), d.fokus);
     setz(el('pcsatz'), d.satz);
-    const s = offen();
+    const s = offenEcht();
     el('pczaehler').textContent = `${s.indexOf(karten[aktiv]) + 1} / ${s.length}`;
     // Die Karte hinter der Galerie mitziehen, damit nach dem Schliessen die
     // zuletzt gesehene Person im Bild steht.
-    karten[aktiv]?.scrollIntoView({block: 'nearest', inline: 'center'});
+    instanzNah(aktiv)?.scrollIntoView({block: 'nearest', inline: 'center'});
   };
 
-  karten.forEach((k, i) => k.addEventListener('click', () => {
-    zeige(i);
+  // Auch die Klone sind anklickbar — sie sind das, was der Besucher sieht,
+  // sobald das Band einmal umgelaufen ist. Der Index steht im data-i und zeigt
+  // bei allen drei Instanzen auf dieselbe Person.
+  alle.forEach(k => k.addEventListener('click', () => {
+    zeige(Number(k.dataset.i));
     pc.showModal();
   }));
 
   // Blaettern laeuft ueber die sichtbaren Karten: bei aktivem Filter waere es
   // sonst moeglich, aus dem Bereich herauszublaettern, den man gerade ansieht.
   const weiter = d => {
-    const s = offen();
+    const s = offenEcht();
     const i = s.indexOf(karten[aktiv]);
     zeige(karten.indexOf(s[(i + d + s.length) % s.length]));
   };
@@ -313,7 +458,10 @@
     let wahlBereich = 'alle', wahlOrt = 'alle';
 
     const anwenden = () => {
-      karten.forEach(k => {
+      // Ueber alle drei Instanzen: ein Klon traegt dieselben data-Attribute wie
+      // sein Original. Bliebe er stehen, zeigte das Band nach einer Umdrehung
+      // wieder die herausgefilterten Personen.
+      alle.forEach(k => {
         k.hidden = !trifft(k, 'gruppe', wahlBereich) || !trifft(k, 'ort', wahlOrt);
       });
       anfang();
