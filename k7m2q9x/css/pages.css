@@ -819,16 +819,19 @@ body.page{overflow-x:hidden}
   font-size:.6875rem;letter-spacing:.16em;text-transform:uppercase;
   color:rgba(251,241,224,.45);
 }
-/* Die Pfeile liegen jetzt auf der Reihe, auf Hoehe der Gesichter, und sind
-   dauerhaft sichtbar — nicht erst beim Ueberfahren. Ein Hinweis, den nur eine
-   Maus hervorholt, erreicht niemanden mit Touchscreen oder Tastatur.
-   Ausgegraut werden sie nicht mehr: im Rundlauf gibt es kein Ende, an dem ein
-   Pfeil nichts mehr zu tun haette. */
+/* Die beiden Pfeile am rechten Ende der Hinweiszeile stehen nebeneinander.
+   Ohne eigene Regel ist der Traeger ein inline-Span: die Knoepfe sassen auf
+   der Grundlinie und bekamen den Zeilenabstand als Luecke. */
+.gal__nav{display:flex;align-items:center;gap:.6rem}
+
+/* Hier steht nur das Aussehen, nicht die Lage. Die Lage stand frueher mit drin:
+   `.gal__arrow` trug `position:absolute`, weil der Pfeil in der Team-Reihe auf
+   den Portraits liegt. Dieselbe Klasse sitzt aber auch in der Hinweiszeile der
+   Standortseiten und in der Profilkarte, und dort gibt es kein `--l`/`--r`.
+   Ohne left/right legten sich beide Pfeile uebereinander, der hintere war nicht
+   anklickbar, und sie schoben das Dokument bei 390px Breite um 25px nach
+   rechts: die Seite liess sich am Telefon seitlich wegschieben. */
 .gal__arrow{
-  /* z-index ueber 40: js/team.js stapelt die Karten per Inline-Stil bis 40, um
-     die Tiefenkurve zu ordnen. Auf 20 lag der Pfeil hinter den Portraits und
-     war genau dort nicht anklickbar, wo er sichtbar war. */
-  position:absolute;top:38%;transform:translateY(-50%);z-index:60;
   width:3.25rem;height:3.25rem;flex:0 0 auto;
   display:grid;place-items:center;
   border:1px solid rgba(251,241,224,.3);border-radius:50%;
@@ -839,15 +842,30 @@ body.page{overflow-x:hidden}
   transition:background .3s var(--ease-out),border-color .3s var(--ease-out),
              color .3s var(--ease-out),transform .3s var(--ease-out);
 }
+.gal__arrow:hover{background:var(--orange);border-color:var(--orange);color:var(--pine-black)}
+.gal__arrow:focus-visible{outline:2px solid var(--orange);outline-offset:3px}
+.gal__arrow:active{transform:scale(.94)}
+
+/* Auf der Reihe liegend, auf Hoehe der Gesichter, und dauerhaft sichtbar, nicht
+   erst beim Ueberfahren. Ein Hinweis, den nur eine Maus hervorholt, erreicht
+   niemanden mit Touchscreen oder Tastatur. Ausgegraut werden sie nicht mehr: im
+   Rundlauf gibt es kein Ende, an dem ein Pfeil nichts mehr zu tun haette.
+   z-index ueber 40: js/team.js stapelt die Karten per Inline-Stil bis 40, um die
+   Tiefenkurve zu ordnen. Auf 20 lag der Pfeil hinter den Portraits und war genau
+   dort nicht anklickbar, wo er sichtbar war. */
+.gal__arrow--l,.gal__arrow--r{
+  position:absolute;top:38%;transform:translateY(-50%);z-index:60;
+}
 .gal__arrow--l{left:clamp(.5rem,2vw,1.6rem)}
 .gal__arrow--r{right:clamp(.5rem,2vw,1.6rem)}
-.gal__arrow:hover{background:var(--orange);border-color:var(--orange);color:var(--pine-black)}
 .gal__arrow--l:hover{transform:translateY(-50%) translateX(-3px)}
 .gal__arrow--r:hover{transform:translateY(-50%) translateX(3px)}
-.gal__arrow:active{transform:translateY(-50%) scale(.94)}
-.gal__arrow:focus-visible{outline:2px solid var(--orange);outline-offset:3px}
+.gal__arrow--l:active,.gal__arrow--r:active{transform:translateY(-50%) scale(.94)}
 @media (prefers-reduced-motion:reduce){
-  .gal__arrow,.gal__arrow:hover,.gal__arrow:active{transform:translateY(-50%)}
+  .gal__arrow,.gal__arrow:hover,.gal__arrow:active{transform:none}
+  .gal__arrow--l,.gal__arrow--r,
+  .gal__arrow--l:hover,.gal__arrow--r:hover,
+  .gal__arrow--l:active,.gal__arrow--r:active{transform:translateY(-50%)}
 }
 
 /* ---------- Team: Profilkarte ---------- */
