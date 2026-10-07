@@ -2,14 +2,69 @@
    Dieselben Tokens und dieselbe Typo wie die Kino-Seite, aber normal scrollend.
    style.css wird davor geladen; hier steht nur, was Fließseiten zusätzlich brauchen. */
 
-body.page{overflow-x:hidden}
+/* ---------- Satzspiegel ----------
+
+   Jeder gedeckelte Block klebte links. `max-width` ohne `margin-inline:auto`
+   heisst: der gesamte Ueberschuss faellt rechts an. In der ganzen Datei stand
+   kein einziges `margin-inline:auto` — das ist Arithmetik, kein Geschmack, und
+   es wurde mit jedem Zoll Bildschirm schlimmer:
+
+       Rand links / rechts    1440: 96/215    1920: 128/631    2560: 171/1186
+
+   Dazu lief die Kopfzeile ueber die volle Breite, waehrend der Inhalt
+   gedeckelt war: bei 2560 endete die Navigation bei 2389 und der Text bei
+   1374. Zwei verschiedene rechte Kanten auf derselben Seite.
+
+   Jetzt teilen sich alle Baender einen Satzspiegel und stehen darueber mittig.
+   Das *alle* ist der kritische Teil: bliebe ein Band zurueck, haette die Seite
+   zwei linke Kanten, und das ist sichtbar schlimmer als ein zu grosser rechter
+   Rand. Betroffen sind Kopfzeile, Deckflaeche, Standort-Hero, Faktenreihe,
+   Bildstrecke, Hauswechsel, Text+Seitenspalte, Weiterlesen, Abschluss, Fuss.
+
+   Spalte und Schrift wachsen gemeinsam. Wer nur die Spalte verbreitert, macht
+   die Zeilen laenger: 72ch bei 16px waren gemessen 85 Zeichen je Zeile, schon
+   am oberen Rand des Vertretbaren (gut bis 75, vertretbar bis 85). Die
+   Lesespalte waechst um 18 %, die Schrift um 12 % — unterm Strich bleibt die
+   Zeilenlaenge, wo sie war, und die Spalte ist trotzdem breiter. */
+body.page{
+  overflow-x:hidden;
+
+  /* Gerechnet, nicht geschaetzt: der Fliesstext ist Barlow Light. Gemessen mit
+     canvas.measureText auf dem berechneten Font liegt die mittlere
+     Zeichenbreite bei 0,425 * Schriftgrad (6,80px bei 16px). Eine Zeile von
+     80 Zeichen ist damit 34 * Schriftgrad breit — genau so steht --lese
+     weiter unten.
+
+     Hier stand vorher 7,635px je 16px und --lese als eigene Formel. Beides
+     war falsch: die 7,635 waren ein Schaetzwert (12 % zu hoch), und zwei
+     getrennte Formeln koennen auseinanderlaufen. Gemessen ergab das 95
+     Zeichen je Zeile statt der vorhergesagten 85. Seit --lese aus --satz
+     faellt, ist die Zeilenlaenge an JEDER Fensterbreite dieselbe Zahl und
+     kann gar nicht mehr abdriften. Wer die 80 aendern will, aendert die 34. */
+  --satz:clamp(1rem, .9rem + .45vw, 1.3rem);
+  /* 390: 16,0px · 768: 17,9px · 1024: 19,0px · ab 1422: 20,8px (Kappe) */
+  --lese:calc(34 * var(--satz));
+  /* 390: 545px · 768: 607px · 1024: 646px · ab 1422: 707px — immer 80 Zeichen */
+
+  --neben:min(26rem, 19rem + 6.67vw);    /* 400px @1440 · 416px ab 1920 */
+  --luecke:clamp(2.5rem,5vw,5rem);
+  --breit:calc(var(--lese) + var(--luecke) + var(--neben) + 2 * var(--gut));
+
+  /* Fuer Baender, die ihren Hintergrund oder ihre Trennlinie ueber die volle
+     Breite ziehen und nur den Inhalt einruecken sollen: nicht das Element
+     zentrieren, sondern seine Polsterung rechnen. max() faengt den Fall ab,
+     dass das Fenster schmaler als --breit ist — dann bleibt es beim normalen
+     Gutter. `100%` loest hier gegen die Fensterbreite auf, weil body weder
+     Polsterung noch Rand hat. */
+  --rand:calc(max(0px, 100% - var(--breit)) / 2 + var(--gut));
+}
 
 /* ---------- Kopf ---------- */
 
 .page-top{
   position:sticky;top:0;z-index:60;
   display:flex;align-items:center;justify-content:space-between;gap:1.5rem;
-  padding:1.6rem var(--gut);
+  padding:1.6rem var(--rand);
   background:rgba(11,22,17,.86);
   backdrop-filter:blur(14px);
   border-bottom:1px solid rgba(251,241,224,.1);
@@ -30,7 +85,7 @@ body.page{overflow-x:hidden}
 
 .masthead{
   position:relative;
-  padding:clamp(4rem,11vh,7.5rem) var(--gut) clamp(3rem,7vh,4.5rem);
+  padding:clamp(4rem,11vh,7.5rem) var(--rand) clamp(3rem,7vh,4.5rem);
   overflow:hidden;
 }
 .masthead__inner{position:relative;z-index:2}
@@ -57,7 +112,7 @@ body.page{overflow-x:hidden}
     linear-gradient(to top, rgba(11,22,17,.825) 4%, rgba(11,22,17,.612) 38%, rgba(11,22,17,.289) 72%),
     linear-gradient(96deg, rgba(11,22,17,.612) 0%, rgba(11,22,17,.102) 62%);
 }
-.artcover__inner{position:relative;z-index:2;padding:0 var(--gut) clamp(2.5rem,6vh,4rem);width:100%}
+.artcover__inner{position:relative;z-index:2;padding:0 var(--rand) clamp(2.5rem,6vh,4rem);width:100%}
 
 /* "Sportphysiotherapie" ist mit 19 Zeichen das laengste Wort, das auf dieser
    Seite in einer Headline steht. .hl__line hat white-space:pre und
@@ -90,8 +145,10 @@ body.page{overflow-x:hidden}
 
 /* ---------- Fließtext ---------- */
 
-/* Der Satz bleibt auf Lesebreite — breiter zu setzen wäre der bequeme, aber
-   falsche Weg. Stattdessen bekommt die freie Spalte rechts eine Aufgabe. */
+/* Der Satz bleibt auf Lesebreite — breiter zu setzen waere der bequeme, aber
+   falsche Weg. Stattdessen bekommt die freie Spalte rechts eine Aufgabe.
+   „Lesebreite" ist seit dem Satzspiegel-Umbau --lese und waechst mit der
+   Schrift mit; frueher stand hier ein festes 72ch. */
 .artbody{
   display:grid;
   /* Die zweite Spalte nimmt den Rest, statt auf 19rem festzustehen. Sonst
@@ -99,12 +156,13 @@ body.page{overflow-x:hidden}
      verteilt: die Seitenspalte endete bei 1121 px, der Block darunter bei
      1129 px.
      19rem bleibt dabei die UNTERGRENZE, nicht die feste Breite. Mit
-     minmax(0,1fr) zog die Textspalte ihre vollen 72ch an sich und drueckte die
-     Seitenspalte bei 1024 px auf 188 px zusammen: das Verzeichnis hat dort
-     nach jedem zweiten Wort umgebrochen. */
-  grid-template-columns:minmax(0,calc(72ch)) minmax(19rem,1fr);
-  gap:clamp(2.5rem,5vw,5rem);
-  max-width:calc(72ch + 19rem + 5rem + 2 * var(--gut));
+     minmax(0,1fr) zog die Textspalte ihre volle --lese an sich und drueckte
+     die Seitenspalte bei 1024 px auf 188 px zusammen: das Verzeichnis hat
+     dort nach jedem zweiten Wort umgebrochen. */
+  grid-template-columns:minmax(0,var(--lese)) minmax(19rem,1fr);
+  gap:var(--luecke);
+  max-width:var(--breit);
+  margin-inline:auto;
   padding:0 var(--gut);
 }
 .artbody > .prose{padding-left:0;padding-right:0;max-width:none}
@@ -179,15 +237,27 @@ body.page{overflow-x:hidden}
 /* Unter 1024px trägt eine zweite Spalte nicht mehr: das Verzeichnis fällt weg
    (der Text ist dann ohnehin einen Wisch entfernt), die Termin-Karte bleibt. */
 @media (max-width:1023px){
-  .artbody{grid-template-columns:minmax(0,1fr);max-width:calc(72ch + 2 * var(--gut))}
+  /* Faellt die zweite Spalte weg, schrumpft der Satzspiegel mit. Das hier ist
+     die eine Stelle, an der das passieren darf: --breit treibt ueber --rand
+     *alle* Baender, der Umbruch bleibt also an jeder Kante derselbe. Stuende
+     die Ausnahme stattdessen als `max-width` an .artbody, haetten Kopfzeile
+     und Faktenreihe weiter auf der Zweispalten-Breite gestanden und die Seite
+     bei 1023px zwei linke Kanten gehabt. */
+  body.page{--breit:calc(var(--lese) + 2 * var(--gut))}
+  .artbody{grid-template-columns:minmax(0,1fr)}
   .artside{position:static;padding-top:2.5rem}
   .toc{display:none}
 }
 
+/* Polsterung --rand, Deckel --lese + 2 * --rand: dadurch liegt die linke Kante
+   auf dem Satzspiegel und der Satz bleibt trotzdem genau --lese breit. Dieselbe
+   Rechnung steht bei .faq, .sources und .byline — alle vier sind Baender, die
+   auch ohne .artbody vorkommen koennen. Innerhalb von .artmain setzt die Regel
+   weiter unten Polsterung und Deckel ohnehin zurueck, dort fuehrt das Raster. */
 .prose{
-  padding:clamp(3rem,7vh,5rem) var(--gut) 0;
-  max-width:calc(72ch + 2 * var(--gut));
-  font-size:clamp(.95rem,1.12vw,1.0625rem);
+  padding:clamp(3rem,7vh,5rem) var(--rand) 0;
+  max-width:calc(var(--lese) + 2 * var(--rand));
+  font-size:var(--satz);
   line-height:1.78;
   font-weight:300;
   color:rgba(251,241,224,.88);
@@ -232,11 +302,14 @@ body.page{overflow-x:hidden}
   font-size:.6875rem;font-weight:500;letter-spacing:.22em;text-transform:uppercase;
   color:#8a5a12;
 }
-.tldr p{margin:0;font-size:1rem;line-height:1.62;font-weight:300}
+/* Der Kasten hat 1,9rem Innenpolster, die Zeile darin ist also schmaler als
+   die Lesespalte. Feste 1rem ergaben gemessen 104 Zeichen. Die 0,92 holt die
+   Polsterung wieder rein: --lese minus 2*1,9rem, geteilt durch 34. */
+.tldr p{margin:0;font-size:calc(var(--satz) * .92);line-height:1.62;font-weight:300}
 
 /* ---------- FAQ ---------- */
 
-.faq{padding:clamp(3.5rem,8vh,5.5rem) var(--gut);max-width:calc(72ch + 2 * var(--gut))}
+.faq{padding:clamp(3.5rem,8vh,5.5rem) var(--rand);max-width:calc(var(--lese) + 2 * var(--rand))}
 .faq__list{margin:2rem 0 0;border-top:1px solid rgba(251,241,224,.16)}
 .faq details{border-bottom:1px solid rgba(251,241,224,.16)}
 .faq summary{
@@ -254,7 +327,10 @@ body.page{overflow-x:hidden}
 }
 .faq details[open] summary::after{transform:rotate(-135deg)}
 .faq summary:focus-visible{outline:2px solid var(--orange);outline-offset:3px}
-.faq__a{margin:0;padding:0 2.5rem 1.4rem 0;font-size:.9375rem;line-height:1.72;font-weight:300;color:rgba(251,241,224,.9)}
+/* Feste 0,9375rem waren bei voller Lesespalte gemessen 121 Zeichen je Zeile —
+   der laengste Satz der ganzen Seite, ausgerechnet in der Antwort, die jemand
+   wirklich liest. Die 0,94 gleicht das rechte Polster von 2,5rem aus. */
+.faq__a{margin:0;padding:0 2.5rem 1.4rem 0;font-size:calc(var(--satz) * .94);line-height:1.72;font-weight:300;color:rgba(251,241,224,.9)}
 
 /* Eine Angabe, die uns fehlt, steht sichtbar als Luecke da. Eine erfundene
    Wartezeit merkt niemand — bis jemand deswegen anruft. */
@@ -312,19 +388,14 @@ body.page{overflow-x:hidden}
 /* Dieselbe Breite wie .artbody, nicht breiter und nicht schmaler. Der Block
    steht direkt unter dem Artikel, und vorher endete er bei 961 px, waehrend der
    Artikel daneben bis 1121 px lief: drei verschiedene rechte Kanten auf einer
-   Seite. Beide Angaben muessen zusammen geaendert werden.
-   `ch` loest sich an der Schriftgroesse des Elements auf. Beide erben sie vom
-   body, deshalb kommt hier derselbe Wert heraus; in :root waere er ein anderer. */
+   Seite. Seit beide auf --breit stehen, kann das nicht mehr auseinanderlaufen —
+   frueher musste man zwei Rechnungen von Hand gleich halten. */
 .weiter{padding:clamp(3.5rem,8vh,6rem) var(--gut) 0;
-        max-width:calc(72ch + 19rem + 5rem + 2 * var(--gut))}
-/* Faellt der Artikel auf eine Spalte zurueck, muss der Block darunter mitgehen,
-   sonst steht er 238 px weiter rechts als der Text darueber.
-   Diese Abfrage steht hier und nicht oben bei .artbody: gleiche Spezifitaet,
-   also entscheidet die Reihenfolge. Weiter oben wurde sie von der Grundregel
-   zwei Zeilen darueber wieder ueberschrieben, und zwar wirkungslos. */
-@media (max-width:1023px){
-  .weiter{max-width:calc(72ch + 2 * var(--gut))}
-}
+        max-width:var(--breit);margin-inline:auto}
+/* Die frueher hier stehende Sonderregel fuer unter 1024px ist entfallen: dass
+   der Block beim Umbruch auf eine Spalte mitgeht, erledigt jetzt --breit, das
+   in derselben Abfrage einmal zentral schrumpft. Es war die zweite von zwei
+   Rechnungen, die man von Hand gleich halten musste. */
 .weiter__h{
   margin:0 0 1.6rem;padding-top:1.4rem;border-top:1px solid rgba(251,241,224,.18);
   font-size:.75rem;font-weight:900;text-transform:uppercase;letter-spacing:.16em;
@@ -372,7 +443,7 @@ body.page{overflow-x:hidden}
 /* ---------- Leistungsuebersicht ---------- */
 
 .lkarten{
-  margin:0;padding:clamp(2.5rem,6vh,4rem) var(--gut) 0;list-style:none;
+  margin:0;padding:clamp(2.5rem,6vh,4rem) var(--rand) 0;list-style:none;
   display:grid;gap:clamp(1rem,2vw,1.75rem);
   grid-template-columns:repeat(auto-fit,minmax(min(22rem,100%),1fr));
 }
@@ -400,13 +471,13 @@ body.page{overflow-x:hidden}
 
 /* ---------- Quellen & Autor ---------- */
 
-.sources{padding:0 var(--gut) 1rem;max-width:calc(72ch + 2 * var(--gut))}
+.sources{padding:0 var(--rand) 1rem;max-width:calc(var(--lese) + 2 * var(--rand))}
 .sources ol{margin:1.2rem 0 0;padding-left:1.2rem;font-size:.8125rem;line-height:1.7;color:rgba(251,241,224,.72)}
 .sources li{margin-bottom:.7em}
 
 .byline{
   display:flex;align-items:center;gap:1rem;
-  padding:2rem var(--gut) 0;max-width:calc(72ch + 2 * var(--gut));
+  padding:2rem var(--rand) 0;max-width:calc(var(--lese) + 2 * var(--rand));
 }
 .byline img{width:52px;height:52px;border-radius:50%;object-fit:cover;object-position:center 18%}
 .byline__txt{font-size:.8125rem;line-height:1.5;color:rgba(251,241,224,.78)}
@@ -452,7 +523,7 @@ body.page{overflow-x:hidden}
 }
 .lead__inner{
   position:relative;z-index:2;width:100%;
-  padding:0 var(--gut) clamp(2.6rem,6vh,4.4rem);
+  padding:0 var(--rand) clamp(2.6rem,6vh,4.4rem);
 }
 .lead__more{
   margin:1.9rem 0 0;
@@ -475,7 +546,7 @@ body.page{overflow-x:hidden}
    Durchscrollen erkennbar. */
 .rubriken{
   display:flex;flex-wrap:wrap;gap:.6rem;
-  padding:2.2rem var(--gut) 2.6rem;
+  padding:2.2rem var(--rand) 2.6rem;
   border-top:1px solid rgba(251,241,224,.14);
 }
 .rubriken a{
@@ -499,7 +570,7 @@ body.page{overflow-x:hidden}
 
 .rail__head{
   display:flex;align-items:baseline;justify-content:space-between;gap:1rem;
-  padding:2.4rem var(--gut) 1.5rem;
+  padding:2.4rem var(--rand) 1.5rem;
 }
 /* Vorher 11px in halber Deckkraft — die Gliederung des Blogs war damit leiser
    als die Artikeltitel darunter. Jetzt trägt sie. */
@@ -537,8 +608,8 @@ body.page{overflow-x:hidden}
   display:flex;gap:0;
   overflow-x:auto;overscroll-behavior-x:contain;
   scroll-snap-type:x proximity;
-  scroll-padding-left:var(--gut);
-  padding-left:var(--gut);
+  scroll-padding-left:var(--rand);
+  padding-left:var(--rand);
   border-top:1px solid rgba(251,241,224,.14);
   scrollbar-width:none;
   /* Der Anschnitt an den Raendern sagt ohne Worte, dass die Leiste weitergeht. */
@@ -550,11 +621,16 @@ body.page{overflow-x:hidden}
 .rail::-webkit-scrollbar{display:none}
 .rail:focus-visible{outline:2px solid var(--orange);outline-offset:-2px}
 /* Abstandhalter statt padding-right: das rechte Innenpolster einer Flex-Leiste
-   fiel in aelteren Browsern beim Scrollen unter den Tisch. */
+   fiel in aelteren Browsern beim Scrollen unter den Tisch.
+   Hier bewusst --gut statt --rand: in --rand steckt ein Prozentwert, und
+   Prozente in flex-basis beziehen sich auf die Inhaltsbreite der Leiste
+   (Fenster minus linkes Polster), nicht aufs Fenster. --rand ergaebe hier
+   also eine andere Zahl als an jeder anderen Kante. Die Luecke am Scroll-Ende
+   sieht ohnehin niemand neben dem Seitenkopf — die linke Kante schon. */
 .rail::after{content:"";flex:0 0 var(--gut)}
 
 .rail__bar{
-  height:1px;margin:0 var(--gut);
+  height:1px;margin:0 var(--rand);
   background:rgba(251,241,224,.14);overflow:hidden;
 }
 .rail__fill{
@@ -612,7 +688,7 @@ body.page{overflow-x:hidden}
    sich, deshalb dürfen sie nicht wie eine lange Reihe aussehen. */
 .teamfilter{
   display:flex;flex-wrap:wrap;gap:.6rem;
-  padding:0 var(--gut) 2.2rem;
+  padding:0 var(--rand) 2.2rem;
 }
 .teamfilter:not(.teamfilter--ort){padding-bottom:.7rem}
 .teamfilter--ort button{border-style:dashed}
@@ -724,7 +800,7 @@ body.page{overflow-x:hidden}
    Aric, 21.09.2026: „bei Design oder Praevention/Ernaehrung kann man da nicht
    scrollen" — beide Sonderfaelle kamen aus derselben Reihen-Logik. */
 .gal__rail[data-modus="gruppe"]{
-  padding-inline:var(--gut);
+  padding-inline:var(--rand);
   justify-content:center;
   scroll-snap-type:none;
   overflow-x:hidden;
@@ -733,7 +809,7 @@ body.page{overflow-x:hidden}
 .gal__rail[data-modus="stapel"]{
   flex-direction:column;
   align-items:center;
-  padding:0 var(--gut) 1.4rem;
+  padding:0 var(--rand) 1.4rem;
   gap:clamp(1.6rem,6vw,2.4rem);
   scroll-snap-type:none;
   overflow-x:hidden;
@@ -807,7 +883,7 @@ body.page{overflow-x:hidden}
 .member__role{display:block;margin-top:.3rem;font-size:.75rem;line-height:1.5;font-weight:300;color:rgba(251,241,224,.78)}
 
 .gal__bar{
-  margin:0 var(--gut);height:1px;background:rgba(251,241,224,.16);
+  margin:0 var(--rand);height:1px;background:rgba(251,241,224,.16);
 }
 .gal__bar-fill{
   display:block;height:100%;background:var(--orange);
@@ -815,7 +891,7 @@ body.page{overflow-x:hidden}
 }
 .gal__hint{
   display:flex;align-items:center;justify-content:space-between;gap:1rem;
-  padding:1rem var(--gut) 0;
+  padding:1rem var(--rand) 0;
   font-size:.6875rem;letter-spacing:.16em;text-transform:uppercase;
   color:rgba(251,241,224,.45);
 }
@@ -950,15 +1026,15 @@ body.page{overflow-x:hidden}
 }
 
 .team-note{
-  padding:0 var(--gut) clamp(4rem,9vh,6rem);
-  max-width:calc(60ch + 2 * var(--gut));
+  padding:0 var(--rand) clamp(4rem,9vh,6rem);
+  max-width:calc(60ch + 2 * var(--rand));
   font-size:.8125rem;line-height:1.7;color:rgba(251,241,224,.45);
 }
 
 /* ---------- Abschluss ---------- */
 
 .tail{
-  padding:clamp(4rem,10vh,7rem) var(--gut);
+  padding:clamp(4rem,10vh,7rem) var(--rand);
   border-top:1px solid rgba(251,241,224,.16);
   text-align:center;
 }
@@ -966,7 +1042,7 @@ body.page{overflow-x:hidden}
 .tail .cta{align-items:center}
 
 .page-foot{
-  padding:0 var(--gut) 3.5rem;text-align:center;
+  padding:0 var(--rand) 3.5rem;text-align:center;
   font-size:.75rem;letter-spacing:.06em;line-height:2;color:rgba(251,241,224,.45);
 }
 .page-foot a{text-decoration:none;border-bottom:1px solid rgba(251,241,224,.25)}
@@ -979,7 +1055,7 @@ body.page{overflow-x:hidden}
      rechts aus (bei 390px: 29px). Darum stapelt der Kopf und die Nav darf
      umbrechen, statt einen Eintrag mobil zu verstecken —
      "Sportphysiotherapie" ist als interner Ankertext zu wertvoll dafuer. */
-  .page-top{padding:1.1rem var(--gut);flex-wrap:wrap;row-gap:.9rem}
+  .page-top{padding:1.1rem var(--rand);flex-wrap:wrap;row-gap:.9rem}
   .page-top .wordmark img{height:20px}
   .page-nav{gap:.55rem 1rem;flex-wrap:wrap;width:100%}
   .page-nav a{font-size:.625rem;letter-spacing:.12em}
@@ -1003,7 +1079,7 @@ body.page{overflow-x:hidden}
 .ohero{
   position:relative;isolation:isolate;
   min-height:min(78vh,44rem);display:flex;align-items:flex-end;
-  padding:calc(var(--gut) + 3rem) var(--gut) clamp(2.5rem,6vh,4.5rem);
+  padding:calc(var(--gut) + 3rem) var(--rand) clamp(2.5rem,6vh,4.5rem);
 }
 .ohero__bg{
   position:absolute;inset:0;z-index:-2;
@@ -1022,7 +1098,7 @@ body.page{overflow-x:hidden}
 .ofakten{
   display:grid;grid-template-columns:repeat(3,minmax(0,1fr));
   gap:clamp(1.6rem,4vw,3.5rem);
-  padding:clamp(2.5rem,6vh,4rem) var(--gut) clamp(2rem,5vh,3rem);
+  padding:clamp(2.5rem,6vh,4rem) var(--rand) clamp(2rem,5vh,3rem);
 }
 .ofakt{border-top:1px solid rgba(251,241,224,.22);padding-top:1rem}
 .ofakt__h{
@@ -1038,7 +1114,7 @@ body.page{overflow-x:hidden}
 
 .os{padding-top:clamp(1rem,3vh,2rem)}
 .os__h{
-  margin:0 0 1.4rem;padding:0 var(--gut);
+  margin:0 0 1.4rem;padding:0 var(--rand);
   font-size:.6875rem;font-weight:500;letter-spacing:.18em;
   text-transform:uppercase;color:rgba(251,241,224,.5);
 }
@@ -1048,12 +1124,13 @@ body.page{overflow-x:hidden}
 .os__rail{
   --bild:clamp(19rem,42vw,34rem);
   display:flex;gap:clamp(.8rem,1.6vw,1.4rem);
-  padding:0 var(--gut) 1.4rem;
+  padding:0 var(--rand) 1.4rem;
   overflow-x:auto;overscroll-behavior-x:contain;
   /* Ohne scroll-padding rechnet der Fangpunkt die Polsterung nicht mit: der
-     Browser schob die Reihe beim Laden um genau var(--gut) nach links, das
-     erste Bild klebte am Fensterrand statt am Satzspiegel. */
-  scroll-snap-type:x mandatory;scroll-padding-left:var(--gut);
+     Browser schob die Reihe beim Laden um genau die Polsterung nach links, das
+     erste Bild klebte am Fensterrand statt am Satzspiegel. Beide Werte muessen
+     deshalb gleich bleiben. */
+  scroll-snap-type:x mandatory;scroll-padding-left:var(--rand);
   scrollbar-width:none;cursor:grab;
 }
 .os__rail::-webkit-scrollbar{display:none}
@@ -1090,7 +1167,7 @@ body.page{overflow-x:hidden}
 .oslb[open]{animation:pc-auf .35s var(--ease-out) both}
 .oslb img{display:block;width:100%;height:auto;max-height:92vh;object-fit:contain}
 
-.owechsel{padding:clamp(2.5rem,6vh,4rem) var(--gut) 0}
+.owechsel{padding:clamp(2.5rem,6vh,4rem) var(--rand) 0}
 .owechsel__k{
   margin:0 0 1rem;font-size:.6875rem;font-weight:500;letter-spacing:.18em;
   text-transform:uppercase;color:rgba(251,241,224,.5);

@@ -180,8 +180,38 @@ addEventListener('keydown', e => { if (e.key === 'Escape' && nav.dataset.open ==
 
 /* ---------------- Virtuelle Scroll-Achse ---------------- */
 
-const WHEEL_PER_BEAT = 1100;
+/* 1100 war auf das Mac-Trackpad mit Nachlauf geeicht: ein kräftiger Wisch
+   schiebt dort über tausend Pixel nach, weil das System weiter Ereignisse
+   feuert, nachdem die Finger längst weg sind. Ein gemessener normaler Wisch
+   ohne Nachlauf kommt auf rund 480 px — 0,44 Kapitel, und scheduleSnap rundet
+   das wieder auf null. Die Seite stand also auch auf dem Mac still, sobald man
+   nicht geschleudert hat. 700 entspricht etwa einem bequemen Zwei-Finger-Zug. */
+const WHEEL_PER_BEAT = 700;
 let target = 0, cur = 0, snapTimer = 0, live = -1;
+
+/* deltaY bedeutet nicht überall dasselbe. deltaMode 1 zählt Zeilen statt Pixel
+   (Firefox auf Windows und Linux: 3 je Rastpunkt), deltaMode 2 zählt Seiten.
+   Roh verrechnet ergibt ein Firefox-Rastpunkt 3/700 Kapitel — dort braucht man
+   über zweihundert Rastpunkte für ein Kapitel, die Seite ist eingefroren. */
+const RAD_ZEILE = 16;
+function radPixel(e) {
+  if (e.deltaMode === 1) return e.deltaY * RAD_ZEILE;
+  if (e.deltaMode === 2) return e.deltaY * innerHeight;
+  return e.deltaY;
+}
+
+/* Ein Mausrad ist kein Trackpad. Es liefert wenige große Einzelsprünge ohne
+   Nachlauf — unter Windows 100 px je Rastpunkt —, und zwischen zwei Rastpunkten
+   liegen 80 bis 150 ms. Beides zusammen macht die Summenrechnung unbrauchbar:
+   der Snap nach 150 ms fällt MITTEN in die Geste und rundet zurück, die Seite
+   arbeitet gegen die Hand. Beim Rad zählt deshalb der Rastpunkt selbst, nicht
+   der Weg: einer weiter, dann so lange taub, wie der Anflug dauert. */
+let radSperre = 0;
+const RAD_PAUSE = 420;
+const RAD_RAST = 50;
+function radDiskret(e, dy) {
+  return e.deltaMode !== 0 || Math.abs(dy) >= RAD_RAST;
+}
 
 const ring   = $('.progress__fill');
 const label  = $('#progressLabel');
@@ -271,7 +301,16 @@ function loop() {
 function bindCinema() {
   addEventListener('wheel', e => {
     e.preventDefault();
-    target = clamp(target + e.deltaY / WHEEL_PER_BEAT, 0, N - 1);
+    const dy = radPixel(e);
+    if (radDiskret(e, dy)) {
+      const jetzt = performance.now();
+      if (jetzt < radSperre) return;
+      radSperre = jetzt + RAD_PAUSE;
+      clearTimeout(snapTimer);
+      target = clamp(Math.round(target) + Math.sign(dy), 0, N - 1);
+      return;
+    }
+    target = clamp(target + dy / WHEEL_PER_BEAT, 0, N - 1);
     scheduleSnap();
   }, { passive: false });
 
