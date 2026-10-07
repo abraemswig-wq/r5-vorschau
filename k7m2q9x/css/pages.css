@@ -335,6 +335,33 @@ body.page{
    Polsterung wieder rein: --lese minus 2*1,9rem, geteilt durch 34. */
 .tldr p{margin:0;font-size:calc(var(--satz) * .92);line-height:1.62;font-weight:300}
 
+/* ---------- Hinweis auf eine kommende Seite ---------- */
+/* Bewusst NICHT im Creme-Ton von .tldr: der Kasten steht direkt darueber, und
+   zwei helle Bloecke uebereinander lesen sich als ein einziger. Dieser hier
+   bleibt auf dem dunklen Grund und markiert sich nur ueber die Linie links —
+   dieselbe Grammatik wie .pull, weil es eine Randnotiz ist und keine Aussage
+   ueber das Angebot.
+
+   Ohne Markennamen und ohne Domain, solange beides nicht entschieden ist:
+   "REHAB FIVE BUSINESS" ist ein Arbeitstitel, rehab-five-business.de ein
+   Kandidat. Ein Name in dieser Zeile waere eine Ankuendigung, die wir spaeter
+   zuruecknehmen muessen. */
+.bald{
+  margin:0 0 2.4rem;padding:.1rem 0 .1rem 1.4rem;
+  border-left:2px solid var(--orange);
+}
+.bald__h{
+  margin:0 0 .5rem;
+  font-size:.6875rem;font-weight:500;letter-spacing:.22em;text-transform:uppercase;
+  color:var(--orange);
+}
+.bald__t{margin:0;font-size:calc(var(--satz) * .92);line-height:1.66;font-weight:300;color:rgba(251,241,224,.82)}
+.bald__t a{color:var(--cream);text-decoration:underline;text-underline-offset:.16em;text-decoration-thickness:1px}
+@media (hover:hover){
+  .bald__t a:hover{color:var(--orange)}
+}
+.bald__t a:focus-visible{outline:2px solid var(--orange);outline-offset:2px}
+
 /* ---------- FAQ ---------- */
 
 .faq{padding:clamp(3.5rem,8vh,5.5rem) var(--rand);max-width:calc(var(--lese) + 2 * var(--rand))}
