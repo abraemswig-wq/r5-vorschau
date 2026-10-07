@@ -225,13 +225,41 @@ body.page{
 .artcard__t{margin:0 0 1rem;font-size:.8125rem;line-height:1.6;font-weight:300;color:rgba(251,241,224,.84)}
 .artcard__l{margin:0;padding:0;list-style:none}
 .artcard__l li + li{margin-top:.5rem}
+
+/* Gemessen (2026-10-07): diese drei Links waren 17 px hoch. Auf dem Telefon ist
+   das keine Klickflaeche, sondern ein Zielschiessen, und es traf genau die
+   Buchung. Die Hoehe kommt jetzt aus senkrechtem Polster.
+   Der Strich sitzt dabei auf text-decoration statt auf border-bottom: ein
+   border-bottom liegt an der UNTERKANTE des Kastens und waere durch das Polster
+   vom Wort abgerueckt - der Link saehe aus wie ein Kaestchen mit Bodenleiste.
+   text-underline-offset haengt den Strich am Text, egal wie hoch der Kasten ist. */
 .artcard__l a{
+  display:inline-block;
+  padding:.7rem 0;                       /* Zeile rund 20px + 2x11,2px = rund 42px */
   font-size:.8125rem;font-weight:500;letter-spacing:.04em;
-  text-decoration:none;color:var(--cream);
-  border-bottom:1px solid rgba(251,241,224,.28);
-  transition:border-color .22s var(--ease-out);
+  color:var(--cream);
+  text-decoration:underline;
+  text-decoration-color:rgba(251,241,224,.28);
+  text-decoration-thickness:1px;
+  text-underline-offset:.28em;
+  transition:text-decoration-color .22s var(--ease-out);
 }
-@media (hover:hover){.artcard__l a:hover{border-color:var(--orange)}}
+/* Das erste Element ist die Buchung, die beiden anderen sind Kontaktdaten. Als
+   gefuellter Knopf auf ganzer Kartenbreite ist der Unterschied sichtbar, ohne
+   dass man die Beschriftungen vergleichen muss. */
+.artcard__l li:first-child a{
+  display:block;text-align:center;
+  padding:.78rem 1rem;                   /* rund 44px */
+  font-weight:900;letter-spacing:.02em;text-transform:uppercase;
+  text-decoration:none;
+  background:var(--cream);color:var(--pine-black);
+  transition:background-color .18s var(--ease-out), color .18s var(--ease-out);
+}
+.artcard__l li:first-child + li{margin-top:.85rem}
+@media (hover:hover) and (pointer:fine){
+  .artcard__l a:hover{text-decoration-color:var(--orange)}
+  .artcard__l li:first-child a:hover{background:var(--orange);color:var(--pine-black)}
+}
 .artcard__l a:focus-visible{outline:2px solid var(--orange);outline-offset:3px}
 
 /* Unter 1024px trägt eine zweite Spalte nicht mehr: das Verzeichnis fällt weg
@@ -338,6 +366,121 @@ body.page{
   font-style:normal;font-size:.8125rem;letter-spacing:.1em;text-transform:uppercase;
   color:rgba(251,241,224,.42);
 }
+
+/* ---------- Termin-Aufruf im Fliesstext ---------- */
+/* Anlass (2026-10-07), gemessen statt vermutet: Auf dem Telefon stand die ERSTE
+   Buchungsmoeglichkeit bei 77 bis 88 % der Seitenlaenge. Grund ist nicht ein
+   Mangel an Knoepfen, sondern die Reihenfolge im Dokument: .artside steht nach
+   .artmain, auf dem Desktop liegt die Terminkarte damit bei 16 bis 20 %, unter
+   1024 px faellt die Spalte aber unter den Text. Wer auf dem Handy liest, hat
+   800 bis 1200 Woerter hinter sich, bevor er buchen kann.
+
+   Dieser Block setzt eine Gelegenheit in die Mitte des Textes. Bewusst
+   zurueckhaltend und NICHT als dritter Stil: der Kasten uebernimmt Creme-Grund
+   und Polsterung von .tldr, die Knoepfe die Grossschrift von .cta. Eine Seite
+   mit drei verschiedenen Knopfsprachen wirkt nicht dringlicher, sondern
+   unaufgeraeumt.
+
+   Kein klebendes Band am unteren Rand: DocMedico setzt dort bereits seinen
+   eigenen Knopf ab. Ein zweites fest stehendes Element daneben verdeckt auf
+   kleinen Geraeten den Text und kollidiert mit fremdem Markup, das wir nicht
+   kontrollieren. */
+
+.jetzt{
+  margin:3rem 0;
+  background:var(--cream);color:var(--pine-black);
+  padding:1.6rem 1.9rem 1.8rem;
+}
+.jetzt__h{
+  margin:0 0 .55rem;
+  font-size:.6875rem;font-weight:500;letter-spacing:.22em;text-transform:uppercase;
+  color:#8a5a12;
+}
+/* Wie .tldr p: der Kasten hat 1,9rem Innenpolster, die Zeile darin ist also
+   schmaler als die Lesespalte. Die 0,92 holt die Polsterung wieder rein. */
+.jetzt__t{margin:0 0 1.15rem;font-size:calc(var(--satz) * .92);line-height:1.62;font-weight:300}
+.jetzt__l{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:.6rem}
+/* Der Kasten steht IM Fliesstext, also greift .prose li mit seinem orangenen
+   Strich und seinem Einzug. Vor einem Knopf sieht ein Aufzaehlungsstrich aus
+   wie ein Fehler. Beides hier zuruecknehmen. */
+.jetzt__l li{position:static;padding-left:0;margin-bottom:0;display:flex}
+.jetzt__l li::before{display:none}
+.jetzt__l a{
+  display:inline-block;
+  font-weight:900;font-size:clamp(1.05rem,1.6vw,1.3rem);
+  letter-spacing:-.01em;text-transform:uppercase;text-decoration:none;
+  /* 0,75rem senkrecht ergeben mit der Zeilenhoehe rund 44 px Klickflaeche.
+     Der Prueflauf meldet alles unter 36 px; 44 ist die Zahl, auf die sich
+     Apple und Google unabhaengig voneinander geeinigt haben. */
+  padding:.75rem 1.15rem;
+  border:1px solid var(--pine-black);
+  color:var(--pine-black);background:transparent;
+  transition:color .18s var(--ease-out), background-color .18s var(--ease-out);
+}
+/* li:first-child a, nicht a:first-child. Jedes a sitzt allein in seinem li und
+   ist dort immer das erste Kind, der kuerzere Selektor faerbte also BEIDE
+   Knoepfe und hob genau die Rangfolge auf, die er herstellen sollte.
+   Aufgefallen beim Auslesen der berechneten Stile, nicht im Bild: zwei gefuellte
+   Knoepfe nebeneinander sehen nicht falsch aus, nur gleichwertig. */
+.jetzt__l li:first-child a{background:var(--pine-black);color:var(--cream)}
+@media (hover:hover) and (pointer:fine){
+  .jetzt__l a:hover{background:var(--orange);border-color:var(--orange);color:var(--pine-black)}
+}
+.jetzt__l a:focus-visible{outline:2px solid #8a5a12;outline-offset:3px}
+
+/* Unter 420 px nebeneinander waere jeder Knopf schmaler als sein Wort. Dann
+   aber auf volle Breite: zwei unterschiedlich breite Kaesten untereinander
+   haben keine gemeinsame Kante und sehen aus wie zwei Zufaelle. */
+@media (max-width:420px){
+  .jetzt__l{flex-direction:column}
+  .jetzt__l li{display:block}
+  .jetzt__l a{display:block;text-align:center}
+}
+
+/* ---------- Knopfpaar im dunklen Seitenkopf ---------- */
+/* Sechs Seiten haben keinen Fliesstext und konnten den Kasten oben deshalb nicht
+   aufnehmen: Startseite, die beiden Standorte, Leistungs-, Blog- und
+   Teamuebersicht. Gemessen lag die erste Buchungsmoeglichkeit dort bei 77 bis
+   93 % — auf der Startseite am spaetesten, also ausgerechnet dort, wo die
+   meisten ankommen.
+
+   Warum eine zweite Form und nicht derselbe Kasten: Die Koepfe stehen auf einem
+   abgedunkelten Foto. Ein cremefarbener Block mittendrin zerschneidet das Bild
+   und saehe aus wie ein Einschub, der dort nicht hingehoert. Zwei Knoepfe
+   liegen auf dem Scrim auf, ohne ihn zu zerteilen.
+
+   Die Rangfolge steckt in der Farbe, nicht in der Groesse: gefuellt ist die
+   Buchung, umrandet der Anruf. Gleich gross waeren beide, und der Blick muesste
+   lesen statt sehen. */
+
+.rufe{
+  list-style:none;margin:1.9rem 0 0;padding:0;
+  display:flex;flex-wrap:wrap;gap:.6rem;
+}
+.rufe a{
+  display:inline-block;
+  font-weight:900;font-size:clamp(.95rem,1.4vw,1.1rem);
+  letter-spacing:.01em;text-transform:uppercase;text-decoration:none;
+  padding:.8rem 1.3rem;                 /* ergibt rund 46px Klickflaeche */
+  border:1px solid var(--cream);
+  color:var(--cream);background:transparent;
+  transition:color .18s var(--ease-out), background-color .18s var(--ease-out), border-color .18s var(--ease-out);
+}
+.rufe li:first-child a{background:var(--cream);color:var(--pine-black)}   /* siehe oben */
+@media (hover:hover) and (pointer:fine){
+  .rufe a:hover{background:var(--orange);border-color:var(--orange);color:var(--pine-black)}
+}
+.rufe a:focus-visible{outline:2px solid var(--orange);outline-offset:3px}
+
+@media (max-width:420px){
+  .rufe{flex-direction:column}
+  .rufe li{display:block}
+  .rufe a{display:block;text-align:center}
+}
+
+/* Im Heldenbild der Startseite steht darueber schon die Saeulen-Liste. Ohne die
+   knappere Kappe reicht die Hoehe auf einem 844px-Geraet nicht mehr. */
+.beat .rufe{margin-top:1.4rem}
 
 /* ---------- Leistungspositionen ---------- */
 /* Kein Icon-Raster, keine Karten: das hier ist eine Liste dessen, was auf einem
@@ -1041,6 +1184,16 @@ body.page{
 .tail .hl{align-items:center;margin-bottom:0}
 .tail .cta{align-items:center}
 
+/* Der grosse Abschluss-Knopf steht in style.css mit padding:.18em. Das ist auf
+   dem Desktop reichlich (Schrift 36px), auf dem Telefon aber faellt die
+   Schriftgroesse in den Anschlag bei 1,25rem und die Klickflaeche mit ihr:
+   gemessen 31px, also unter den 36, ab denen eine Flaeche zuverlassig zu treffen
+   ist. style.css liegt als Kopie in vier Marken und wird nicht angefasst, die
+   Untergrenze kommt darum von hier.
+   max() statt eines festen Werts, weil ein fester Wert den Desktop mitzieht:
+   bei 36px Schrift gewinnt dort weiter die em-Angabe. */
+.cta a{padding-top:max(.18em,10px);padding-bottom:max(.18em,10px)}
+
 .page-foot{
   padding:0 var(--rand) 3.5rem;text-align:center;
   font-size:.75rem;letter-spacing:.06em;line-height:2;color:rgba(251,241,224,.45);
@@ -1107,8 +1260,20 @@ body.page{
 }
 .ofakt__t{margin:.25rem 0 0;font-size:.9375rem;font-weight:300;line-height:1.6;color:rgba(251,241,224,.9)}
 .ofakt__t--leise{color:rgba(251,241,224,.6);font-size:.8125rem}
-.ofakt__t a{color:inherit;text-decoration:none;border-bottom:1px solid rgba(251,241,224,.32)}
-.ofakt__t a:hover{border-color:var(--orange);color:var(--orange)}
+/* Die Telefonnummer steht hier allein unter ihrer Beschriftung, ist also ein
+   Knopf und kein Wort im Satz. Gemessen 19px hoch. Polsterung senkrecht bringt
+   sie auf rund 40px; der Strich wandert dabei von border-bottom auf
+   text-decoration, sonst rutscht er mit der Kastenunterkante vom Wort weg. */
+.ofakt__t a{
+  display:inline-block;padding:.52rem 0;
+  color:inherit;
+  text-decoration:underline;
+  text-decoration-color:rgba(251,241,224,.32);
+  text-decoration-thickness:1px;
+  text-underline-offset:.26em;
+  transition:text-decoration-color .22s var(--ease-out), color .22s var(--ease-out);
+}
+.ofakt__t a:hover{text-decoration-color:var(--orange);color:var(--orange)}
 .ofakt__t a:focus-visible{outline:2px solid var(--orange);outline-offset:3px}
 .ofakt .ort__z{margin:0}
 
