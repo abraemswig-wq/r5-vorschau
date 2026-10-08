@@ -1528,3 +1528,148 @@ body.page{
       rgba(11,22,17,.88) 6%, rgba(11,22,17,.72) 52%, rgba(11,22,17,.54) 100%);
   }
 }
+
+/* ======================================================================
+   Kino-Layout: die Kopfleiste war nie freigehalten
+   ======================================================================
+
+   Anlass (Aric, 08.10.2026): „Wenn ich bei Standorte bin und bei Mehr,
+   schneidet sich das immer so, dass das Logo ueber dem Mehr liegt."
+
+   Nachgemessen, nicht nachempfunden. Im Fliess-Layout steht seit jeher
+   `.beat{padding:7.5rem 0 6rem}` — dort ist der Platz fuer die feste
+   Kopfleiste reserviert. Im Kino-Layout fehlt genau diese Reservierung:
+   `.beat` zentriert `.beat__inner` ueber die VOLLE Fensterhoehe, als saesse
+   oben nichts. Solange ein Kapitel kurz ist, faellt das nicht auf — der Inhalt
+   bleibt von allein unterhalb des Schriftzugs.
+
+   Die beiden laengsten Kapitel sind aber „Standorte" (702 px) und „Mehr"
+   (722 px), und zentrierter Inhalt steigt mit jedem Pixel, den das Fenster
+   niedriger wird, um einen halben Pixel nach oben. Gemessen bei 1440x735 —
+   ein ganz normales Safari-Fenster auf einem 1440x900-Bildschirm, Menueleiste
+   und Werkzeugleiste abgezogen:
+
+     Standorte   «05 · Standorte» bei y=17,  «Zwei Haeuser.» bei y=61
+     Mehr        «06 · Mehr»      bei y=7,   «Das Haus hat»  bei y=50
+
+   Der Schriftzug belegt 53..80. Das Logo liegt also buchstaeblich auf der
+   Schlagzeile. Bei 1280x660 steht der Kicker sogar bei y=-6, ist also gar
+   nicht mehr im Bild. Auf 1440x900 und hoeher passiert nichts — deshalb war
+   es beim Bauen unsichtbar.
+
+   Drei Teile, und jeder einzelne waere fuer sich zu wenig:
+
+   1. Der Kopf wird reserviert (`padding-top`). Das Medium bleibt full-bleed:
+      `.beat__media` ist absolut mit `inset:0` gesetzt und bezieht sich damit
+      auf die Polsterbox — das Bild deckt den reservierten Streifen mit ab,
+      nur die Typo rueckt nach unten.
+
+   2. `align-items:safe center`. Zentrierter Inhalt, der nicht mehr passt,
+      laeuft sonst nach BEIDEN Seiten ueber — also auch nach oben, wieder
+      unter den Schriftzug. `safe` faellt bei Ueberlauf auf `start` zurueck:
+      lieber unten abgeschnitten als oben unlesbar. (Wo `safe` fehlt, bleibt
+      es beim normalen `center` aus style.css — dann greift Teil 3 allein.)
+
+   3. Bei niedrigen Fenstern wird der Satz enger und die Schlagzeile kleiner.
+      Ohne das waeren 1. und 2. nur eine Verschiebung des Problems ans untere
+      Ende, wo der feste DocMedico-Knopf wartet. Eine Buehne, die die volle
+      Fensterhoehe beansprucht, muss auf die Hoehe genauso reagieren wie auf
+      die Breite — bisher stand im ganzen Stylesheet keine einzige
+      Hoehen-Abfrage.
+
+   Alles greift erst ab 821 px Breite, also nur im Kino-Modus. Das
+   Fliess-Layout auf dem Telefon bleibt unberuehrt. */
+
+@media (min-width:821px){
+  .cinema .beat{
+    /* 8.3rem = 133 px, die gemessene Hoehe von .chrome-top (53 px Polster,
+       27 px Schriftzug, 53 px Polster). */
+    padding-top:8.3rem;
+    align-items:safe center;
+  }
+}
+
+/* --- Fenster unter 880 px: erste Stufe ------------------------------- */
+@media (min-width:821px) and (max-height:880px){
+  /* Die 14vh Fusspolster im Kino-Layout setzen die Schlagzeile auf den
+     Referenz-Anker (246/900). Bei 900 px Fensterhoehe ist das richtig; bei
+     700 px sind es 98 px, die dem Inhalt oben fehlen. */
+  .cinema .beat__inner{padding-bottom:10vh}
+  :root{--hl-size:clamp(2.25rem,4.69vw,4.1rem)}
+  .kicker{margin-bottom:1rem}
+  .lede{margin-top:1.2rem}
+  .orte{margin-top:1.5rem}
+  .tueren{margin-top:1.4rem}
+}
+
+/* --- Fenster unter 790 px: zweite Stufe ------------------------------ */
+@media (min-width:821px) and (max-height:790px){
+  .cinema .beat__inner{padding-bottom:7vh}
+  :root{--hl-size:clamp(2rem,4.2vw,3.5rem)}
+  .kicker{margin-bottom:.8rem}
+  .lede{margin-top:1rem}
+  .orte{margin-top:1.1rem}
+  .ort__z{margin-top:.6rem}
+  .ort__z > div{padding:.12rem 0}
+  .bewertung{margin-top:.7rem}
+  .ort__go{margin-top:.8rem}
+  .ort__fuss{margin-top:.6rem}
+  .tueren{margin-top:1.1rem}
+  .tueren__l{margin-top:.4rem}
+  .tuer{padding:.5rem 0 .55rem}
+}
+
+/* --- Fenster unter 700 px: dritte Stufe ------------------------------
+   Hier wird es eng genug, dass auch die Kopfleiste selbst Platz hergeben
+   muss. Sie rueckt zusammen, der Schriftzug bleibt gleich gross — er ist der
+   Weg zurueck auf die Hauptseite und darf nicht zur Fussnote werden. */
+@media (min-width:821px) and (max-height:700px){
+  .chrome-top{padding:1.9rem var(--gut)}
+  .cinema .beat{padding-top:5.6rem}
+  .cinema .beat__inner{padding-bottom:4vh}
+  :root{--hl-size:clamp(1.8rem,3.6vw,3rem)}
+  .lede{margin-top:.85rem}
+  .orte{gap:2.2rem;margin-top:.9rem}
+  .ort{padding-top:.7rem}
+  .ort__a{margin-top:.1rem}
+  .ort__z{margin-top:.45rem}
+  .bewertung{margin-top:.5rem}
+  .ort__go{margin-top:.6rem}
+  .tueren{margin-top:.9rem;gap:1.4rem 3rem}
+  .tuer{padding:.38rem 0 .42rem}
+}
+
+/* --- Das Siegel tritt bei niedrigen Fenstern zurueck -----------------
+   Beim Nachmessen des Kopf-Problems mitgefunden, und es ist derselbe Fehler
+   am anderen Ende: `.seal` steht fest auf `left:var(--gut)` — also GENAU auf
+   der linken Textkante — und `bottom:2.6rem`. Wo der Inhalt bis an den
+   unteren Rand reicht, liegt die Siegelgrafik zwangslaeufig darauf. Gemessen
+   bei 1440x735: 2.440 px² ueber «Parken direkt vor der Tuer · 0251 74788200»
+   im Kapitel Standorte und 1.610 px² ueber «29 Artikel zu Beschwerden ...»
+   im Kapitel Mehr. Der Ring laeuft mitten durch die Telefonnummer.
+
+   Ausweichen nach links geht nicht: das Siegel ist 86 px breit, die Gasse bei
+   1280 px Fensterbreite nur 85 px. Kleiner machen geht auch nicht — die
+   Umschrift steht in viewBox-Einheiten und schrumpft mit; schon bei 64 px
+   waere sie 5 CSS-Pixel hoch (dieselbe Rechnung wie im Telefon-Block von
+   style.css).
+
+   Also dieselbe Entscheidung wie dort: das Siegel ist das einzige rein
+   dekorative feste Element der Seite, und es stand jetzt zum dritten Mal auf
+   etwas, das gebraucht wird — am 07.10. auf der Klickflaeche „Praxis
+   ansehen", heute auf einer Telefonnummer. Wo es eng wird, geht die
+   Dekoration. Ab 880 px Fensterhoehe ist es wieder da. */
+@media (min-width:821px) and (max-height:880px){
+  .seal{display:none}
+}
+
+/* --- Tueren halten Abstand zum Fortschrittsring ----------------------
+   Ebenfalls beim Gitterlauf gefunden, und unabhaengig von der Hoehe: der Ring
+   steht fest rechts auf halber Hoehe, die Tueren-Tafel ist 56rem breit. Unter
+   rund 1100 px Fensterbreite treffen sich beide — gemessen bei 1024 px lag
+   «Betriebliches Gesundheitsmanagement ...» mit 1.425 px² unter dem Ring.
+   Nicht den Ring verstecken: er ist die einzige Ortsangabe im Kino-Modus.
+   Stattdessen endet die Tafel vor ihm. */
+@media (min-width:821px){
+  .tueren{max-width:min(56rem, calc(100vw - 2 * var(--gut) - 7rem))}
+}
