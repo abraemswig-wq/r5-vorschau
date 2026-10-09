@@ -660,9 +660,13 @@ body.page{
 .sources ol{margin:1.2rem 0 0;padding-left:1.2rem;font-size:.8125rem;line-height:1.7;color:rgba(251,241,224,.72)}
 .sources li{margin-bottom:.7em}
 
+/* Unten stand 0. Direkt darunter beginnt .tail mit seiner Trennlinie — gemessen
+   lagen zwischen Portraitunterkante und Linie 6 Pixel, oben 39. Der Autor klebte
+   damit an der Linie. Jetzt beidseitig 3rem; gemessen rund 54 oben zu 54 unten
+   (2026-10-09). */
 .byline{
   display:flex;align-items:center;gap:1rem;
-  padding:2rem var(--rand) 0;max-width:calc(var(--lese) + 2 * var(--rand));
+  padding:3rem var(--rand);max-width:calc(var(--lese) + 2 * var(--rand));
 }
 .byline img{width:52px;height:52px;border-radius:50%;object-fit:cover;object-position:center 18%}
 .byline__txt{font-size:.8125rem;line-height:1.5;color:rgba(251,241,224,.78)}
