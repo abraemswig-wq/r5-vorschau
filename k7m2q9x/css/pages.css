@@ -683,10 +683,13 @@ body.page{
    der Aufmacher nimmt, was uebrig bleibt. Die angeschnittene Karte ist das
    ehrlichste Weiter-Zeichen, das es gibt: kein Symbol fuer Inhalt, sondern
    Inhalt. */
+/* "stretch" statt "flex-end": .lead__inner spannt damit die ganze Karte auf
+   und richtet seinen Inhalt selbst unten aus. Sichtbar aendert das nichts —
+   aber die Klickflaeche des Titel-Links (.lead__link::after, inset:0 gegen
+   .lead__inner) deckt so die ganze Karte statt nur den Textblock. */
 .lead{
-  position:relative;display:flex;align-items:flex-end;
+  position:relative;display:flex;align-items:stretch;
   min-height:clamp(20rem, calc(100svh - 21rem), 44rem);overflow:hidden;
-  text-decoration:none;color:inherit;
 }
 /* Wie .artcover__bg — siehe Begruendung dort. Der Zoom beim Ueberfahren bleibt
    auf dem div: das <img> darin faehrt mit, und die Transition muss nur eine
@@ -708,6 +711,7 @@ body.page{
 }
 .lead__inner{
   position:relative;z-index:2;width:100%;
+  display:flex;flex-direction:column;justify-content:flex-end;
   padding:0 var(--rand) clamp(2.6rem,6vh,4.4rem);
 }
 .lead__more{
@@ -716,7 +720,13 @@ body.page{
   color:rgba(251,241,224,.72);
 }
 .lead__more span{color:var(--orange)}
-.lead:focus-visible{outline:2px solid var(--orange);outline-offset:-4px}
+/* Der Titel traegt den Link, die Flaeche davor macht die ganze Karte
+   anklickbar. Die Knoepfe muessen darueber liegen, sonst faengt die Flaeche
+   den Tipp auf "Termin buchen" ab — genau dafuer stehen die z-index. */
+.lead__link{color:inherit;text-decoration:none}
+.lead__link::after{content:"";position:absolute;inset:0;z-index:1}
+.lead .rufe{position:relative;z-index:2}
+.lead__link:focus-visible{outline:2px solid var(--orange);outline-offset:3px}
 @media (hover:hover){.lead:hover .lead__bg{transform:scale(1.04)}}
 
 /* Die Artikel stehen in einer Leiste, nicht in einem Raster mit fester
