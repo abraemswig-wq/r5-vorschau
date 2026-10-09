@@ -325,9 +325,18 @@ body.page{
   background:var(--cream);color:var(--pine-black);
   padding:1.7rem 1.9rem 1.9rem;
 }
-.tldr__label{
+/* Dieses Etikett stand hier auf .6875rem/500 — gerendert hat es nie so.
+   ".tldr p" eine Zeile tiefer ist spezifischer (0,1,1 gegen 0,1,0) und hat
+   Groesse und Gewicht ueberschrieben: KURZ GESAGT lief seit jeher in
+   Fliesstextgroesse und mager. Genau dieser Zustand ist abgenommen, deshalb
+   wird er jetzt ausgeschrieben statt stillschweigend zurueckgebaut — nur eben
+   fett (2026-10-09). Der Doppelselektor ist Absicht: ohne ihn gewinnt wieder
+   ".tldr p". .jetzt__h traegt dieselben Werte; wer hier etwas aendert, aendert
+   es dort mit. */
+.tldr .tldr__label{
   margin:0 0 .7rem;
-  font-size:.6875rem;font-weight:500;letter-spacing:.22em;text-transform:uppercase;
+  font-size:calc(var(--satz) * .92);font-weight:700;
+  letter-spacing:.22em;text-transform:uppercase;
   color:#8a5a12;
 }
 /* Der Kasten hat 1,9rem Innenpolster, die Zeile darin ist also schmaler als
@@ -418,9 +427,15 @@ body.page{
   background:var(--cream);color:var(--pine-black);
   padding:1.6rem 1.9rem 1.8rem;
 }
+/* Gleiche Groesse, gleiche Sperrung, gleiches Fett wie .tldr__label — siehe
+   die Begruendung dort. Absichtlich ausgeschrieben statt per Sammelselektor:
+   die beiden Kaesten stehen weit auseinander im Stylesheet, und ein geteilter
+   Selektor haette den Kommentar von genau einer der beiden Stellen
+   weggenommen. */
 .jetzt__h{
   margin:0 0 .55rem;
-  font-size:.6875rem;font-weight:500;letter-spacing:.22em;text-transform:uppercase;
+  font-size:calc(var(--satz) * .92);font-weight:700;
+  letter-spacing:.22em;text-transform:uppercase;
   color:#8a5a12;
 }
 /* Wie .tldr p: der Kasten hat 1,9rem Innenpolster, die Zeile darin ist also
