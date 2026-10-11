@@ -305,9 +305,14 @@ a{color:inherit}
 @supports (backdrop-filter:blur(2px)){
   .tueren::before{backdrop-filter:saturate(.9) blur(1.5px)}
 }
+/* Deckkraft .72, nicht .5: bei .5 misst pruefung/kontrast-messen.py ueber dem
+   hellsten Grund unter den Glyphen 3,32:1 — die Zeile ist 11px gross und
+   braucht 4,5:1. .72 ergibt rund 4,8:1 und ist zugleich der Wert, den
+   .tuer__s direkt darunter schon traegt. Unterschieden bleiben die beiden
+   ueber Groesse und Sperrung, nicht ueber Helligkeit. */
 .tueren__t{
   margin:0;font-size:.6875rem;letter-spacing:.18em;text-transform:uppercase;
-  color:rgba(251,241,224,.5);
+  color:rgba(251,241,224,.72);
 }
 .tueren__l{list-style:none;margin:.55rem 0 0;padding:0}
 .tuer{

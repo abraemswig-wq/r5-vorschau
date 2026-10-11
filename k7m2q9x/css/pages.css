@@ -308,6 +308,16 @@ body.page{
   width:9px;height:1.5px;background:var(--orange);
 }
 .prose strong{font-weight:500;color:var(--cream)}
+/* .tldr und .jetzt drehen den Grund um: dunkler Text auf Creme. Die Regel
+   darueber faerbt <strong> aber unbedingt creme — in diesen beiden Kaesten
+   stand das Wort damit creme auf creme und war schlicht unsichtbar (gemessen
+   auf programme.html: Wort und Grund beide rgb(251,241,224), Kontrast 1:1).
+   Aufgefallen ist es erst, als eine Seite fette Woerter in den Kasten setzte;
+   vorher lag der Fehler latent im System. Nicht alle <strong> auf
+   color:inherit umstellen: auf dunklem Grund laeuft der Fliesstext gedimmt,
+   und genau davon soll sich das fette Wort abheben. */
+.prose .tldr strong,
+.prose .jetzt strong{color:inherit;font-weight:600}
 
 /* Zitat der Referenz-Grammatik: keine Anführungsgrafik, nur Maßstabswechsel */
 .pull{
@@ -721,9 +731,36 @@ body.page{
 .lead__more{
   margin:1.9rem 0 0;
   font-size:.625rem;letter-spacing:.2em;text-transform:uppercase;
-  color:rgba(251,241,224,.72);
+  /* Der Zusatz " · 4 Min." stand auf .72 und kam damit auf 4,20:1 — knapp
+     unter der Schwelle. .82 hebt ihn auf 4,91 und laesst den Abstand zum
+     Titel daneben trotzdem sichtbar. */
+  color:rgba(251,241,224,.82);
 }
-.lead__more span{color:var(--orange)}
+/* Der Artikeltitel lief hier in Orange (#d99129) — und zwar genau ueber dem
+   sonnenbeschienenen weissen Shirt in der Bildmitte. Gegen dieselben
+   Hintergrundpixel gemessen (11.10.2026):
+
+       Orange   390px: 2,73 min · 3,08 im 5%-Quantil   1440px: 2,72 · 3,64
+       Creme    390px: 6,37 min · 7,20                 1440px: 6,35 · 8,50
+
+   Noetig sind 4,5:1 — das Orange lag bei 10px/300 deutlich darunter, und es
+   war der einzige Weg vom Aufmacher in den Artikel. Den Scrim zu verstaerken
+   haette geholfen, aber genau das Foto verdunkelt, das gerade erst ausgesucht
+   wurde. Also traegt der Titel jetzt dieselbe Creme wie die Lede und behaelt
+   das Orange als Unterstrich: ein Strich ist Dekoration, kein Text, und
+   faellt nicht unter die 4,5:1.
+
+   Zwei Messfallen, die auf dem Weg dahin falsche Zahlen erzeugt haben und
+   beide in /tmp/kontrast2.py geschlossen sind: `getBoundingClientRect()` am
+   Absatz misst die ganze Spaltenbreite mit, auch wo kein Buchstabe steht —
+   ueber einem Foto sammelt man sich so die hellsten Stellen ein. Und beim
+   Ausblenden des Textes bleibt `text-decoration-color` stehen; der Unterstrich
+   wurde als Hintergrund seines eigenen Textes gemessen. */
+.lead__more span{
+  color:#fbf1e0;
+  text-decoration:underline;text-decoration-color:var(--orange);
+  text-decoration-thickness:1px;text-underline-offset:.3em;
+}
 /* Der Titel traegt den Link, die Flaeche davor macht die ganze Karte
    anklickbar. Die Knoepfe muessen darueber liegen, sonst faengt die Flaeche
    den Tipp auf "Termin buchen" ab — genau dafuer stehen die z-index. */
