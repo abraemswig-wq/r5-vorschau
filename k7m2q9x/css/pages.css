@@ -1739,3 +1739,21 @@ body.page{
 @media (min-width:821px){
   .tueren{max-width:min(56rem, calc(100vw - 2 * var(--gut) - 7rem))}
 }
+
+/* --- Der Pfeil markiert das Verlassen, nicht die Liste ----------------
+   style.css haengt "\2197" pauschal an .chapters__seiten--zwei a. Das stimmte,
+   solange dort Unternehmen und Sportvereine nach rehab-five.com zeigten. Seit
+   dem 07.10.2026 sind beide seiteneigen (unternehmen-muenster.html,
+   sportverein-muenster.html) — der Pfeil versprach seither einen Absprung, den
+   es nicht gibt. Aufgefallen ist das erst, als am 12.10.2026 mit dem HEALTH
+   CLUB ein Ziel dazukam, das wirklich hinausfuehrt.
+
+   style.css ist die Kopie, die vier Marken teilen, und wird hier nicht
+   angefasst. Die Regel wird deshalb zurueckgenommen und an das Merkmal
+   gehaengt, das sie traegt: ein Ziel mit eigenem Schema. Damit pflegt sich der
+   Pfeil selbst, wenn spaeter ein Link von aussen nach innen wandert. */
+.chapters__seiten--zwei a::after{content:none}
+.chapters__seiten a[href^="http"]::after{
+  content:"\2197";margin-left:.35em;font-weight:400;
+  font-size:.7em;vertical-align:.15em;color:rgba(251,241,224,.5);
+}
