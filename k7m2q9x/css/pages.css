@@ -1757,3 +1757,23 @@ body.page{
   content:"\2197";margin-left:.35em;font-weight:400;
   font-size:.7em;vertical-align:.15em;color:rgba(251,241,224,.5);
 }
+
+/* --- „in Vorbereitung" muss man lesen koennen -------------------------
+   .tuer__go--bald stand in style.css auf rgba(251,241,224,.45) und faellt damit
+   durch: gemessen 3,85:1 bei 390 px und 4,00:1 bei 1440 px gegen die Schwelle
+   4,5:1 — die Zeile ist 10 px, Grossbuchstaben, also gilt der strenge Wert.
+   (Die Vault-Notiz nennt fuer diesen Grauton 4,15:1; das war ein anderer
+   Hintergrund. Noch ein Grund, am Ort zu messen statt die Zahl zu uebernehmen.)
+
+   Aufgefallen ist es erst am 12.10.2026, als REHAB FIVE NUTRITION als
+   Nicht-Link dazukam. Vorher war der HEALTH CLUB der einzige, und mit seinem
+   Verlinken verschwand das Element — der Kontrastlauf meldete „0 unter Soll"
+   und hatte schlicht nichts mehr zu messen. *Ein Befund, der mit seinem
+   Element verschwindet, ist nicht behoben.*
+
+   .6 statt .45 ist gerechnet, nicht geschaetzt: 5,66:1 bei 390 px. Die Zeile
+   bleibt damit leiser als die Beschreibung darueber (.72) und ist trotzdem
+   lesbar — und lesbar muss sie sein, weil sie das Einzige ist, was vor dem
+   Klick verraet, dass hier kein Link liegt. Korrigiert in der Markendatei,
+   weil style.css die Kopie ist, die vier Marken teilen. */
+.tuer__go--bald{color:rgba(251,241,224,.6)}
