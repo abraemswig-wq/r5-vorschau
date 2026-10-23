@@ -1857,3 +1857,33 @@ body.page{
    Klick verraet, dass hier kein Link liegt. Korrigiert in der Markendatei,
    weil style.css die Kopie ist, die vier Marken teilen. */
 .tuer__go--bald{color:rgba(251,241,224,.6)}
+
+/* --- Widerrufs-Link und Warten auf die Rezeption ----------------------
+   Beides Nebenwirkungen des Umbaus vom 23.10. (Einwilligung verdrahtet,
+   Rezeption erst auf Klick) und bewusst hier statt in style.css: die teilen
+   vier Marken, und CookieFirst gehoert nur REHAB FIVE.
+
+   Die `[hidden]`-Regel ist eine Wache, kein Schmuck: `hidden` ist nur eine
+   Empfehlung des Browsers (`display:none` aus dem UA-Stylesheet) und wird von
+   jeder spaeteren `display`-Regel auf `span` stillschweigend ausgehebelt. Dann
+   stuende in der Vorschau ein „Cookies verwalten", das nichts oeffnet, weil
+   dort gar kein Banner laedt. Lieber doppelt gesichert als einmal peinlich.
+
+   `aria-busy` setzt `js/termin.js` fuer die Zeit, in der das fremde Skript
+   laedt — nach dem Klick passiert sonst sichtbar nichts, und das ist die
+   Sekunde, in der jemand ein zweites Mal drueckt. Nur Mauszeiger und ein
+   Hauch Deckkraft: keine Bewegung, damit es auch bei `prefers-reduced-motion`
+   richtig bleibt, und kein Textwechsel, der den Knopf springen laesst. */
+[data-einwilligung][hidden]{display:none}
+a[data-termin][aria-busy="true"]{cursor:progress;opacity:.72}
+
+/* Der Uebergangs-Absatz in der Datenschutzerklaerung. Er beschreibt, was auf
+   der VORSCHAU-Adresse anders ist als spaeter live, und faellt mit dem Umzug
+   weg. Deshalb bekommt er einen sichtbaren Rand: wer die Seite live stellt,
+   soll die Stelle finden, ohne den Text zu durchsuchen. Kein eigener Kasten —
+   das wuerde ihn wichtiger machen als die Erklaerung selbst. */
+.recht .prose .hinweis{
+  border-left:2px solid var(--orange);
+  padding:.15em 0 .15em 1.1rem;
+  color:rgba(251,241,224,.78);
+}
