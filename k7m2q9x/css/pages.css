@@ -1425,6 +1425,96 @@ body.page{
    pauschales `pointer-events:none` haette diese Absicht mitgeloescht. */
 .preloader[data-done="true"]{pointer-events:none}
 
+/* DER EINSPIELER ZEIGT DEN CLAIM STATT DER 5 (Ansage Aric, 23.10.2026).
+   Die Mechanik steht in css/style.css und gehoert dort vier Marken
+   gemeinsam — hier wird sie nur fuer REHAB FIVE umgestellt, nicht
+   angefasst. (Den Einspieler gibt es ohnehin nur auf index.html, geprueft:
+   genau eine Seite traegt `class="preloader"`.)
+
+   VIER UEBERSCHREIBUNGEN, JEDE MIT EINEM GRUND:
+
+   1. `.preloader__long` darf nicht mehr zuklappen. In style.css faehrt
+      `[data-contract="true"]` seine `max-width` auf 0 und die Deckkraft auf
+      0 — das war der Tausch Wort gegen Ziffer. Jetzt bleibt „PHYSIOTHERAPIE"
+      stehen und der zweite Teil kommt dazu: der Claim vervollstaendigt sich,
+      statt sich zu ersetzen. `14ch` ist der Ausgangswert aus style.css,
+      hier bewusst wiederholt statt `none`, damit die Breite dieselbe bleibt
+      und nichts springt.
+
+   2. `flex-wrap:wrap` ist die Rueckfallebene fuer schmale Geraete.
+      Gemessen (pruefung/einspieler-breite-messen.py): einzeilig 336,1 px bei
+      24 px Schrift, Reserve +23,9 px bei 360 und +53,9 bei 390 — aber
+      -15,2 px bei 320. Statt eines Medienschalters bricht die Zeile dort von
+      selbst zwischen den beiden Spans um, also genau am Umbruch der H1
+      („Physiotherapie" / „neu gedacht."). `text-align:center`, damit die
+      zweite Zeile dann nicht links klebt.
+
+   3. Der Einblender kommt frueher. In style.css startet er nach 0,28 s und
+      braucht 0,4 s, ist also erst bei 680 ms fertig — app.js schaltet den
+      Einspieler aber schon bei 780 ms auf `data-done`. Fuer eine Ziffer
+      reichen 100 ms Standzeit, fuer sieben Silben nicht. Jetzt 0,06 s
+      Vorlauf, 0,42 s Dauer.
+
+      NACHGEMESSEN STATT AUSGERECHNET (pruefung/einspieler-ablauf-messen.py,
+      alle 40 ms abgetastet): Umschalten bei 41 ms, Claim vollstaendig
+      sichtbar bei 329 ms, Blende geht bei 821 ms auf, weg bei 1231 ms.
+      STANDZEIT 492 ms — so lange steht er ruhig, bevor die Blende aufgeht.
+      (Meine ueberschlagenen 480/300 ms standen hier zuerst und waren beide
+      falsch; das ist der Grund, warum die Zahlen aus dem Messlauf kommen und
+      nicht aus dem Kopf.)
+
+      DIE ZEITEN IN app.js BLEIBEN UNANGETASTET: die Datei ist dieselbe Kopie
+      wie bei den drei anderen Marken, und der Einspieler soll die Seite nicht
+      laenger zuhalten als bisher. Die Gesamtdauer aendert sich um 0 ms.
+
+   4. Der Claim UEBERGIBT an die H1, statt sie zu ueberlagern. Das ist die
+      einzige Aenderung hier, die nicht aus der Ansage kommt, sondern aus
+      einer Messung — und zwar aus einer, die erst durch die Ansage noetig
+      wurde.
+
+      WAS GEMESSEN WURDE (pruefung/einspieler-h1-gleichzeitig.py, 40 ms):
+      Die H1 traegt `data-scramble` und ist bei 781 ms fertig verwuerfelt.
+      Die Blende geht bei 821 ms auf. Heisst: ueber die GANZEN rund 410 ms,
+      in denen man durch den aufgehenden Einspieler hindurchsieht, steht
+      unten die fertige Ueberschrift „Physiotherapie neu gedacht." — und
+      oben derselbe Satz noch einmal. Zweimal dieselben sieben Silben
+      uebereinander, das liest niemand als Aufloesung, das liest sich als
+      Doppelbild.
+
+      DAS IST NEU UND ES IST MEINS. Mit der 5 gab es das nicht: oben stand
+      eine Ziffer, unten ein Satz, nichts doppelte sich. Die Kaesten
+      ueberlappten sich zwar schon damals (pruefung/einspieler-kreuzung-
+      messen.py: bei 1280 px 11.967 px² mit der 5, 20.146 px² mit dem Claim,
+      also das 1,7-fache; unter 1024 px beruehren sie sich gar nicht) — aber
+      Flaeche war nie das Problem. Der gedoppelte WORTLAUT ist es.
+
+      DIE LOESUNG KOSTET KEINE ZEIT: nicht den Einspieler laenger stehen
+      lassen und nicht app.js anfassen, sondern den Claim bei `data-done`
+      schneller ausblenden als die Blende aufgeht. Er ist dann weg, BEVOR
+      die Ueberschrift darunter sichtbar wird; der Satz wandert vom
+      Einspieler in die Seite, statt neben sich selbst zu stehen. 0,24 s
+      Deckkraft plus ein winziger Zug nach oben, damit es wie ein Uebergeben
+      aussieht und nicht wie ein Ausfall.
+
+      NACHGEMESSEN, UND ZWAR EHRLICH: aus rund 410 ms Doppelbild wird EIN
+      Abtastpunkt bei 844 ms — da steht der Deckel auf 0,79 und der Claim
+      auf 0,49. Das ist nicht „weg", das ist der Uebergabemoment selbst,
+      40 ms, und der soll sichtbar sein. Beim naechsten Punkt (885 ms) ist
+      der Claim auf 0,15 und damit unter der Lesbarkeitsschwelle. */
+.preloader[data-contract="true"] .preloader__long{max-width:14ch;opacity:1}
+.preloader__mark{flex-wrap:wrap;justify-content:center;text-align:center}
+.preloader__short{
+  margin-left:.22em;
+  transition:opacity .42s .06s var(--ease-out),
+             transform .42s .06s var(--ease-out);
+}
+.preloader[data-done="true"] .preloader__mark{
+  opacity:0;
+  transform:translateY(-.14em);
+  transition:opacity .24s var(--ease-out),
+             transform .32s var(--ease-out);
+}
+
 /* Aus der 11px-Zeile wird ein Knopf. Sie bleibt klein, bekommt aber eine Kante
    und damit eine Form, die man auch erkennt, ohne sie zu lesen. Auf dem Telefon
    gibt es kein Ueberfahren: was im Ruhezustand nicht nach Knopf aussieht, sieht
