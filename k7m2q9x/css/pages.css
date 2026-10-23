@@ -1489,6 +1489,68 @@ body.page{
 .recht .prose h2{font-size:clamp(1rem,1.4vw,1.2rem)}
 .recht .prose address{font-style:normal;margin:0 0 1.35em;line-height:1.7}
 
+/* DREI EBENEN, SEIT DIE ERKLAERUNG ARICS WORTLAUT IST. Vorher trug diese
+   Seite nur <h2> - meine eigene Gliederung in neun flachen Kapiteln. Seine
+   Vorlage ist dreistufig (gezaehlt: 14 x h2 inklusive der vier Anhaenge,
+   34 x h3, 12 x h4), und in 6873 Woertern ist
+   die Stufe die einzige Orientierung: "Auftragsverarbeitung" steht vier Mal
+   da und bedeutet jedes Mal einen anderen Dienstleister - erkennbar nur
+   daran, unter welcher Ueberschrift es haengt.
+
+   OHNE REGEL WAERE DIE STUFE VERDREHT: ein nicht gestaltetes h3 landet beim
+   Browser-Standard auf 1.17em fett, hier also 23,6 px - das h2 darueber ist
+   mit clamp(1rem,1.4vw,1.2rem) nur 17,9 px breit gemessen. Die Untergliederung
+   haette lauter gerufen als das Kapitel, das sie untergliedert.
+
+   ERSTER VERSUCH WAR DANN ZU WEIT IN DIE ANDERE RICHTUNG und ist an der
+   Messung gescheitert: h3 auf 16 px, h4 auf 14,7 px - beide KLEINER als der
+   Flieszutext, der hier 20,2 px hat. Eine Ueberschrift unter der Textgroesse
+   liest sich als Bildunterschrift, nicht als Ueberschrift. In 6873 Woertern
+   ist das kein Geschmacksfehler, sondern verlorene Orientierung.
+
+   DESHALB GEWINNT DAS h2 HIER NICHT UEBER DIE GROESSE - das tut es auf dieser
+   Seite ohnehin nicht, es ist kleiner als der Text, den es ueberschreibt. Es
+   gewinnt ueber Kapitaelchen, Gewicht 900 und die Linie darueber; das ist die
+   vorhandene Gestaltung und sie bleibt unangetastet. Die beiden Unterstufen
+   arbeiten darum mit Gewicht und Helligkeit statt mit Groesse: h3 knapp ueber
+   Textgroesse, Gewicht 600, volles Creme; h4 knapp darunter, gleiches
+   Gewicht, gedaempft und leicht gesperrt. Gemessen danach: 21,8 / 18,5 px
+   gegen 20,2 px Text - drei unterscheidbare Stufen, keine davon unter dem
+   Niveau einer Bildunterschrift.
+
+   Scoped auf .recht, nicht auf .prose: dieselbe Klasse tragen die 20
+   Blogartikel, und dort ist die Zwischenstufe die Dramaturgie des Textes. */
+.recht .prose h3{
+  margin:2.1em 0 .6em;
+  font-size:1.08em;
+  font-weight:600;line-height:1.35;letter-spacing:-.005em;
+  color:var(--cream);
+}
+.recht .prose h4{
+  margin:1.7em 0 .5em;
+  font-size:.92em;
+  font-weight:600;line-height:1.4;letter-spacing:.03em;
+  color:rgba(251,241,224,.74);
+}
+
+/* DIE VORLAGE SCHREIBT ADRESSEN AUS, und zwar ganze: "https://privacy.
+   google.com/businesses/gdprcontrollerterms/sccs/" steht dort als Text im
+   Satz, nicht als Wort hinter einem Link. Gemessen bei 390 px Fenster lief
+   die Seite dadurch bis 489 px nach rechts - 99 px Ueberhang, sechs Links
+   waren daran beteiligt. Eine solche Adresse hat keine Trennstelle, an der
+   ein Umbruch erlaubt waere; `anywhere` erlaubt sie ueberall, aber erst wenn
+   es sonst nicht passt. Normale Wortlinks bleiben davon unberuehrt.
+   Vorher hatte diese Seite keine ausgeschriebene Adresse - der Mangel kommt
+   mit der Uebernahme herein, nicht aus der Gestaltung. */
+.recht .prose a{overflow-wrap:anywhere}
+.recht .prose h3[id],
+.recht .prose h4[id]{scroll-margin-top:6rem}   /* wie beim h2 */
+/* Eine Ueberschrift direkt ueber der naechsten Ueberschrift braucht den
+   vollen Abstand nicht - h3 "Datenerfassung auf dieser Website" steht in der
+   Vorlage ohne Absatz dazwischen vor einem h4. */
+.recht .prose h3 + h4,
+.recht .prose h2 + h3{margin-top:1.1em}
+
 .page-foot{
   padding:0 var(--rand) 3.5rem;text-align:center;
   font-size:.75rem;letter-spacing:.06em;line-height:2;color:rgba(251,241,224,.45);
