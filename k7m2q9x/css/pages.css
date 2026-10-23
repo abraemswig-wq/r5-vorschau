@@ -1327,6 +1327,86 @@ body.page{
   .ort:hover{background:rgba(8,18,14,.82);border-color:rgba(230,126,34,.55)}
 }
 
+/* „Praxis ansehen" stand auf den beiden Karten nicht auf derselben Hoehe
+   (Ansage Aric 2026-10-22). Gemessen: 23,1 px Versatz — und das ist genau
+   EINE Oeffnungszeiten-Zeile. Die Scharnhorststrasse hat drei (Mo–Mi, Do, Fr),
+   die Friedrich-Ebert-Strasse zwei (Mo–Fr, Sa). Der Rost streckt beide Karten
+   auf dieselbe Hoehe, also sass auf der rechten Karte der Knopf hoeher und
+   darunter 23 px Leere.
+
+   Nicht mit einer festen Hoehe oder einem Abstand geflickt: beides waere auf
+   die heutige Zeilenzahl geeicht und beim naechsten geaenderten Oeffnungs-
+   zeitenblock wieder falsch. Stattdessen traegt die Karte jetzt eine
+   Spaltenflex, und der Fuss (Bewertung + Knopf) wird mit `margin-top:auto`
+   nach unten gedrueckt. Das rechnet sich selbst aus, egal wie viele Zeilen
+   darueber stehen.
+
+   Drei Details, die daran haengen:
+   - Der 1rem-Abstand ueber der Bewertung wird zu `padding-top`. Als Margin
+     waere er von `auto` geschluckt worden, sobald Platz da ist — auf der
+     hoechsten Karte (kein freier Platz) saesse die Bewertung dann direkt an
+     den Zeiten.
+   - `.ort__go` ist `inline-flex` und wuerde als Flex-Kind auf volle Breite
+     gezogen. `align-self:flex-start` haelt den Knopf auf Textbreite.
+   - `.ort::before` (der orangene Kantenstrich) ist `position:absolute` und
+     wird deshalb KEIN Flex-Kind — geprueft, nicht angenommen.
+
+   Auf dem Telefon stehen die Karten untereinander und sind inhaltshoch; dort
+   gibt es keinen freien Platz, `auto` loest zu 0 auf und es aendert sich
+   nichts. Die Regel ist also bewusst ohne Breakpoint. */
+.ort{display:flex;flex-direction:column}
+.ort .bewertung{margin-top:auto;padding-top:1rem}
+.ort__go{align-self:flex-start}
+
+/* TIPPFLAECHEN IM KOPF (Mobil-Durchsicht 2026-10-22)
+   Gemessen bei 390 px: der Burger ist 20x14 gross, die Wortmarke 103x22.
+   WCAG 2.2 AA (2.5.8) will mindestens 24x24. Der Burger ist dabei der
+   unangenehmste Fall ueberhaupt — er ist auf dem Telefon der einzige Weg in
+   die Navigation und zugleich das kleinste Ziel der Seite.
+
+   NICHT ueber `width`/`height` vergroessert: die Balken sitzen in einer
+   zentrierten Spaltenflex, ein groesserer Kasten haette sie verschoben und
+   die Kopfleiste neu ausgerichtet. Stattdessen ein durchsichtiges `::after`,
+   das nur die Trefferflaeche aufspannt — das Aussehen bleibt Pixel fuer Pixel
+   gleich, geprueft.
+
+   Die Masse sind aus der Geometrie gerechnet, nicht geraten: Burgermitte
+   (37|33), 44x44 ergibt 15..59; die Wortmarke beginnt bei 71, es bleiben also
+   12 px Luft. Die Wortmarke selbst waechst auf 34 px Hoehe (16..50) und
+   beginnt bei 65 — immer noch hinter der 59 des Burgers. Keine der beiden
+   Flaechen verlaesst die Kopfleiste (0..67).
+
+   Die Fusszeilen-Links bleiben bewusst, wie sie sind: sie stehen inline in
+   einer Zeile, durch „·" getrennt, und fallen damit unter die Inline-Ausnahme
+   von 2.5.8. Sie vertikal aufzublasen wuerde ihre Flaechen uebereinander
+   schieben, nicht auseinander. */
+.burger{position:relative}
+.burger::after{content:"";position:absolute;inset:-15px -12px}
+.wordmark{position:relative}
+.wordmark::after{content:"";position:absolute;inset:-6px}
+
+/* DER UNSICHTBARE DECKEL (gefunden bei der Mobil-Durchsicht 2026-10-22)
+   Aufgefallen ist es als unplausible Messung: selbst die MITTE des Burgers
+   meldete „kein Ziel". Ursache ist nicht der Burger, sondern der Preloader.
+
+   `.preloader` traegt `transition:opacity .7s, visibility .7s`. `visibility`
+   kennt keine Zwischenwerte und springt deshalb erst am ENDE der 0,7 s auf
+   `hidden` — bis dahin liegt der Deckel mit `z-index:100` ueber der ganzen
+   Seite und faengt jeden Tipp ab, obwohl seine Deckkraft laengst bei 0 ist.
+   Gemessen: die Seite ist **1505 ms** lang sichtbar und zugleich taub, mit
+   voller Animation 1528 ms — der Unterschied liegt also nicht an der
+   Animation, sondern allein an dieser Blende.
+
+   Das ist der teuerste Fehler dieser Durchsicht, weil er nicht aussieht wie
+   einer: man sieht eine fertige Seite, tippt, und nichts passiert. Wer das
+   erlebt, haelt die Seite fuer kaputt, nicht fuer langsam.
+
+   Bewusst eng gefasst: nur `[data-done="true"]`. Solange der Preloader laeuft,
+   soll er weiter abschirmen — das ist die Absicht hinter dem Deckel. Erst ab
+   dem Moment, in dem er weggeht, hoert er auf, Tipps zu schlucken. Ein
+   pauschales `pointer-events:none` haette diese Absicht mitgeloescht. */
+.preloader[data-done="true"]{pointer-events:none}
+
 /* Aus der 11px-Zeile wird ein Knopf. Sie bleibt klein, bekommt aber eine Kante
    und damit eine Form, die man auch erkennt, ohne sie zu lesen. Auf dem Telefon
    gibt es kein Ueberfahren: was im Ruhezustand nicht nach Knopf aussieht, sieht
