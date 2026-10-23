@@ -1508,6 +1508,12 @@ body.page{
    5. LANGSAMER, OHNE app.js ANZUFASSEN (Ansage Aric, 23.10.2026: „kannst du
       den einspieler einwenig langsamer machen").
 
+      FREIGEGEBEN, NACHDEM ER ES GESEHEN HAT: „das ruhige bitte"
+      (23.10.2026, nach dem Film mit drei Fassungen nebeneinander). Damit
+      ist auch entschieden, was danebenstand: das schnellere Tempo, das vor
+      dieser Ansage freigegeben war, kommt nicht zurueck. Wer die Zeiten
+      hier wieder anfasst, aendert eine Entscheidung, nicht eine Einstellung.
+
       DIE SCHRAUBE, DIE NAHE LAG, IST GESPERRT. Das Tempo scheint in
       js/app.js zu stehen: `setTimeout(() => pre.dataset.done = 'true', 780)`.
       Diese Datei ist aber dieselbe Kopie wie bei drei anderen Marken — eine
