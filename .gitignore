@@ -1,0 +1,2 @@
+# Commit-Texte fuer `git commit -F` - gehoeren nicht in die Vorschau.
+.commit-*.txt
