@@ -534,6 +534,24 @@ body.page{
    knappere Kappe reicht die Hoehe auf einem 844px-Geraet nicht mehr. */
 .beat .rufe{margin-top:1.4rem}
 
+/* Kapitel 01: der Kopf darf nicht an die Fensterkante stossen (Aric,
+   23.10.2026: „Der Kopf ist jetzt im Befund abgeschnitten.").
+
+   Zwei Dinge schneiden hier nacheinander. Erstens der Zuschnitt der Platte
+   selbst — der ist in index.html dokumentiert und sitzt jetzt 344px hoeher.
+   Zweitens `object-fit:cover`: die Platte ist 16:9, der Kasten ist so breit
+   wie das Fenster. Nur bei einem Fenster, das BREITER als 16:9 ist, bleibt
+   Hoehe uebrig, und `object-position:center` nimmt sie zur Haelfte oben weg —
+   also genau dort, wo der Kopf sitzt. Gemessen bei 2560x1330 (Seitenverhaeltnis
+   1,93): 65px oben. Das ist mehr, als ueber dem Scheitel Platz ist.
+
+   Mit 20% faellt nur ein Fuenftel davon oben an (26px statt 65px). Was unten
+   mehr weggeht, ist Boden und die Sohlenkante — dort schneidet das Bild
+   ohnehin schon, der Standfuss des Sportlers laeuft aus dem Bild. Bei
+   Fenstern schmaler als 16:9 (Laptop, jedes Telefon) hat der Wert keine
+   Wirkung: dann wird waagerecht beschnitten, nicht senkrecht. */
+.beat[data-key="Befund"] .beat__img{object-position:center 20%}
+
 /* ---------- Leistungspositionen ---------- */
 /* Kein Icon-Raster, keine Karten: das hier ist eine Liste dessen, was auf einem
    Rezept stehen kann. Die Abrechnungsposition ist die Ueberschrift, weil genau
