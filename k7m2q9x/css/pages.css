@@ -1431,7 +1431,7 @@ body.page{
    angefasst. (Den Einspieler gibt es ohnehin nur auf index.html, geprueft:
    genau eine Seite traegt `class="preloader"`.)
 
-   VIER UEBERSCHREIBUNGEN, JEDE MIT EINEM GRUND:
+   FUENF UEBERSCHREIBUNGEN, JEDE MIT EINEM GRUND:
 
    1. `.preloader__long` darf nicht mehr zuklappen. In style.css faehrt
       `[data-contract="true"]` seine `max-width` auf 0 und die Deckkraft auf
@@ -1500,7 +1500,74 @@ body.page{
       Abtastpunkt bei 844 ms — da steht der Deckel auf 0,79 und der Claim
       auf 0,49. Das ist nicht „weg", das ist der Uebergabemoment selbst,
       40 ms, und der soll sichtbar sein. Beim naechsten Punkt (885 ms) ist
-      der Claim auf 0,15 und damit unter der Lesbarkeitsschwelle. */
+      der Claim auf 0,15 und damit unter der Lesbarkeitsschwelle.
+      (Seit dem langsameren Tempo, Punkt 5, ist auch dieser eine Punkt weg:
+      der Claim ist vollstaendig verschwunden, BEVOR die Blende die H1
+      durchscheinen laesst. Gemessen: kein gemeinsames Fenster mehr.)
+
+   5. LANGSAMER, OHNE app.js ANZUFASSEN (Ansage Aric, 23.10.2026: „kannst du
+      den einspieler einwenig langsamer machen").
+
+      DIE SCHRAUBE, DIE NAHE LAG, IST GESPERRT. Das Tempo scheint in
+      js/app.js zu stehen: `setTimeout(() => pre.dataset.done = 'true', 780)`.
+      Diese Datei ist aber dieselbe Kopie wie bei drei anderen Marken — eine
+      groessere Zahl dort haette den Einspieler von REHAB FIVE verlangsamt
+      UND still den der drei anderen gleich mit. Also bleibt die 780 stehen.
+
+      WAS STATTDESSEN GEDREHT WIRD: nicht WANN app.js umschaltet, sondern
+      WANN die Blende darauf reagiert. `.preloader` bekommt eine
+      Verzoegerung (`--blende-warten`) auf `opacity` UND `visibility` — beide,
+      denn haette nur die Deckkraft sie, wuerde der Deckel schon unsichtbar
+      geschaltet, waehrend er noch zu sehen ist. Der Claim bekommt dieselbe
+      Verschiebung, 0,12 s, damit er laenger steht statt nur laenger auf
+      einem leeren Deckel zu fehlen.
+
+      GEMESSEN (dasselbe Skript wie oben):
+        Standzeit   492 ms -> 864 ms
+        Gesamtdauer 1190 ms -> 1559 ms
+      Also rund ein Drittel ruhiger, nicht doppelt so lang.
+
+      UND DIE WICHTIGE ZEILE, DIE SICH NICHT AENDERT: die Seite ist
+      weiterhin ab 780 ms bedienbar. `.preloader[data-done="true"]` traegt
+      `pointer-events:none` (siehe ganz oben), der Deckel laesst Tipps also
+      schon durch, waehrend er noch sichtbar verblasst. Der Einspieler sieht
+      laenger aus, er HAELT die Seite aber keine Millisekunde laenger zu.
+      Das ist der Grund, warum diese Loesung ueberhaupt vertretbar ist —
+      haette der Deckel noch geklickt, waere „langsamer" gleichbedeutend mit
+      „spaeter bedienbar" gewesen.
+
+      DER FEHLER, DEN ERST DAS LANGSAMERE TEMPO GEMACHT HAT: beim ersten
+      Versuch war der Claim bei 956 ms praktisch weg, die Blende ging aber
+      erst bei 1164 ms auf — 208 ms, in denen man auf eine leere dunkle
+      Flaeche schaut. Das ist kein Uebergang mehr, das ist eine Pause.
+      Aufgefallen ist es an einem herausgezogenen Einzelbild (8,9 kB bei
+      1,00 s — ein fast leerer Schirm komprimiert sich klein), nachgemessen
+      hat es dann pruefung/einspieler-h1-gleichzeitig.py.
+
+      SCHULD WAR DIE KURVE, NICHT DIE ZEIT. `var(--ease-out)` nimmt am
+      Anfang schnell weg: 60 ms nach Beginn des Ausblendens war die
+      Deckkraft schon halbiert. Beim schnellen Tempo fiel das nicht auf,
+      weil die Blende unmittelbar danach kam. Jetzt traegt die Deckkraft des
+      Claims `cubic-bezier(.33,0,.67,1)` — sie HAELT und faellt dann zuegig,
+      statt sofort einzubrechen. Nur die Deckkraft; der kleine Zug nach oben
+      behaelt `--ease-out`, sonst ruckt die Bewegung.
+
+      JETZT STEHEN BEIDE ZAHLEN GLEICHZEITIG RICHTIG:
+        Leerlauf   208 ms -> 40 ms (ein Abtastpunkt, also Messgrenze)
+        Doppelbild kein gemeinsames Fenster
+      Das ist der Punkt: die zwei Fehler sitzen an entgegengesetzten Enden
+      derselben Schraube. Dreht man gegen das Doppelbild, waechst der
+      Leerlauf, und umgekehrt.
+
+      ZWEI ZAHLENDREHER ZUM MITDREHEN, UND SIE HAENGEN ZUSAMMEN:
+      `--blende-warten` macht den Einspieler ruhiger (groesser = ruhiger).
+      Wer sie aendert, muss die 0,16 s am Claim mitziehen, sonst steht am
+      Ende ein leerer Deckel herum oder das Doppelbild kommt zurueck. Die
+      alte Faustregel („Blenden-Verzoegerung minus 0,24 s") gilt NICHT mehr,
+      seit die Kurve haelt: der Claim ist jetzt erst kurz vor Ende seiner
+      0,24 s unlesbar, nicht nach einem Viertel. Statt zu rechnen, beide
+      Zahlen nachmessen — das Skript nennt Leerlauf und Doppelbild in einem
+      Lauf, und richtig ist erst, wenn BEIDE stimmen. */
 .preloader[data-contract="true"] .preloader__long{max-width:14ch;opacity:1}
 .preloader__mark{flex-wrap:wrap;justify-content:center;text-align:center}
 .preloader__short{
@@ -1508,11 +1575,16 @@ body.page{
   transition:opacity .42s .06s var(--ease-out),
              transform .42s .06s var(--ease-out);
 }
+.preloader{
+  --blende-warten:.36s;
+  transition:opacity .7s var(--blende-warten) var(--ease-out),
+             visibility .7s var(--blende-warten);
+}
 .preloader[data-done="true"] .preloader__mark{
   opacity:0;
   transform:translateY(-.14em);
-  transition:opacity .24s var(--ease-out),
-             transform .32s var(--ease-out);
+  transition:opacity .24s .16s cubic-bezier(.33,0,.67,1),
+             transform .32s .16s var(--ease-out);
 }
 
 /* Aus der 11px-Zeile wird ein Knopf. Sie bleibt klein, bekommt aber eine Kante
