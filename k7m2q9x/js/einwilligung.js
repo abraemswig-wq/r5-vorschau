@@ -20,10 +20,26 @@
    Property gemessen werden soll, entscheidet er; geaendert wird das im
    CookieFirst-Dashboard, nicht in dieser Datei. Der Bau hier ist davon
    unabhaengig richtig.
+   Am 23.10.2026 abends noch einmal aus der Konfiguration gelesen, weil der
+   Umzug daran haengt: es steht WEITERHIN `G-YJMLBK0ZB3` drin, zweimal (im
+   gtag-Schnipsel als `?id=` und als `gtag('config', …)`). Die Abweichung ist
+   also nicht stillschweigend verschwunden. Wer sie aufloest, muss zwei
+   Stellen anfassen: das CookieFirst-Dashboard — und, falls die Property
+   wechselt, die beiden Textstellen in `datenschutz.html`, die das Cookie
+   `_ga_YJMLBK0ZB3` namentlich nennen (Abschnitt „Reichweitenmessung" und die
+   Cookie-Tabelle). Ein Cookie-Name, der nicht gesetzt wird, waere derselbe
+   Fehler wie ein verschwiegener.
 
    WAS IN DER LIVE-KONFIGURATION STEHT (ausgelesen, nicht vermutet): Kategorien
    `necessary/performance/functional/advertising`, alles ausser `necessary` vor
-   der Einwilligung aus; Google Analytics haengt an `performance`.
+   der Einwilligung aus (`baseConsent`); Google Analytics haengt an
+   `performance` und ist mit `integration: "banner_load"` eingetragen.
+   `googleConsentModeEnabled: true` — CookieFirst sendet also die
+   Consent-Mode-Signale an Google, das ist die Voraussetzung dafuer, dass eine
+   Ablehnung bei Google auch ankommt und nicht nur das Skript zurueckhaelt.
+   `denyBtn` und `denyBtnSecond` stehen beide auf `visible`, „Ablehnen" ist
+   also auf beiden Ebenen da. `isUsingWildcard: false` — Unterdomains sind
+   nicht pauschal mitgedeckt; `www` laeuft trotzdem, siehe die Messung unten.
 
    Aus `okAcceptsAll: true` plus `bannerToggles: false` hatte ich hier zuerst
    geschlossen, im ersten Banner bleibe praktisch nur "alles annehmen" oder der
@@ -47,13 +63,44 @@
    stand zuerst, der Lader pruefe die Domain nicht und wuerde auf
    `abraemswig-wq.github.io` anstandslos starten und Cookies setzen. Ich habe
    es ausprobiert, statt es stehen zu lassen, und es ist falsch: der Lader
-   prueft wirklich nichts, aber das von ihm nachgezogene Banner baut seine
-   Konfigurations-Adresse aus dem Hostnamen —
-   `/sites/<hostname>-31d2e90f-…/version.json`. Auf einem fremden Host
-   antwortet das mit 404, das Banner bricht ab, und es entsteht KEIN Cookie.
-   Gemessen auf 127.0.0.1: drei Anfragen an cookiefirst.com, dann
+   prueft wirklich nichts, aber das von ihm nachgezogene Banner bricht auf
+   einem fremden Host mit 404 ab, und es entsteht KEIN Cookie. Gemessen auf
+   127.0.0.1: drei Anfragen an cookiefirst.com, dann
    `[CF] Request to …/sites/127.0.0.1-31d2e90f-…/version.json failed: 404`,
    danach Stille; `window.CookieFirst` entsteht nie.
+
+   ZWEITE KORREKTUR AN MIR SELBST, 23.10.2026 — und diesmal eine, die den
+   Go-Live betrifft. Aus dem 404 oben hatte ich die Regel abgeleitet, das
+   Banner baue seine Konfigurations-Adresse IMMER aus `location.hostname`.
+   Daraus folgte eine beunruhigende Rechnung: die laufende Seite liegt auf
+   `www.rehab-five.com` (ohne www kommt 301), und
+   `…/sites/www.rehab-five.com-31d2e90f-…/version.json` antwortet mit 404.
+   Dann koennte das Banner live gar nicht erscheinen.
+
+   Statt das zu glauben, an der laufenden Seite nachgemessen
+   (`pruefung/banner-hostname-messen.py`, nur lesend, nichts angeklickt).
+   Ergebnis: auf `www.rehab-five.com` gehen ALLE acht Anfragen mit 200 durch,
+   und zwar samtlich auf den Pfad `/sites/rehab-five.com-31d2e90f-…/` — also
+   auf den Namen aus dem LADER, nicht aus dem Hostnamen. Der Hostname geht nur
+   an einen einzigen, anderen Endpunkt:
+   `edge.cookiefirst.com/prod/location?origin=www.rehab-five.com`, und der
+   antwortet unabhaengig vom Namen. `window.CookieFirst` entsteht, das Banner
+   zeigt „Alle akzeptieren" / „Ablehnen" / „Nein, anpassen",
+   `cookiefirst-id` liegt im lokalen Speicher. Dasselbe beim Aufruf ohne www,
+   der dorthin weitergeleitet wird.
+
+   Die richtige Regel lautet also: der Slug kommt aus der Lader-Adresse. Erst
+   wenn der Hostname NICHT zur eingetragenen Domain passt, fallt das Banner auf
+   einen aus dem Hostnamen gebauten Slug zurueck — und genau dieser Rueckfall
+   erzeugte den 404 auf 127.0.0.1. `www` zaehlt dabei als dieselbe Domain,
+   `127.0.0.1` und `www788.your-server.de` nicht.
+
+   WAS DAS FUER DEN UMZUG HEISST: diese Datei ist Zeichen fuer Zeichen
+   derselbe Lader, den die laufende Seite einbindet (gegengeprueft im
+   Live-Quelltext). Das Banner funktioniert nach dem Umzug also nicht
+   „hoffentlich", sondern messbar — unter rehab-five.com mit und ohne www.
+   Vorfuehren laesst es sich auf der Vorschau-Adresse trotzdem nicht; das ist
+   kein Mangel, sondern dieselbe Hostnamen-Bindung.
 
    Der Host-Schalter unten ist damit nicht das, was die Vorschau cookiefrei
    haelt — das tut CookieFirst selbst, eine Schicht spaeter. Er bleibt
