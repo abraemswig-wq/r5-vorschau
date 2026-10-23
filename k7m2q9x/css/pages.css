@@ -1952,6 +1952,111 @@ a[data-termin][aria-busy="true"]{cursor:progress;opacity:.72}
   color:rgba(251,241,224,.78);
 }
 
+/* ---------- Cookie-Tabelle ---------- */
+/* Aric hat die Tabelle der laufenden Seite geschickt und gefragt, ob wir "das
+   im gleichen Format anlegen" koennen. Format also wie live: sechs Spalten
+   Name · Zweck · Domainname · Ablauf · Anbieter · Typ, je Kategorie eine
+   eigene Tabelle.
+
+   SECHS SPALTEN PASSEN AUF DEM TELEFON NICHT. Die Lesespalte ist dort 310 px
+   breit (gemessen bei 360 px Fenster), die Zweck-Texte sind zwei bis drei
+   Saetze lang. Drei Wege standen zur Wahl:
+     - quer scrollen: die Tabelle waere lesbar, aber der Zweck - die Spalte,
+       auf die es ankommt - laege ausserhalb des Bildes, und ein horizontaler
+       Scroller in einem Rechtstext wird nicht gefunden;
+     - Spalten weglassen: dann ist es nicht mehr dasselbe Format;
+     - je Cookie ein Block, Feldname davor.
+   Der dritte Weg ist hier gebaut. Ueber 720 px eine echte Tabelle, darunter
+   stapeln sich die Zellen und holen ihre Beschriftung aus `data-feld`. Das
+   Markup bleibt in beiden Faellen dasselbe `<table>`.
+
+   Dass `display:block` die Tabellensemantik nicht zerstoert, ist der Punkt,
+   an dem dieses Muster historisch schiefging - frueher warf der Browser mit
+   dem Tabellen-Display auch die Rollen weg. Nachgemessen statt geglaubt, ueber
+   den Barrierefreiheitsbaum (CDP `Accessibility.getFullAXTree`): bei 390 px
+   und bei 1440 px identisch 2x table, 2x caption, 7x row, 30x cell,
+   12x columnheader. Der Baum ist in beiden Breiten derselbe.
+
+   Warum `data-feld` und nicht einfach die Ueberschrift wiederholen: ein
+   zweites Textvorkommen muesste bei jeder Korrektur mitgepflegt werden. So
+   steht der Feldname einmal im Attribut, sichtbar nur dort, wo der Kopf
+   fehlt. */
+.recht .prose .kekse{
+  width:100%;
+  border-collapse:collapse;
+  margin:0 0 2.2em;
+  font-size:.82rem;
+  line-height:1.6;
+}
+.recht .prose .kekse caption{
+  text-align:left;
+  font-weight:500;
+  color:var(--cream);
+  letter-spacing:.04em;
+  text-transform:uppercase;
+  font-size:.72rem;
+  padding:0 0 .7em;
+}
+.recht .prose .kekse th,
+.recht .prose .kekse td{
+  text-align:left;
+  vertical-align:top;
+  padding:.7rem .9rem .7rem 0;
+  border-bottom:1px solid rgba(251,241,224,.14);
+}
+.recht .prose .kekse thead th{
+  font-weight:500;
+  color:var(--cream);
+  white-space:nowrap;
+  border-bottom-color:rgba(251,241,224,.3);
+}
+.recht .prose .kekse td:first-child{
+  font-family:var(--mono,ui-monospace,SFMono-Regular,Menlo,monospace);
+  color:var(--cream);
+  word-break:break-word;        /* `_ga_YJMLBK0ZB3` sprengt sonst die Spalte */
+}
+.recht .prose .kekse td:nth-child(2){min-width:16ch}
+.recht .prose .kekse td:nth-child(3){word-break:break-word}
+
+@media (max-width:720px){
+  .recht .prose .kekse,
+  .recht .prose .kekse tbody,
+  .recht .prose .kekse tr,
+  .recht .prose .kekse td{display:block;width:auto}
+  /* Nicht `display:none`: der Kopf soll fuer Screenreader bleiben.
+     Weggeraeumt wird das TH, nicht das THEAD. Erster Versuch war das THEAD,
+     und gemessen ragten die Zellen bei 360 px bis x=365 hinaus: `overflow`
+     greift auf `table-header-group` nicht (CSS 2.1, 11.1.1 - gilt nur fuer
+     Block-Container, Flex- und Grid-Container). Sichtbar war nichts, weil
+     clip-path den Anstrich beschneidet, und ueberlaufen tat auch nichts -
+     aber eine Kiste, die 5 px breiter ist als das Fenster, ist eine Falle,
+     die beim naechsten Umbau zuschlaegt. Auf dem TH greift overflow. */
+  .recht .prose .kekse thead th{
+    position:absolute;width:1px;height:1px;
+    overflow:hidden;clip-path:inset(50%);white-space:nowrap;
+    padding:0;border:0;
+  }
+  .recht .prose .kekse tr{
+    padding:.9rem 0;
+    border-bottom:1px solid rgba(251,241,224,.14);
+  }
+  .recht .prose .kekse tr:last-child{border-bottom:0}
+  .recht .prose .kekse td{
+    padding:0 0 .35rem;
+    border:0;
+  }
+  .recht .prose .kekse td::before{
+    content:attr(data-feld) " ";
+    display:block;
+    font-size:.68rem;
+    letter-spacing:.08em;
+    text-transform:uppercase;
+    color:rgba(251,241,224,.45);
+  }
+  .recht .prose .kekse td:first-child{font-size:.9rem;padding-bottom:.5rem}
+  .recht .prose .kekse td:first-child::before{content:none}
+}
+
 /* ---------- Headline-Reveal: Wische statt Stauchung ---------- */
 /* Rania Landwehrmeyer, 23.10.2026, zwei Screenshots 24 s auseinander: eine
    Headline als schmaler Cream-Balken mit verzerrter Schrift, gemeldet als
