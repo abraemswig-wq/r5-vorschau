@@ -1887,3 +1887,60 @@ a[data-termin][aria-busy="true"]{cursor:progress;opacity:.72}
   padding:.15em 0 .15em 1.1rem;
   color:rgba(251,241,224,.78);
 }
+
+/* ---------- Headline-Reveal: Wische statt Stauchung ---------- */
+/* Rania Landwehrmeyer, 23.10.2026, zwei Screenshots 24 s auseinander: eine
+   Headline als schmaler Cream-Balken mit verzerrter Schrift, gemeldet als
+   "Darstellungsproblem der Headline".
+
+   Ursache gemessen, nicht geraten. style.css:641 oeffnet den Block mit
+   `transform:scaleX(0 -> 1)`, 0,42 s, zeilenweise um 70 ms gestaffelt.
+   scaleX staucht aber nicht den Balken, sondern alles darin — die Glyphen
+   mit. Gleichzeitig laeuft ab +120 ms der Scrambler (app.js:107) und
+   tauscht die Buchstaben aus. Zwei Effekte uebereinander ergeben das, was
+   auf ihren Bildern steht: gequetschte Zufallszeichen.
+
+   Beim echten Scrollen abgetastet (alle 40 ms, mouse.wheel, kein Sprung):
+     Chromium  2-3 von 6-8 Proben je Kapitel mitten in der Stauchung
+     WebKit    5-6 von 11-13 Proben, kleinstes gemessenes scaleX 0,07
+   Der verzerrte Zustand lebt in Safari messbar laenger. Deshalb hat sie ihn
+   zweimal erwischt und deshalb liest er sich als Fehler, nicht als Bewegung.
+
+   Reparatur haelt den Auftritt und nimmt die Verformung: der Balken oeffnet
+   weiter links nach rechts, aber als Schnitt statt als Verzerrung. clip-path
+   klippt, es skaliert nicht — die Schrift behaelt in jedem Zwischenbild ihre
+   Form. Dieselbe --sx-Mechanik wie vorher, damit app.js und style.css
+   unveraendert weiterschalten; style.css ist die geteilte Vier-Marken-Kopie
+   und wird nicht angefasst. */
+.hl__line{
+  transform:none;
+  clip-path:inset(0 calc(100% - var(--sx,1) * 100%) 0 0);
+  transition:clip-path .42s var(--ease-out);
+  transition-delay:var(--hd,0s);
+}
+/* Mittig gesetzte Headlines oeffneten per transform-origin:center aus der
+   Mitte heraus (style.css:175). Der Schnitt macht dasselbe: von beiden
+   Seiten gleich weit nach innen. */
+.hl--center .hl__line{
+  clip-path:inset(0 calc((100% - var(--sx,1) * 100%) / 2));
+}
+/* style.css:705 kuerzt die Dauer bei prefers-reduced-motion auf .01ms. Die
+   Kurzschreibweise oben wuerde sie zurueckholen — pages.css laedt spaeter.
+   Also hier noch einmal, sonst wischt es trotz Systemeinstellung. */
+@media (prefers-reduced-motion:reduce){
+  .hl__line{transition-duration:.01ms}
+}
+
+/* Rania, 23.10.2026: "langen gruenen Balken entfernen/stark einkuerzen" —
+   gemeint ist der Kicker ueber dem Blog-Aufmacher, der als 1179 px breiter
+   dunkler Streifen unter 247 px Text steht.
+   `.kicker` ist in style.css `display:inline-block`, zieht sich also auf
+   seinen Text zusammen. Nur nicht hier: `.lead__inner` ist ein Flex-Container
+   in Spaltenrichtung, und `align-items` steht auf dem Vorgabewert `stretch`.
+   Fuer ein Flex-Item zaehlt `inline-block` nicht — es wird auf die volle
+   Spaltenbreite gezogen, und der Block malt mit.
+   Nachgemessen ueber alle 50 Seiten (Blockbreite gegen die Breite des eigenen
+   Textknotens): genau dieser eine Kicker ist betroffen. Deshalb auch nur
+   dieser eine Eingriff und kein `align-items` am Container — das wuerde auch
+   Headline und Lede auf Schrumpfbreite setzen und den Umbruch verschieben. */
+.lead__inner>.kicker{align-self:flex-start}
