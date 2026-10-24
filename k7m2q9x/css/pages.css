@@ -1261,6 +1261,27 @@ body.page{
 
 .pc__satz{margin:1.4rem 0 0;font-size:.9375rem;line-height:1.7;color:rgba(251,241,224,.8)}
 
+/* Genannte Organisationen in der Vita fuehren auf deren Seite — Vereine
+   (USC Münster, Uni Baskets) und Fortbildungsanbieter (DIGOTOR). Hiess bis
+   zum 24.10.2026 `.pc__verein`; umbenannt, als der erste Nicht-Verein dazukam.
+   DIE UNTERSTREICHUNG IST NICHT GESCHMACK, SIE IST GEMESSEN: Orange auf dem
+   Kartengruen ergibt 5,06:1 und besteht AA — aber gegen den UMGEBENDEN Text
+   nur 1,61:1. WCAG 1.4.1 verlangt 3:1, wenn die Farbe das einzige Merkmal
+   eines Links im Fliesstext ist. Ohne Strich waere der Link fuer einen Teil
+   der Leser schlicht kein Link. Darum liegt er immer an, nicht erst im Hover.
+   `text-underline-offset` haelt ihn aus den Unterlaengen heraus. */
+.pc__org{
+  color:var(--orange);
+  text-decoration:underline;
+  text-decoration-thickness:1px;
+  text-underline-offset:.18em;
+  text-decoration-color:rgba(217,145,41,.55);
+  transition:text-decoration-color .3s var(--ease-out),color .3s var(--ease-out);
+}
+.pc__org:hover,.pc__org:focus-visible{
+  color:var(--cream);text-decoration-color:var(--cream);
+}
+
 .pc__nav{
   padding-top:clamp(1.6rem,3vw,2.4rem);
   display:flex;align-items:center;gap:1rem;

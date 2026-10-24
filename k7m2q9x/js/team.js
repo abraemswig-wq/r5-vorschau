@@ -365,6 +365,63 @@
     knoten.classList.toggle('is-leer', !wert);
   };
 
+  /* ---------- Genannte Organisationen in der Vita verlinken ----------
+     Die Adressen stehen HIER und nicht im Datensatz, und das ist Absicht:
+     dieselbe Organisation kommt bei mehreren Leuten vor (USC Münster bei
+     Constantin und bei Simon). Stünde die Adresse im Text, gäbe es pro Person
+     eine Fassung — und die erste, die sich ändert, zieht die anderen nicht mit.
+
+     `satz` bleibt dadurch REINER TEXT. Das ist der zweite Grund: hier wird
+     innerHTML gesetzt, und wer HTML aus den Daten durchreicht, reicht auch
+     alles andere durch. Deshalb wird erst escaped, DANN verlinkt — der Name
+     der Organisation ist das einzige, was zu Markup werden kann.
+
+     NICHT MEHR NUR VEREINE, darum heisst die Karte nicht mehr VEREINE: seit
+     dem 24.10.2026 steht DIGOTOR darin, ein Fortbildungsanbieter. Die Klasse
+     hiess `.pc__verein` und heisst jetzt `.pc__org` — ein Name, der nur fuer
+     die Haelfte der Einträge stimmt, führt den nächsten Leser in die Irre.
+
+     Geprüft am 24.10.2026: usc-muenster.de antwortet mit 200 („Startseite —
+     USC Münster"), unibaskets.de leitet auf unibaskets.ms um („Uni Baskets
+     des UBC Münster e.V."). Verlinkt ist deshalb das Ziel, nicht die
+     Weiterleitung.
+
+     DIGOTOR AM 24.10.2026 NACHGESCHLAGEN, NICHT GERATEN — und die naechst-
+     liegende Adresse waere falsch gewesen: `digotor.de` existiert, leitet
+     aber per http auf `digotor.info` („Startseite - DIGOTOR", 63x
+     „Krankengymnastik am Gerät") — und `https://digotor.de` bricht im
+     TLS-Handshake ab (`sslv3 alert handshake failure`). Ein Link auf
+     digotor.de wuerde also in jedem Browser scheitern, der von sich aus auf
+     https geht, und das tun heute alle. Verlinkt ist darum digotor.info.
+
+     ACHTUNG, ZWEITE FASSUNG — GILT NUR FUER DIE VEREINE: die beiden
+     Vereinsadressen stehen schon in der Vereinsleiste von
+     sportverein-muenster.html und sportphysiotherapie-muenster.html
+     (`.vl__logo`). Am 24.10.2026 geprüft — sie sind zeichengleich. Wer hier
+     eine Adresse ändert, muss dort mitziehen; `pruefung/vereinslinks.py`
+     vergleicht beide Orte. DIGOTOR hat dort keine Entsprechung und damit
+     keine zweite Quelle — das Skript sagt das jetzt ausdrücklich, statt den
+     Eintrag stillschweigend zu überspringen. */
+  const ORGS = {
+    'USC Münster': 'https://www.usc-muenster.de/',
+    'Uni Baskets Münster': 'https://unibaskets.ms/',
+    'DIGOTOR': 'https://digotor.info/',
+  };
+  // Längere Namen zuerst, sonst schluckt ein kürzerer Name den längeren, der
+  // mit ihm anfängt.
+  const ORG_RE = new RegExp('(' + Object.keys(ORGS)
+    .sort((a, b) => b.length - a.length)
+    .map(n => n.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))
+    .join('|') + ')', 'g');
+  const SCHILD = {'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;'};
+  const setzVita = (knoten, wert) => {
+    knoten.classList.toggle('is-leer', !wert);
+    if (!wert) { knoten.textContent = LEER; return; }
+    knoten.innerHTML = wert.replace(/[&<>"]/g, c => SCHILD[c])
+      .replace(ORG_RE, n => `<a class="pc__org" href="${ORGS[n]}"`
+        + ` target="_blank" rel="noopener noreferrer">${n}</a>`);
+  };
+
   // Welche der drei Instanzen einer Person steht gerade am naechsten? Immer die
   // echte zu nehmen risse die Reihe quer durch das Band, obwohl dieselbe Person
   // zwei Karten weiter schon im Bild steht.
@@ -397,7 +454,7 @@
     el('pcrole').textContent = d.rolle;
     setz(el('pcort'), d.standort);
     setz(el('pcfokus'), d.fokus);
-    setz(el('pcsatz'), d.satz);
+    setzVita(el('pcsatz'), d.satz);
     const s = offenEcht();
     el('pczaehler').textContent = `${s.indexOf(karten[aktiv]) + 1} / ${s.length}`;
     // Die Karte hinter der Galerie mitziehen, damit nach dem Schliessen die
