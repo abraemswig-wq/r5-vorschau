@@ -2170,7 +2170,17 @@ body.page{
    bleibt damit leiser als die Beschreibung darueber (.72) und ist trotzdem
    lesbar — und lesbar muss sie sein, weil sie das Einzige ist, was vor dem
    Klick verraet, dass hier kein Link liegt. Korrigiert in der Markendatei,
-   weil style.css die Kopie ist, die vier Marken teilen. */
+   weil style.css die Kopie ist, die vier Marken teilen.
+
+   27.10.2026: NUTRITION ist verlinkt, und damit trifft diese Regel zum zweiten
+   Mal auf kein Element — `.tuer--bald` kommt in keiner Seite dieser Marke mehr
+   vor. Beim ersten Mal (HEALTH CLUB, 12.10.) hat genau das den Befund verdeckt,
+   bis er zwei Wochen spaeter wieder auftauchte. Die Regel bleibt deshalb stehen,
+   obwohl sie gerade nichts faerbt: sie ist nicht Dekoration, sondern die
+   Korrektur eines Kontrastfehlers in der geteilten style.css, und die naechste
+   Tuer, die als Nicht-Link anfaengt, braucht sie am ersten Tag und nicht erst,
+   wenn jemand nachmisst. Loeschen hiesse, die gemessenen 5,66:1 wegzuwerfen und
+   beim naechsten Mal wieder bei 3,85:1 zu starten. */
 .tuer__go--bald{color:rgba(251,241,224,.6)}
 
 /* --- Widerrufs-Link und Warten auf die Rezeption ----------------------
