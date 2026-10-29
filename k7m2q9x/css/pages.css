@@ -2374,3 +2374,61 @@ a[data-termin][aria-busy="true"]{cursor:progress;opacity:.72}
    dieser eine Eingriff und kein `align-items` am Container — das wuerde auch
    Headline und Lede auf Schrumpfbreite setzen und den Umbruch verschieben. */
 .lead__inner>.kicker{align-self:flex-start}
+/* ---------- Online-Rezeption: Platz fuer den fremden Starter (28.10.2026) ----
+
+   HIER STAND EINEN HALBEN TAG LANG EIN EIGENER KNOPF (`.rezeption`), der die
+   Rezeption erst auf Klick holen sollte. Er ist wieder raus, mitsamt seinen
+   Regeln. Grund in `js/termin.js`: die Online-Rezeption ist ein
+   Nachrichtenkanal, kein Buchungsformular — sie muss mitlaufen, damit eine
+   Antwort der Praxis den Patienten auch erreicht. DocMedico stellt seinen
+   eigenen Starter wieder von allein hin; zwei Knoepfe waeren einer zu viel.
+
+   WAS BLEIBT, ist das hier: der fremde Starter belegt die rechte untere Ecke
+   dauerhaft, und unser Scroll-Hinweis stand dort auch. Gemessen bei 390 px —
+   Pille 237x57, 23 px vom rechten und unteren Rand, also x 130..367 /
+   y 764..821; Hinweis 180x53 bei x 183..363 / y 752..805. Das ueberschneidet
+   sich deutlich. Dass es vor dem 23.10. schon so war, macht es nicht richtig:
+   es ist nur keinem aufgefallen, weil beide hell auf dunkel stehen.
+
+   Der Hinweis weicht, nicht die Rezeption — er verschwindet ohnehin beim
+   ersten Scrollen (`data-off`), der Buchungs- und Nachrichtenweg bleibt. 6rem
+   sind gerechnet: Oberkante der Pille (844 - 23 - 57 = 764) minus Hinweishoehe
+   (53) minus 12 px Luft, aufgerundet. Nachgemessen in
+   `pruefung/tmp/pille-und-hinweis.py` — dort steht ueber alle Breiten von 390
+   bis 1440 px eine Null in jeder Ueberlappungsspalte.
+
+   Ueber 820 px braucht es nichts: dort steht der Hinweis mittig und die Pille
+   rechts, gemessen ohne Beruehrung. Und das Siegel ist unter 821 px seit dem
+   07.10. ohnehin `display:none` — genau wegen dieser Ecke.
+
+   ---------------------------------------------------------------------------
+   UND JETZT DER TEIL, DEN DIESE REGEL NICHT LOEST, damit ihn niemand fuer
+   geloest haelt. Die Messung oben war „sauber" und trotzdem zu eng: sie hat
+   die PILLE gemessen. DocMedico klappt beim Seitenaufruf aber zusaetzlich
+   einen Teaser-Kasten auf (252x289, „Wie koennen wir Ihnen behilflich sein?"
+   mit Termin vereinbaren / Termin absagen / Rezept hochladen). Der ist kein
+   `<button>` und fiel deshalb durch das Sieb. Auf dem Bildschirmfoto lag er
+   sofort da. Der Messbereich ist Teil des Messgeraets.
+
+   NACHGEMESSEN mit `pruefung/tmp/teaser-messen.py` (jedes sichtbare Element
+   im Wrapper statt nur Knoepfe) und `teaser-lebensdauer.py`:
+     - Er verschwindet NICHT: nicht nach 40 s, nicht beim Scrollen, nicht beim
+       Zurueckscrollen.
+     - 390 px: verdeckt „TERMIN BUCHEN" zu 74 % und den Scroll-Hinweis zu
+       100 %. 480/560/700/820 px: Hinweis 100 %, Rufleiste 58/49/37/33 %.
+       1024 px: 25 %, 1440 px: 16 % — am Desktop nur der rechte Rand der
+       Leiste, der Termin-Knopf selbst bleibt dort frei.
+     - Abschalten WAERE moeglich: `sessionStorage.dmrFeatureTeaser='true'` vor
+       dem fremden Skript gesetzt haelt ihn zu; Pille bleibt, `openClose()`
+       oeffnet weiter (gemessen).
+
+   ARIC HAT AM 28.10. ENTSCHIEDEN: so lassen, wie DocMedico es macht. Begruendet
+   und nicht nebenbei — niemand kann ausschliessen, dass DocMedico genau diesen
+   Kasten auch benutzt, um eine wartende Antwort anzukuendigen, und das ist der
+   ganze Grund, warum die Rezeption ueberhaupt wieder mitlaedt. Lieber ein
+   verdeckter Knopf als eine verpasste Antwort.
+   ALSO NICHT „VERGESSEN", SONDERN ENTSCHIEDEN: wer hier `dmrFeatureTeaser`
+   einbaut, dreht diese Entscheidung um und braucht dafuer seine. */
+@media (max-width:820px){
+  .hint{bottom:6rem}
+}

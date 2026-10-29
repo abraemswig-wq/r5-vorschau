@@ -1,37 +1,84 @@
-/* Online-Rezeption (DocMedico). Laedt seit 2026-10-23 ERST AUF KLICK.
+/* Online-Rezeption (DocMedico). Laedt seit 2026-10-28 WIEDER MIT DER SEITE.
 
-   VORHER: in 48 von 50 Koepfen stand
+   DIE GESCHICHTE IN DREI SCHRITTEN, weil der mittlere falsch war und man das
+   sehen koennen muss:
+
+   BIS 23.10.2026: in 48 von 50 Koepfen stand
    `<script src="https://cdn.docmedico-rezeption.de/j9u4c9m7a/reception_embed.js" async>`
    samt `preconnect`. Damit ging die IP-Adresse jedes Besuchers an einen fremden
    Server, bevor irgendwer einen Termin wollte, und die Rezeption legte
-   `sessionStorage.dmrFeatureTeaser` an. ENTSCHEIDUNG VON ARIC vom 23.10.:
-   erst auf Klick.
+   `sessionStorage.dmrFeatureTeaser` an.
 
-   Warum das mehr ist als eine Gewichtsfrage: § 25 Abs. 2 Nr. 2 TDDDG erlaubt
-   Speichern und Auslesen auf dem Endgeraet ohne Einwilligung nur, soweit es
-   fuer einen vom Nutzer AUSDRUECKLICH GEWUENSCHTEN Dienst unbedingt
-   erforderlich ist. Beim Auto-Laden war das die schwache Lesart — gewuenscht
-   hatte die Rezeption niemand, sie kam mit dem Seitenaufruf. Nach einem Klick
-   auf einen Termin-Knopf ist der Wunsch ausdruecklich und die Ausnahme greift
-   sauber. Genau deshalb braucht die Rezeption kein Einwilligungsbanner, und
-   genau deshalb loest diese Aenderung auch die Sonderrolle von Impressum und
-   Datenschutz auf: dort fehlte das Skript bisher absichtlich, weil das Lesen
-   der Rechtstexte nicht schon Daten ausloesen sollte. Jetzt loest das Lesen
-   nirgends mehr Daten aus.
+   23.10.2026: umgestellt auf „erst auf Klick". Begruendung damals — § 25 Abs. 2
+   Nr. 2 TDDDG erlaubt Speichern und Auslesen auf dem Endgeraet ohne
+   Einwilligung nur fuer einen vom Nutzer AUSDRUECKLICH GEWUENSCHTEN Dienst;
+   ein Klick macht den Wunsch ausdruecklich, ein Seitenaufruf nicht. Der Preis
+   wurde benannt: DocMedicos eigener Knopf unten rechts erscheint dann erst
+   nach dem ersten Klick.
 
-   DER PREIS, benannt statt versteckt: DocMedicos eigener Knopf unten rechts
-   erscheint erst nach dem ersten Klick auf einen unserer Termin-Knoepfe. Wer
-   die Rezeption ueber diesen fremden Knopf gesucht hat, findet sie dort nicht
-   mehr vor — unsere eigenen Termin-Knoepfe stehen auf jeder Seite und tun
-   dasselbe. Zweitens kostet der erste Klick die Ladezeit des fremden Skripts,
-   die vorher im Hintergrund lag. Gemessen, nicht geschaetzt: siehe
-   `pruefung/rezeption-messen.py`.
+   28.10.2026, ERSTER VERSUCH (verworfen, keine 30 Minuten alt): ein EIGENER
+   Starter unten rechts, der nichts laedt und abtritt, sobald DocMedicos
+   Starter steht. Gebaut, gemessen, funktionierte — und ging trotzdem am
+   Problem vorbei.
 
-   KEIN `preconnect` mehr, auch nicht auf Verdacht: ein Vorverbinden traegt die
-   IP-Adresse schon vor dem Klick hinueber und waere damit genau die
-   Uebermittlung, die hier wegfallen soll. */
+   28.10.2026, SO IST ES JETZT: zurueck zum Laden mit der Seite. Der Grund ist
+   nicht Bequemlichkeit, sondern eine Eigenschaft des Dienstes, die ich nicht
+   auf dem Schirm hatte. Aric: „das muss immer so sein, dass da DocMedico
+   direkt offen geladen ist, weil unsere Kunden, wenn wir darauf antworten, den
+   Link kriegen. Dann koennen die das ueber diesen ‚Termin buchen'-Button von
+   dir nicht oeffnen."
 
-const DOCMEDICO = 'https://cdn.docmedico-rezeption.de/j9u4c9m7a/reception_embed.js';
+   DIE ONLINE-REZEPTION IST KEIN BUCHUNGSFORMULAR, SIE IST EIN NACHRICHTEN-
+   KANAL. Das steht auch in dem, was sie nachlaedt: `chats-frontend-store`,
+   `chats-store`, `docmed-crypt`. Die Praxis antwortet darin, und der Patient
+   muss die Antwort VORFINDEN. Ein Knopf, der erst auf Klick etwas laedt, kann
+   nicht anzeigen, dass eine Antwort wartet — er weiss es nicht, weil nichts
+   geladen ist. Mein eigener Starter konnte das grundsaetzlich nicht leisten,
+   egal wie gut er aussah. Ich hatte den Dienst als „Terminbuchung" gelesen und
+   danach entworfen; das war der Fehler unter dem Fehler.
+
+   WAS DAS KOSTET, gemessen am 28.10. nach der Umstellung
+   (`pruefung/rezeption-messen.py`, index.html, 4 s nach load):
+     BEIM AUFRUF, ohne jedes Zutun — 4 Anfragen an zwei fremde Hosts
+     (cdn.docmedico-rezeption.de 1, cdn.docmedico.de 3), keine Cookies, kein
+     localStorage, ein Eintrag `sessionStorage.dmrFeatureTeaser=true`.
+     ERST BEIM OEFFNEN — 22 weitere, davon 21 an embed.docmedico-rezeption.de.
+   Das ist weniger, als ich erwartet hatte, und die Differenz ist kein Detail:
+   vorgeladen wird nur der STARTER, die Chat-Anwendung selbst kommt weiter erst
+   auf Klick. Der Preis des Vorladens ist also die IP-Adresse plus ein
+   sessionStorage-Eintrag — nicht die ganzen 26 Anfragen, wie ich es vorhin
+   noch in zwei Kommentaren geschrieben hatte. Hoher Preis bleibt hoher Preis,
+   aber er wird hier beziffert und nicht aufgerundet.
+
+   Die Begruendung von oben (§ 25 Abs. 2 Nr. 2 TDDDG) traegt das nur in der
+   schwachen Lesart. Das ist eine Entscheidung des Verantwortlichen, nicht
+   meine.
+
+   WAS IN DER DATENSCHUTZERKLAERUNG DAZU STEHT — nachgesehen, nicht vermutet,
+   und hier stand vorhin das Falsche: ich hatte an dieser Stelle geschrieben,
+   der Abschnitt sei „am 28.10. zurueckgedreht". Er ist es nicht, und er war
+   es auch nicht. Der Fliesstext von `datenschutz.html` ist seit dem achten
+   Durchgang Arics Text, Wort fuer Wort aus seiner Vorlage; MEINE gemessenen
+   Saetze („beim blossen Aufruf geht nichts hinaus") sind dort schon damals
+   herausgefallen. Es gab also nichts zurueckzudrehen — die Behauptung war
+   bequem und ungeprueft, zwei Dateien weiter.
+
+   Der Mangel ist ein anderer und aelter als diese Aenderung: Arics Text sagt
+   „Wir haben [...] einen LINK zum Dienst Online-Rezeption integriert" und die
+   Uebermittlung erfolge „erst, nachdem Sie [...] zugestimmt haben". Eingebunden
+   ist kein Link, sondern ein Skript, und die IP geht vor jeder Zustimmung
+   hinaus. Das stimmte vor dem 23.10. schon nicht; fuenf Tage lang stimmte es
+   zufaellig, weil der Code strenger war als der Text; jetzt stimmt es wieder
+   nicht. Zu entscheiden hat das der Verantwortliche, nicht ich — ich nenne es
+   ihm und schreibe es nicht still um. Was ich nicht tue: meine eigene
+   Nachlaessigkeit im Kommentar als erledigte Rechtsfrage ausgeben.
+
+   WAS DIESE DATEI DANN NOCH TUT, jetzt wo das Skript von allein kommt:
+   1. Unsere Termin-Knoepfe im Text oeffnen die Rezeption, statt auf die
+      Kontaktseite zu springen (`openClose()`). Genau das, was Aric mit „das
+      Interface nochmal da oeffnet, wenn man da draufdrueckt" meint.
+   2. Sie zieht das fehlende alt-Attribut am fremden Logo nach.
+   Beides braucht kein Vorladen und keinen eigenen Knopf mehr. */
 
 /* Das fremde Skript haengt sein "powered by"-Logo OHNE alt-Attribut in unser
    Dokument — kein iframe, es steht wirklich in unserem DOM. Fuer einen
@@ -42,11 +89,9 @@ const DOCMEDICO = 'https://cdn.docmedico-rezeption.de/j9u4c9m7a/reception_embed.
 
    Warum ein Beobachter und kein einmaliger Lauf: das Logo kommt asynchron und
    erst, wenn die Rezeption sich aufbaut. Zu jedem festen Zeitpunkt danach zu
-   suchen waere geraten. Der Beobachter haengt sich ab, sobald er es hatte.
-
-   NEU ab 23.10.: er startet erst mit dem Laden der Rezeption. Vorher lief er
-   auf JEDEM Seitenaufruf 30 Sekunden mit und wartete auf ein Logo, das ohne
-   Klick nie kam. */
+   suchen waere geraten. Der Beobachter haengt sich ab, sobald er es hatte,
+   spaetestens nach 30 s — sonst laeuft er auf der Startseite dauerhaft gegen
+   jede Kino-Bewegung mit. */
 function logoNachziehen() {
   const nachziehen = () => {
     const treffer = [...document.querySelectorAll('img:not([alt])')]
@@ -60,45 +105,41 @@ function logoNachziehen() {
   setTimeout(() => wache.disconnect(), 30000);
 }
 
-/* Laedt das fremde Skript genau einmal und liefert seinen Helfer.
+/* Wartet auf den Helfer des fremden Skripts.
 
-   Warum danach noch gewartet wird: `onload` sagt nur, dass die Datei da ist.
-   Ob `docmedEmbedHelper` in derselben Mikroaufgabe entsteht, ist eine Zusage,
-   die uns niemand gegeben hat — das Skript ist fremd und kann sich morgen
-   anders verhalten. Also nachsehen, bis der Helfer da ist, und aufgeben statt
-   ewig zu warten. 8 s ist bewusst lang: ein langsames Mobilfunknetz soll den
-   Knopf nicht ins Leere laufen lassen. */
-let ladeVorgang = null;
-function rezeptionLaden() {
-  if (ladeVorgang) return ladeVorgang;
-  ladeVorgang = new Promise((fertig, scheitern) => {
-    const skript = document.createElement('script');
-    skript.src = DOCMEDICO;
-    skript.async = true;
-    skript.onerror = () => scheitern(new Error('Rezeption nicht erreichbar'));
-    skript.onload = () => {
-      const frist = Date.now() + 8000;
-      const nachsehen = () => {
-        if (window.docmedEmbedHelper) return fertig(window.docmedEmbedHelper);
-        if (Date.now() > frist) return scheitern(new Error('docmedEmbedHelper fehlt'));
-        setTimeout(nachsehen, 60);
-      };
-      nachsehen();
+   Warum ueberhaupt warten, wo das Skript doch im Kopf steht: es laedt `async`.
+   Wer auf einer langsamen Verbindung sofort auf „Termin buchen" drueckt, kann
+   schneller sein als der Download. Ohne Warten liefe der Klick dann ins Leere
+   — und das waere derselbe Fehler wie vorher, nur seltener und damit
+   schwerer zu finden.
+
+   8 s ist bewusst lang und die Obergrenze, nicht die Regel: gemessen war der
+   Helfer 137 ms nach dem Klick da, wenn das Skript erst dann geholt wurde.
+   Mit Vorladen ist er in aller Regel schon vor dem ersten Klick bereit. */
+function helferHolen(frist = 8000) {
+  if (window.docmedEmbedHelper) return Promise.resolve(window.docmedEmbedHelper);
+  return new Promise((fertig, scheitern) => {
+    const ende = Date.now() + frist;
+    const nachsehen = () => {
+      if (window.docmedEmbedHelper) return fertig(window.docmedEmbedHelper);
+      if (Date.now() > ende) return scheitern(new Error('docmedEmbedHelper fehlt'));
+      setTimeout(nachsehen, 60);
     };
-    logoNachziehen();
-    document.head.appendChild(skript);
+    nachsehen();
   });
-  return ladeVorgang;
 }
 
 (() => {
+  logoNachziehen();
+
   const ziele = [...document.querySelectorAll('a[data-termin]')];
   if (!ziele.length) return;
 
   let laeuft = false;
 
   ziele.forEach(a => a.addEventListener('click', async e => {
-    // Zweiter Weg hinein, falls das Skript schon steht: dann kein Umweg.
+    // Steht der Helfer schon — der Normalfall, weil das Skript mitlaedt —,
+    // dann ohne Umweg auf und fertig.
     if (window.docmedEmbedHelper) {
       e.preventDefault();
       window.docmedEmbedHelper.openClose();
@@ -106,20 +147,19 @@ function rezeptionLaden() {
     }
     // preventDefault muss synchron fallen, vor jedem await.
     e.preventDefault();
-    // Doppelklick waehrend des Ladens wuerde sonst zweimal openClose() rufen
+    // Doppelklick waehrend des Wartens wuerde sonst zweimal openClose() rufen
     // und das Fenster im selben Atemzug wieder zuklappen.
     if (laeuft) return;
     laeuft = true;
     a.setAttribute('aria-busy', 'true');
     try {
-      const hilfe = await rezeptionLaden();
+      const hilfe = await helferHolen();
       hilfe.openClose();
     } catch {
       // Das href bleibt stehen und traegt weiter, wenn das fremde Skript nicht
       // kommt — Blocker, Ausfall, Funkloch. Ohne diesen Rueckfall zeigte der
-      // wichtigste Knopf der Seite ins Leere. Vorher uebernahm das der Browser
-      // von selbst (kein preventDefault); jetzt muss der Sprung von Hand
-      // kommen, weil der Klick abgefangen ist.
+      // wichtigste Knopf der Seite ins Leere. Der Sprung muss von Hand kommen,
+      // weil der Klick abgefangen ist.
       window.location.href = a.href;
     } finally {
       laeuft = false;
